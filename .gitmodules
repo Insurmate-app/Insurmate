@@ -1,0 +1,3 @@
+[submodule "fabric-experimental"]
+	path = fabric-experimental
+	url = https://github.com/Toe12/blockchain-experimental.git
