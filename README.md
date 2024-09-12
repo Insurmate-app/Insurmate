@@ -98,6 +98,12 @@ graph TD
 - **Frontend:** React
 - **Backend:** Express JS
 
+### API Testing
+- **Tech** Postman
+
+### Datbase
+- **Tech** MongoDb
+
 ### Containerization
 
 - **Tech:** Docker
