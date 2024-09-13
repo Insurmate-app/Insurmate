@@ -99,9 +99,11 @@ graph TD
 - **Backend:** Express JS
 
 ### API Testing
+
 - **Tech** Postman
 
 ### Datbase
+
 - **Tech** MongoDb
 
 ### Containerization
@@ -114,7 +116,7 @@ graph TD
 
 ### Text Processing
 
-- **Tech:** Text extraction using AI
+- **Tech:** Amazon Textract
 
 ### Cloud Storage
 
@@ -122,4 +124,4 @@ graph TD
 
 ### Unit & integration Testing
 
-- **Tech:** Jest and Moch (<b>subject to change)
+- **Tech:** Jest and Mocha (<b>subject to change)
