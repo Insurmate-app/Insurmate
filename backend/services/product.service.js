@@ -1,5 +1,6 @@
 const Product = require("../models/product.model");
 const email = require("../services/email.service");
+const modelMapper = require("lodash");
 
 const createProduct = async (payload) => {
   try {
@@ -11,7 +12,15 @@ const createProduct = async (payload) => {
         text: "Hi there",
       });
     }
-    return product;
+    // Define the DTO structure
+    const productDto = modelMapper.pick(product, [
+      "_id",
+      "name",
+      "qauntity",
+      "price",
+    ]);
+
+    return productDto;
   } catch (error) {
     throw new Error("Error creating products: " + error.message);
   }
@@ -19,7 +28,13 @@ const createProduct = async (payload) => {
 
 const getAllProducts = async () => {
   try {
-    return await Product.find({});
+    const products = await Product.find({});
+
+    const productDtos = products.map((product) => {
+      return modelMapper.pick(product, ["_id", "name", "qauntity", "price"]);
+    });
+
+    return productDtos;
   } catch (error) {
     throw new Error("Error fetching products: " + error.message);
   }
@@ -27,7 +42,21 @@ const getAllProducts = async () => {
 
 const getProduct = async (productId) => {
   try {
-    return await Product.findById(productId);
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
+    // Define the DTO structure
+    const productDto = modelMapper.pick(product, [
+      "_id",
+      "name",
+      "qauntity",
+      "price",
+    ]);
+
+    return productDto;
   } catch (error) {
     throw new Error("Error retrieving product " + error.message);
   }
@@ -41,7 +70,14 @@ const getProductByName = async (name) => {
       throw new Error("Product not found");
     }
 
-    return product;
+    const productDto = modelMapper.pick(product, [
+      "_id",
+      "name",
+      "qauntity",
+      "price",
+    ]);
+
+    return productDto;
   } catch (error) {
     throw new Error("Error retrieving product by name: " + error.message);
   }
@@ -50,10 +86,13 @@ const getProductByName = async (name) => {
 const updateProduct = async (productId, payload) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(productId, payload);
-    if (updatedProduct) {
-      const product = await getProduct(productId);
-      return product;
+    console.log(updatedProduct);
+    if (!updatedProduct) {
+      throw new Error("Product not found");
     }
+    const product = await getProduct(productId);
+
+    return modelMapper.pick(product, ["_id", "name", "qauntity", "price"]);
   } catch (error) {
     throw new Error("Error updating product " + error.message);
   }
