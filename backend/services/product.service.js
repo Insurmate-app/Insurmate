@@ -1,5 +1,6 @@
 const Product = require("../models/product.model");
 const email = require("../services/email.service");
+const logger = require("../logger");
 const modelMapper = require("lodash");
 
 const createProduct = async (payload) => {
@@ -22,7 +23,9 @@ const createProduct = async (payload) => {
 
     return productDto;
   } catch (error) {
-    throw new Error("Error creating products: " + error.message);
+    const message = "Error creating product: " + error.message;
+    logger.error(message);
+    throw new Error(message);
   }
 };
 
