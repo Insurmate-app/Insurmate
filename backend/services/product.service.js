@@ -17,7 +17,7 @@ const createProduct = async (payload) => {
     const productDto = modelMapper.pick(product, [
       "_id",
       "name",
-      "qauntity",
+      "quantity",
       "price",
     ]);
 
@@ -34,7 +34,7 @@ const getAllProducts = async () => {
     const products = await Product.find({});
 
     const productDtos = products.map((product) => {
-      return modelMapper.pick(product, ["_id", "name", "qauntity", "price"]);
+      return modelMapper.pick(product, ["_id", "name", "quantity", "price"]);
     });
 
     return productDtos;
@@ -55,7 +55,7 @@ const getProduct = async (productId) => {
     const productDto = modelMapper.pick(product, [
       "_id",
       "name",
-      "qauntity",
+      "quantity",
       "price",
     ]);
 
