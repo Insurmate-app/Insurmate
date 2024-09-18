@@ -2,12 +2,16 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 const express = require("express");
 const productRoute = require("./routes/product.route.js");
+const cors = require("cors");
 const app = express();
 
 const dbUrl = process.env.DATABASE_URL;
 const maxPoolSize = process.env.MAX_POOL_SIZE;
 const maxIdleTimeMS = process.env.MAX_Idle_Time_MS;
 const connectionTimeoutMS = process.env.CONECTION_TIMEOUT_MS;
+
+// Allow all origins or configure specific origins
+app.use(cors());
 
 // middleware
 app.use(express.json());

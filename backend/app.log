@@ -1,1 +1,5 @@
 2024-09-17T00:41:08.359Z error: Error creating product: E11000 duplicate key error collection: dev.products index: name_1 dup key: { name: "Toe Arkar2233yu" }
+2024-09-17T19:14:20.521Z info: Email sent: 
+2024-09-17T19:18:16.021Z info: Email sent: 
+2024-09-17T19:20:19.366Z info: Email sent: 
+2024-09-18T18:12:56.982Z info: Email sent: 
