@@ -19,7 +19,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
-        # cache: "npm"
+
+      # Cache NPM dependencies in the backend directory
+      - name: Cache NPM dependencies
+        uses: actions/cache@v3
+        with:
+          path: backend/node_modules # Path to the node_modules in the backend
+          key: npm-${{ hashFiles('backend/package-lock.json') }} # Unique key based on the package-lock.json hash
+          restore-keys: |
+            npm-
 
       # Navigate to the 'backend' directory and install dependencies
       - name: Install Dependencies in Backend
