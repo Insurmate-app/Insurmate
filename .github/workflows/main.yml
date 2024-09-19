@@ -13,8 +13,7 @@ jobs:
     steps:
       # Checkout the repository
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    
 
       # Set up Node.js (using Node.js v22 LTS)
       - name: Use Node.js 22
@@ -39,6 +38,4 @@ jobs:
         working-directory: backend
         run: |
           npm install -g vercel
-          vercel --token ${{ secrets.VERCEL_TOKEN }} --prod
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          vercel --prod --token ${{ secrets.VERCEL_TOKEN }}
