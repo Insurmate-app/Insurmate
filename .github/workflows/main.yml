@@ -13,13 +13,13 @@ jobs:
     steps:
       # Checkout the repository
       - uses: actions/checkout@v4
-    
+
       # Set up Node.js (using Node.js v22 LTS)
       - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
-          cache: "npm"
+        # cache: "npm"
 
       # Navigate to the 'backend' directory and install dependencies
       - name: Install Dependencies in Backend
