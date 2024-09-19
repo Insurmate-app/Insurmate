@@ -1,4 +1,3 @@
-#https://dev.to/olumidenwosu/implementing-continuous-integration-for-nodejs-apps-with-github-actions-1ag2
 name: Node.js CI
 
 on:
@@ -12,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository code
+      # Checkout the repository
       - uses: actions/checkout@v4
 
       # Set up Node.js (v22)
@@ -22,17 +21,33 @@ jobs:
           node-version: 22
           cache: "npm"
 
+      # Navigate to the 'backend' directory and verify package-lock.json
+      - name: Navigate to Backend and Verify Lock File
+        run: |
+          cd backend
+          if [ ! -f "package-lock.json" ]; then
+            echo "Error: package-lock.json not found in backend directory!"
+            exit 1
+          else
+            echo "package-lock.json found"
+          fi
+
       # Install dependencies
-      - run: |
+      - name: Install Dependencies
+        run: |
           cd backend
           npm install
 
       # Run tests
-      # - run: npm test
+      - name: Run Tests
+        run: |
+          cd backend
+        # TODO npm run test
 
-      # Deploy to Vercel
+      # Deploy to Vercel (optional)
       - name: Deploy to Vercel
         run: |
+          cd backend
           npm install -g vercel
           vercel --token ${{ secrets.VERCEL_TOKEN }} --prod
         env:
