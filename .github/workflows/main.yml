@@ -9,7 +9,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -21,10 +20,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: "npm"
 
       # Install dependencies
-      - run: npm install
+      - run: |
+          cd backend
+          npm install
 
       # Run tests
       # - run: npm test
