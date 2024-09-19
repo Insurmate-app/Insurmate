@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: false }));
 // route
 app.use("/v1/api/product", productRoute);
 
-app.get("/", (req, res) => res.send("App is working!!!!"));
+app.get("/", (req, res) => res.send("CI/CD Test (1)"));
 
 mongoose
   .connect(dbUrl, {
