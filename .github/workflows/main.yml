@@ -14,11 +14,11 @@ jobs:
       # Checkout the repository
       - uses: actions/checkout@v4
 
-      # Set up Node.js (v22)
-      - name: Use Node.js 22
+      # Set up Node.js (using Node.js v20)
+      - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: "npm"
 
       # Navigate to the 'backend' directory and verify package-lock.json
@@ -42,7 +42,7 @@ jobs:
       - name: Run Tests
         run: |
           cd backend
-        # TODO npm run test
+        # npm test
 
       # Deploy to Vercel (optional)
       - name: Deploy to Vercel
