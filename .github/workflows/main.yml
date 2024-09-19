@@ -8,46 +8,36 @@ on:
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
 
     steps:
       # Checkout the repository
       - uses: actions/checkout@v4
 
-      # Set up Node.js (using Node.js v20)
-      - name: Use Node.js 20
+      # Set up Node.js (using Node.js v22 LTS)
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: "npm"
 
-      # Navigate to the 'backend' directory and verify package-lock.json
-      - name: Navigate to Backend and Verify Lock File
+      # Navigate to the 'backend' directory and install dependencies
+      - name: Install Dependencies in Backend
+        working-directory: backend
         run: |
-          cd backend
-          if [ ! -f "package-lock.json" ]; then
-            echo "Error: package-lock.json not found in backend directory!"
-            exit 1
-          else
-            echo "package-lock.json found"
-          fi
-
-      # Install dependencies
-      - name: Install Dependencies
-        run: |
-          cd backend
           npm install
 
-      # Run tests
-      - name: Run Tests
+      # Run tests in 'backend' directory
+      - name: Run Tests in Backend
+        working-directory: backend
         run: |
-          cd backend
-        # npm test
+          npm test
 
-      # Deploy to Vercel (optional)
+      # Deploy to Vercel from the 'backend' directory (optional)
       - name: Deploy to Vercel
+        working-directory: backend
         run: |
-          cd backend
           npm install -g vercel
           vercel --token ${{ secrets.VERCEL_TOKEN }} --prod
         env:
