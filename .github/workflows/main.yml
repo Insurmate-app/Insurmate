@@ -19,6 +19,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
+          cache: "npm"
 
       # Navigate to the 'backend' directory and install dependencies
       - name: Install Dependencies in Backend
