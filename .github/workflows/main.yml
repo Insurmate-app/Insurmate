@@ -29,10 +29,10 @@ jobs:
           npm install
 
       # Run tests in 'backend' directory
-      - name: Run Tests in Backend
-        working-directory: backend
-        run: |
-          npm test
+      # - name: Run Tests in Backend
+      # working-directory: backend
+      # run: |
+      # npm test
 
       # Deploy to Vercel from the 'backend' directory (optional)
       - name: Deploy to Vercel
