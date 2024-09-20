@@ -1,4 +1,5 @@
 require("dotenv").config();
+//const redis = require("redis");
 const mongoose = require("mongoose");
 const express = require("express");
 const productRoute = require("./routes/product.route.js");
@@ -38,3 +39,13 @@ mongoose
     console.log(error);
     console.log("Connection failed!");
   });
+
+// Create Redis client
+// const client = redis.createClient({
+//   host: "localhost",
+//   port: 6379, // Default Redis port
+// });
+
+// client.on("error", (err) => {
+//   console.error("Error connecting to Redis:", err);
+// });
