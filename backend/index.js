@@ -3,6 +3,7 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 const express = require("express");
 const productRoute = require("./routes/product.route.js");
+const userRoute = require("./routes/user.route.js");
 const cors = require("cors");
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // route
 app.use("/v1/api/product", productRoute);
+app.use("/v1/api/user", userRoute);
 
 app.get("/", (req, res) => res.send("CI/CD Test (2)"));
 
