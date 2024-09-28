@@ -1,5 +1,5 @@
 require("dotenv").config();
-//const redis = require("redis");
+const helmet = require('helmet'); 
 const mongoose = require("mongoose");
 const express = require("express");
 const productRoute = require("./routes/product.route.js");
@@ -10,6 +10,10 @@ const dbUrl = process.env.DATABASE_URL;
 const maxPoolSize = process.env.MAX_POOL_SIZE;
 const maxIdleTimeMS = process.env.MAX_Idle_Time_MS;
 const connectionTimeoutMS = process.env.CONECTION_TIMEOUT_MS;
+
+// helment
+// https://blog.logrocket.com/using-helmet-node-js-secure-application/
+app.use(helmet());
 
 // Allow all origins or configure specific origins
 app.use(cors());
@@ -39,13 +43,3 @@ mongoose
     console.log(error);
     console.log("Connection failed!");
   });
-
-// Create Redis client
-// const client = redis.createClient({
-//   host: "localhost",
-//   port: 6379, // Default Redis port
-// });
-
-// client.on("error", (err) => {
-//   console.error("Error connecting to Redis:", err);
-// });
