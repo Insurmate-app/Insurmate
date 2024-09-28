@@ -1,5 +1,5 @@
 require("dotenv").config();
-const helmet = require('helmet'); 
+const helmet = require("helmet");
 const mongoose = require("mongoose");
 const express = require("express");
 const productRoute = require("./routes/product.route.js");
@@ -14,6 +14,13 @@ const connectionTimeoutMS = process.env.CONECTION_TIMEOUT_MS;
 // helment
 // https://blog.logrocket.com/using-helmet-node-js-secure-application/
 app.use(helmet());
+
+// Alternatively, if you want to configure the headers manually:
+app.use((req, res, next) => {
+  // Enable XSS protection: 1; mode=block
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
 
 // Allow all origins or configure specific origins
 app.use(cors());
