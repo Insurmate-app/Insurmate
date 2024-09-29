@@ -16,7 +16,6 @@ const connectionTimeoutMS = process.env.CONECTION_TIMEOUT_MS;
 // https://blog.logrocket.com/using-helmet-node-js-secure-application/
 app.use(helmet());
 
-// Alternatively, if you want to configure the headers manually:
 app.use((req, res, next) => {
   // Enable XSS protection: 1; mode=block
   res.setHeader('X-XSS-Protection', '1; mode=block');
