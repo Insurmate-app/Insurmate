@@ -1,7 +1,10 @@
 const User = require("../models/user.model");
 const emailService = require("../services/email.service");
 const modelMapper = require("lodash");
+const log = require("../logger");
+const CustomError = require("../errorhandling/errorUtil");
 
+// Utility function to create custom errors with a status code
 /**
  * 2024-09-29
  * @//toDo:
@@ -43,7 +46,19 @@ const createUser = async (userData) => {
 
     return userDto;
   } catch (error) {
-    throw new Error("Error creating user: " + error.message);
+    // Check if the error is a MongoDB duplicate key error
+    if (error.code === 11000) {
+      // Extract the duplicated field (e.g., email, username)
+      const duplicateField = Object.keys(error.keyValue)[0];
+      const errorMessage = `Duplicate field value: '${duplicateField}' already exists.`;
+
+      // Throw a custom error with a 409 conflict status code
+      throw CustomError(errorMessage, 409);
+    } else {
+      log.error(error.message);
+      // Handle other types of errors
+      throw error;
+    }
   }
 };
 
@@ -56,11 +71,15 @@ const createUser = async (userData) => {
 const resetPassword = async (email, newPassword) => {
   try {
     // retrieve user
-    const user = await findUserByEmail(email);
+    // const user = await findUserByEmail(email);
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw CustomError("User not found.", 404);
+    }
 
-    // we dont allow to reset password if account is not active
+    // we don't allow resetting the password if the account is not active
     if (!user.activeAccount) {
-      throw new Error("Account is not active.");
+      throw CustomError("Account is not active.", 400); // You need to throw the error
     }
 
     const updatedUser = await User.findByIdAndUpdate(
@@ -70,23 +89,28 @@ const resetPassword = async (email, newPassword) => {
     );
 
     if (!updatedUser) {
-      throw new Error("User not found.");
+      throw CustomError("User not found.", 404); // Ensure proper error status for user not found
     }
   } catch (error) {
-    throw new Error("Error resetting password: " + error.message);
+    // Handle specific error codes
+    if (error.statusCode >= 400 && error.statusCode < 500) {
+      // Handle expected errors (400-series)
+      throw error; // Re-throw the error to preserve the correct status code
+    } else {
+      // Handle 500-series or unexpected errors
+      log.error(error.message);
+      // You can log the full error details or take specific actions
+      throw CustomError("Unable to reset password.", 500); // Convert to 500 and re-throw
+    }
   }
 };
 
 const findUserByEmail = async (email) => {
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      throw new Error("User not found.");
-    }
-    return user;
-  } catch (error) {
-    throw new Error("Error finding user: " + error.message);
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw CustomError("User not found.", 404);
   }
+  return user;
 };
 
 /**
@@ -96,29 +120,42 @@ const loginUser = async (email, password) => {
   try {
     const user = await findUserByEmail(email);
 
+    // Check if user exists
     if (!user) {
-      throw new Error("User not found.");
+      throw CustomError("User not found.", 400);
     }
 
-    // Check if the account is locked or inactive
+    // Check if account is locked or inactive
     if (user.failedLoginAttempts >= 5 || !user.activeAccount) {
-      throw new Error(
-        "Account is inactive or locked because there are more than 5 failed login attempts."
+      throw CustomError(
+        "Account is inactive or locked due to more than 5 failed login attempts.",
+        401
       );
     }
 
+    // Check if password is correct
     if (user.password !== password) {
       user.failedLoginAttempts += 1;
       await user.save();
-      throw new Error("Invalid username or password.");
+
+      throw CustomError("Invalid password.", 401);
     }
 
-    // Reset failed login attempts on successful login
+    // Reset failed login attempts and activate account on successful login
     user.failedLoginAttempts = 0;
     user.activeAccount = true;
     await user.save();
   } catch (error) {
-    throw new Error("Error logging in: " + error.message);
+    // Handle specific error codes
+    if (error.statusCode >= 400 && error.statusCode < 500) {
+      // Handle expected errors (400-series)
+      throw error; // Re-throw the error to preserve the correct status code
+    } else {
+      // Handle 500-series or unexpected errors
+      log.error(error.message);
+      // You can log the full error details or take specific actions
+      throw CustomError("Unable to login.", 500); // Convert to 500 and re-throw
+    }
   }
 };
 

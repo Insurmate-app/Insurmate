@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const express = require("express");
 const productRoute = require("./routes/product.route.js");
 const userRoute = require("./routes/user.route.js");
+const errorHandler = require("./routes/errorHandler");
 const cors = require("cors");
 const app = express();
 
@@ -18,7 +19,7 @@ app.use(helmet());
 
 app.use((req, res, next) => {
   // Enable XSS protection: 1; mode=block
-  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader("X-XSS-Protection", "1; mode=block");
   next();
 });
 
@@ -34,6 +35,9 @@ app.use("/v1/api/product", productRoute);
 app.use("/v1/api/user", userRoute);
 
 app.get("/", (req, res) => res.send("CI/CD Test (2)"));
+
+// Error handling middleware should be the last middleware
+app.use(errorHandler);
 
 mongoose
   .connect(dbUrl, {
