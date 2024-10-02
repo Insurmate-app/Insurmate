@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "bcrypt": "^5.1.1",
-    "helmet": "^7.1.0"
-  }
-}
