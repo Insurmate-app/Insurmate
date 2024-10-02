@@ -71,8 +71,7 @@ const createUser = async (userData) => {
 const resetPassword = async (email, newPassword) => {
   try {
     // retrieve user
-    // const user = await findUserByEmail(email);
-    const user = await User.findOne({ email });
+    const user = await findUserByEmail(email);
     if (!user) {
       throw CustomError("User not found.", 404);
     }
