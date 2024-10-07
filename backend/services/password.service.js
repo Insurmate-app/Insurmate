@@ -25,7 +25,6 @@ async function checkPassword(plainPassword, hashedPassword) {
 
 async function generateOtp(){
     const otp = otplib.authenticator.generate(secret);
-    console.log(otp);
     return otp;
 }
 

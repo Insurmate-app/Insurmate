@@ -22,6 +22,14 @@ const passwordService = require("../services/password.service")
  * We need to send OTP to user
  */
 
+const sendVerificationEmail = async (email, otpToken) => {
+  await emailService.sendEmail({
+    to: email,
+    subject: "Welcome to We Care Insurance",
+    text: `Hello, welcome to We Care Insurance.\n\n\tyour verification code is: ${otpToken}`
+  });
+}
+
 const createUser = async (userData) => {
   try {
     // Without this, the client will have capabilities to change failed login attempts and active account status
@@ -38,11 +46,7 @@ const createUser = async (userData) => {
     const otpToken = await passwordService.generateOtp();
 
     if (user) {
-      await emailService.sendEmail({
-        to: user.email,
-        subject: "Welcome to We Care Insurance",
-        text: `Hello, welcome to We Care Insurance.\n\n\tyour verification code is: ${otpToken}`
-      });
+      await sendVerificationEmail(user.email, otpToken);
     }
 
     const userDto = modelMapper.pick(user, [
@@ -79,6 +83,7 @@ const createUser = async (userData) => {
  * Hash and salt the password
  * We need to send OTP to user to confirm password reset
  */
+
 const resetPassword = async (email, newPassword) => {
   try {
     // retrieve user
@@ -138,10 +143,19 @@ const loginUser = async (email, password) => {
       throw CustomError("User not found.", 400);
     }
 
-    // Check if account is locked or inactive
-    if (user.failedLoginAttempts >= 5 || !user.activeAccount) {
+    if (!user.activeAccount) {
+      const otpToken = await passwordService.generateOtp();
+      await sendVerificationEmail(user.email, otpToken);
       throw CustomError(
-        "Account is inactive or locked due to more than 5 failed login attempts.",
+        "Account is inactive, a new verification code has been sent to your email address.",
+        401
+      );
+    }
+
+    // Check if account is locked or inactive
+    if (user.failedLoginAttempts >= 5) {
+      throw CustomError(
+        "Account is locked due to more than 5 failed login attempts.",
         401
       );
     }
