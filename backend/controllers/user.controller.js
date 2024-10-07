@@ -32,8 +32,19 @@ const loginUser = async (req, res, next) => {
   }
 };
 
+const verifyUser = async(req, res, next) => {
+  try{
+    const { email, otpToken } = req.body;
+    await userService.verifyUser(email, otpToken);
+    res.status(200).json("Verification Successful.");
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createUser,
   resetPassword,
   loginUser,
+  verifyUser,
 };

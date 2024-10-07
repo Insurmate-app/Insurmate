@@ -93,6 +93,25 @@ router.post(
   userController.loginUser
 );
 
+router.post(
+  "/verify",
+  [
+    check("email")
+      .notEmpty()
+      .withMessage("Email is required")
+      .isLength({ max: 100 })
+      .withMessage("Email must be no more than 100 characters long")
+      .matches(emailRegex)
+      .withMessage("Invalid email format"),
+
+    check("otpToken")
+      .notEmpty()
+      .withMessage("OTP Token is required"),
+  ],
+  validate,
+  userController.verifyUser
+)
+
 router.put(
   "/reset-password",
   [
