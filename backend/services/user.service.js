@@ -3,6 +3,9 @@ const emailService = require("../services/email.service");
 const modelMapper = require("lodash");
 const log = require("../logger");
 const CustomError = require("../errorhandling/errorUtil");
+const passwordService = require("../services/password.service")
+
+
 
 // Utility function to create custom errors with a status code
 /**
@@ -18,20 +21,32 @@ const CustomError = require("../errorhandling/errorUtil");
  * Hash and salt the password
  * We need to send OTP to user
  */
+
+const sendVerificationEmail = async (email, otpToken) => {
+  await emailService.sendEmail({
+    to: email,
+    subject: "Welcome to We Care Insurance",
+    text: `Hello, welcome to We Care Insurance.\n\n\tyour verification code is: ${otpToken}`
+  });
+}
+
 const createUser = async (userData) => {
   try {
     // Without this, the client will have capabilities to change failed login attempts and active account status
     userData.failedLoginAttempts = 0;
     userData.activeAccount = false;
 
+    // hashes the password the user sent before the User is created
+    const hashedPassword = await passwordService.hashPassword(userData.password)
+    userData.password = hashedPassword
+
     const user = await User.create(userData);
 
+    //create an OTP
+    const otpToken = await passwordService.generateOtp();
+
     if (user) {
-      await emailService.sendEmail({
-        to: user.email,
-        subject: "Welcome to We Care Insurance",
-        text: `Hello ${user.companyName}, your account has been successfully created!`,
-      });
+      await sendVerificationEmail(user.email, otpToken);
     }
 
     const userDto = modelMapper.pick(user, [
@@ -68,6 +83,7 @@ const createUser = async (userData) => {
  * Hash and salt the password
  * We need to send OTP to user to confirm password reset
  */
+
 const resetPassword = async (email, newPassword) => {
   try {
     // retrieve user
@@ -80,6 +96,9 @@ const resetPassword = async (email, newPassword) => {
     if (!user.activeAccount) {
       throw CustomError("Account is not active.", 400); // You need to throw the error
     }
+
+    //hash the newPassword
+    newPassword = await passwordService.hashPassword(newPassword)
 
     const updatedUser = await User.findByIdAndUpdate(
       user._id,
@@ -124,16 +143,26 @@ const loginUser = async (email, password) => {
       throw CustomError("User not found.", 400);
     }
 
-    // Check if account is locked or inactive
-    if (user.failedLoginAttempts >= 5 || !user.activeAccount) {
+    if (!user.activeAccount) {
+      const otpToken = await passwordService.generateOtp();
+      await sendVerificationEmail(user.email, otpToken);
       throw CustomError(
-        "Account is inactive or locked due to more than 5 failed login attempts.",
+        "Account is inactive, a new verification code has been sent to your email address.",
         401
       );
     }
 
-    // Check if password is correct
-    if (user.password !== password) {
+    // Check if account is locked or inactive
+    if (user.failedLoginAttempts >= 5) {
+      throw CustomError(
+        "Account is locked due to more than 5 failed login attempts.",
+        401
+      );
+    }
+
+    // Check if password is correct by comparing it to hashed password
+    const match = await passwordService.checkPassword(password, user.password);
+    if (!match) {
       user.failedLoginAttempts += 1;
       await user.save();
 
@@ -158,8 +187,40 @@ const loginUser = async (email, password) => {
   }
 };
 
+const verifyUser = async (email, otpToken) => {
+  try {
+    const user = await findUserByEmail(email);
+
+    // Check if user exists
+    if (!user) {
+      throw CustomError("User not found.", 400);
+    }
+
+    // Check if the otpToken is valid
+    const isValid = passwordService.verifyOtp(otpToken);
+    if (!isValid) {
+      throw CustomError("Verification Link Expired")
+    }
+
+    // Now that the OTP is valid, activate the user account
+    user.activeAccount = true;
+    await user.save();
+  } catch (error) {
+    if (error.statusCode >= 400 && error.statusCode < 500) {
+      // Handle expected errors (400-series)
+      throw error; // Re-throw the error to preserve the correct status code
+    } else {
+      // Handle 500-series or unexpected errors
+      log.error(error.message);
+      // You can log the full error details or take specific actions
+      throw CustomError("Unable to verify.", 500); // Convert to 500 and re-throw
+    }
+  }
+};
+
 module.exports = {
   createUser,
   resetPassword,
   loginUser,
+  verifyUser
 };
