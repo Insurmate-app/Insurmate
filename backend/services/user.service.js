@@ -3,32 +3,15 @@ const emailService = require("../services/email.service");
 const modelMapper = require("lodash");
 const log = require("../logger");
 const CustomError = require("../errorhandling/errorUtil");
-const passwordService = require("../services/password.service")
+const passwordService = require("../services/password.service");
 
-
-
-// Utility function to create custom errors with a status code
-/**
- * 2024-09-29
- * @//toDo:
- * Create another method to activate account
- * Make activtedAccount to true after OTP verification
- */
-
-/**
- * 2024-09-29
- * @//toDo:
- * Hash and salt the password
- * We need to send OTP to user
- */
-
-const sendVerificationEmail = async (email, otpToken) => {
+const sendVerificationEmail = async (email, otp) => {
   await emailService.sendEmail({
     to: email,
-    subject: "Welcome to We Care Insurance",
-    text: `Hello, welcome to We Care Insurance.\n\n\tyour verification code is: ${otpToken}`
+    subject: "Activate Account",
+    text: `Hi there, \nPlease use the following OTP to activate your account: ${otp}. This OTP is valid for 5 minutes.`,
   });
-}
+};
 
 const createUser = async (userData) => {
   try {
@@ -37,13 +20,15 @@ const createUser = async (userData) => {
     userData.activeAccount = false;
 
     // hashes the password the user sent before the User is created
-    const hashedPassword = await passwordService.hashPassword(userData.password)
-    userData.password = hashedPassword
+    const hashedPassword = await passwordService.hashPassword(
+      userData.password
+    );
+    userData.password = hashedPassword;
 
     const user = await User.create(userData);
 
     //create an OTP
-    const otpToken = await passwordService.generateOtp();
+    const otpToken = await passwordService.generateOtp(user.email);
 
     if (user) {
       await sendVerificationEmail(user.email, otpToken);
@@ -77,13 +62,6 @@ const createUser = async (userData) => {
   }
 };
 
-/**
- * 2024-09-29
- * @//toDo:
- * Hash and salt the password
- * We need to send OTP to user to confirm password reset
- */
-
 const resetPassword = async (email, newPassword) => {
   try {
     // retrieve user
@@ -92,13 +70,8 @@ const resetPassword = async (email, newPassword) => {
       throw CustomError("User not found.", 404);
     }
 
-    // we don't allow resetting the password if the account is not active
-    if (!user.activeAccount) {
-      throw CustomError("Account is not active.", 400); // You need to throw the error
-    }
-
     //hash the newPassword
-    newPassword = await passwordService.hashPassword(newPassword)
+    newPassword = await passwordService.hashPassword(newPassword);
 
     const updatedUser = await User.findByIdAndUpdate(
       user._id,
@@ -108,6 +81,12 @@ const resetPassword = async (email, newPassword) => {
 
     if (!updatedUser) {
       throw CustomError("User not found.", 404); // Ensure proper error status for user not found
+    }
+    //create an OTP
+    const otpToken = await passwordService.generateOtp(user.email);
+
+    if (updatedUser) {
+      await sendVerificationEmail(updatedUser.email, otpToken);
     }
   } catch (error) {
     // Handle specific error codes
@@ -144,8 +123,6 @@ const loginUser = async (email, password) => {
     }
 
     if (!user.activeAccount) {
-      const otpToken = await passwordService.generateOtp();
-      await sendVerificationEmail(user.email, otpToken);
       throw CustomError(
         "Account is inactive, a new verification code has been sent to your email address.",
         401
@@ -187,6 +164,38 @@ const loginUser = async (email, password) => {
   }
 };
 
+const regenerateOtp = async (email) => {
+  try {
+    const user = await findUserByEmail(email);
+    if (!user) {
+      throw CustomError("User not found.", 404);
+    }
+
+    if (user.activeAccount) {
+      throw CustomError("Account is already active.", 400);
+    }
+
+    await User.findByIdAndUpdate(
+      user._id,
+      { activeAccount: false },
+      { new: true }
+    );
+
+    const otpToken = await passwordService.generateOtp(email);
+
+    await sendVerificationEmail(user.email, otpToken);
+  } catch (error) {
+    if (error.statusCode >= 400 && error.statusCode < 500) {
+      // Handle expected errors (400-series)
+      throw error; // Re-throw the error to preserve the correct status code
+    } else {
+      // Handle 500-series or unexpected errors
+      log.error(error.message);
+      // You can log the full error details or take specific actions
+    }
+  }
+};
+
 const verifyUser = async (email, otpToken) => {
   try {
     const user = await findUserByEmail(email);
@@ -197,13 +206,12 @@ const verifyUser = async (email, otpToken) => {
     }
 
     // Check if the otpToken is valid
-    const isValid = passwordService.verifyOtp(otpToken);
-    if (!isValid) {
-      throw CustomError("Verification Link Expired")
-    }
+    await passwordService.verifyOtp(email, otpToken);
 
     // Now that the OTP is valid, activate the user account
     user.activeAccount = true;
+    user.failedLoginAttempts = 0;
+
     await user.save();
   } catch (error) {
     if (error.statusCode >= 400 && error.statusCode < 500) {
@@ -222,5 +230,6 @@ module.exports = {
   createUser,
   resetPassword,
   loginUser,
-  verifyUser
+  verifyUser,
+  regenerateOtp,
 };
