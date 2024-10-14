@@ -106,11 +106,14 @@ router.post(
 
     check("otpToken")
       .notEmpty()
-      .withMessage("OTP Token is required"),
+      .withMessage("OTP Token is required")
+      .isNumeric()
+      .isLength({ max: 6 })
+      .withMessage("OTP Token must be no more than 6 digits or less than long"),
   ],
   validate,
   userController.verifyUser
-)
+);
 
 router.put(
   "/reset-password",
@@ -135,6 +138,21 @@ router.put(
   ],
   validate,
   userController.resetPassword
+);
+
+router.post(
+  "/regenerate-otp",
+  [
+    check("email")
+      .notEmpty()
+      .withMessage("Email is required")
+      .isLength({ max: 100 })
+      .withMessage("Email must be no more than 100 characters long")
+      .matches(emailRegex)
+      .withMessage("Invalid email format"),
+  ],
+  validate,
+  userController.regenerateOtp
 );
 
 module.exports = router;

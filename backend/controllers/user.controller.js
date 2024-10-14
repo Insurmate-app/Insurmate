@@ -32,11 +32,21 @@ const loginUser = async (req, res, next) => {
   }
 };
 
-const verifyUser = async(req, res, next) => {
-  try{
+const verifyUser = async (req, res, next) => {
+  try {
     const { email, otpToken } = req.body;
     await userService.verifyUser(email, otpToken);
     res.status(200).json("Verification Successful.");
+  } catch (error) {
+    next(error);
+  }
+};
+
+const regenerateOtp = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    await userService.regenerateOtp(email);
+    res.status(200).json("OTP regenerated successfully.");
   } catch (error) {
     next(error);
   }
@@ -47,4 +57,5 @@ module.exports = {
   resetPassword,
   loginUser,
   verifyUser,
+  regenerateOtp,
 };
