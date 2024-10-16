@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "builds": [{ "src": "index.js", "use": "@vercel/node" }],
+  "builds": [{ "src": "app.js", "use": "@vercel/node" }],
   "env": {
     "NODE_ENV": "production",
     "DATABASE_URL": "mongodb+srv://toearkar:2QdNMyggg2x0pZ6U@dev.xlcqh.mongodb.net/?retryWrites=true&w=majority&appName=dev"
@@ -8,7 +8,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "index.js"
+      "dest": "app.js"
     }
   ]
 }
