@@ -42,7 +42,7 @@ app.use("/health", healthcheck());
 app.use("/v1/api/product", productRoute);
 app.use("/v1/api/user", userRoute);
 
-app.get("/", (req, res) => res.send("CI/CD Test (2)"));
+app.get("/", (req, res) => res.send("CI/CD Test (backend)"));
 
 // Error handling middleware should be the last middleware
 app.use(errorHandler);
