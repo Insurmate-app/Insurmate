@@ -64,6 +64,3 @@ To start the Node.js application, follow these steps:
    ```bash
    npm run dev
    ```
-
-### Postman Collection
-[Postman Collection](app.postman_collection.json)

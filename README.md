@@ -124,21 +124,4 @@ graph TD
 
 ### Unit & integration Testing
 
-- **Tech:** Jest and Mocha (<b>subject to change)
-
-
-# Release Notes (Milestone 1)
-
-### Users can do the following
-- Create an account (This sends an OTP to the user's submitted email)
-- Verify their accounts (Using the OTP mentioned above)
-- Request a new OTP
-- Login
-- Reset password
-- Logout
-
-### Other Features
-- Passwords are hashed before being stored in the database
-- OTPs expire after 5 minutes
-
-#### ./backend/README.md contains information on setting up the backend
+- **Tech:** Jest/Mocha and Testcontainers (<b>subject to change)
