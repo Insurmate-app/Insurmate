@@ -227,6 +227,7 @@ const verifyUser = async (email, otpToken) => {
 };
 
 module.exports = {
+  findUserByEmail,
   createUser,
   resetPassword,
   loginUser,

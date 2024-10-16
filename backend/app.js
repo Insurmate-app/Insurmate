@@ -7,7 +7,7 @@ const gracefulShutdown = require("express-graceful-shutdown");
 const cors = require("cors");
 const app = express();
 
-const errorHandler = require("./routes/errorHandler");
+const errorHandler = require("./middlewares/errorHandler.js");
 const productRoute = require("./routes/product.route.js");
 const userRoute = require("./routes/user.route.js");
 
