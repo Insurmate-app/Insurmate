@@ -25,7 +25,7 @@ app.use(cookieParser());
 mongoose.connect("mongodb://mongo:mongo@localhost:27017/dev?authSource=admin");
 
 // Login route without passport (generating JWT token)
-app.post("/test-login", async (req, res) => {
+app.post("/login", async (req, res) => {
   try {
     // Check if the user exists
     const { email, password } = req.body;
