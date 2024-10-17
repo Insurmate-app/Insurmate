@@ -17,3 +17,7 @@
 2024-09-29T17:26:42.070Z info: Email sent: 
 2024-09-29T17:30:42.876Z info: Email sent: 
 2024-10-02T01:53:17.898Z info: Email sent: 
+2024-10-16T19:34:53.317Z error: Operation `users.findOne()` buffering timed out after 10000ms
+2024-10-16T19:36:16.298Z error: Operation `users.findOne()` buffering timed out after 10000ms
+2024-10-16T19:39:07.810Z info: Email sent: 
+2024-10-16T19:41:22.140Z info: Email sent: 

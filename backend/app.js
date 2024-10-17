@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const express = require("express");
 const healthcheck = require("express-healthcheck");
 const gracefulShutdown = require("express-graceful-shutdown");
+const rateLimit = require("express-rate-limit");
 const cors = require("cors");
 const app = express();
 
@@ -25,6 +26,16 @@ app.use((req, res, next) => {
   res.setHeader("X-XSS-Protection", "1; mode=block");
   next();
 });
+
+// Define a rate limiter
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again later",
+});
+
+// Apply the rate limiter to all requests
+app.use(limiter);
 
 // Allow all origins or configure specific origins
 app.use(cors());
