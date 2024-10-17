@@ -34,13 +34,13 @@ To set up MongoDB and manage Docker containers and volumes, use the following co
 1. **Restart MongoDB**  
    Run the script to restart MongoDB:
    ```bash
-   ./scripts/mongo_db_restart.sh
+   ../db_docker_scripts/mongo_db_restart.sh
    ```
 
 2. **Remove MongoDB**  
    If you need to remove the MongoDB container and associated volumes, use:
    ```bash
-   ./scripts/mongo_db_remove.sh
+   ../db_docker_scripts/mongo_db_remove.sh
    ```
 
 ### Starting the Node.js Application
