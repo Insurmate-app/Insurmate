@@ -1,11 +1,16 @@
 const path = require("path");
+const nodeExternals = require("webpack-node-externals");
 
 module.exports = {
-  entry: "./index.js",
+  mode: "production", // Or 'development' depending on your environment
+  entry: "./app.js", // Entry point for your application
   output: {
-    filename: "bundle.js",
     path: path.resolve(__dirname, "dist"),
+    filename: "final.js", // Output bundle
   },
-  target: "node", // since we're bundling a Node.js app
-  mode: "production",
+  target: "node", // Set Webpack target to Node.js environment
+  externals: [nodeExternals()], // Exclude node_modules from being bundled
 };
+
+// need to install 
+// npm install -g node-gyp

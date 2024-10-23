@@ -11,7 +11,6 @@ const cors = require("cors");
 const app = express();
 
 const errorHandler = require("./middlewares/errorHandler.js");
-const productRoute = require("./routes/product.route.js");
 const userRoute = require("./routes/user.route.js");
 
 const dbUrl = process.env.DATABASE_URL;
@@ -52,10 +51,9 @@ const PORT = process.env.PORT || 3000;
 app.use("/health", healthcheck());
 
 // route
-app.use("/v1/api/product", productRoute);
 app.use("/v1/api/user", userRoute);
 
-app.get("/", (req, res) => res.send("CI/CD Test [ No. 5 ]"));
+app.get("/", (req, res) => res.send("App is working!"));
 
 // Error handling middleware should be the last middleware
 app.use(errorHandler);

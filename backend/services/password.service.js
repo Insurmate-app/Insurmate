@@ -48,7 +48,7 @@ const generateOtp = async (id) => {
 
     // Generate the OTP using the dynamic secret
     const otp = otplib.authenticator.generate(dynamicSecret);
-    
+
     // Store the OTP and secret in the cache with the user's ID as the key
     otpCache.set(id, { otp, secret: dynamicSecret });
     return otp;
