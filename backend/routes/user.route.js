@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const passport = require("passport");
+require("../security/passport"); // Import Passport JWT configuration
 
 const validate = require("../middlewares/requestValidator");
 const { check } = require("express-validator");
@@ -154,5 +156,7 @@ router.post(
   validate,
   userController.regenerateOtp
 );
+
+router.post("/logout", passport.authenticate("jwt", { session: false }), userController.logoutUser); 
 
 module.exports = router;
