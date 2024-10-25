@@ -1,9 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import useSignUpForm from "../hooks/signup/useSignUpForm";
 import useSpinner from "../hooks/useSpinner";
 import useModal from "../hooks/useModal";
 import Modal from "./Modal";
 import { Link } from "react-router-dom";
+import { UserContext } from "../context/UserContext"; // Ensure correct import
 import axios from "axios";
 import * as Yup from "yup";
 
@@ -55,6 +57,9 @@ const SignUpForm = () => {
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
 
+  const { setEmail: setContextEmail } = useContext(UserContext); // Correct context property
+  const navigate = useNavigate();
+
   const validationSchema = Yup.object().shape({
     email: Yup.string().email("Please enter a valid email address").required(),
     password: Yup.string()
@@ -102,8 +107,6 @@ const SignUpForm = () => {
     try {
       await validationSchema.validate(form, { abortEarly: false });
 
-      console.log(form);
-
       await axios.post(signup_url, {
         email: email,
         password: password,
@@ -118,6 +121,8 @@ const SignUpForm = () => {
       });
 
       showModal("Sign up successful");
+      setContextEmail(email); // Use setContextEmail instead of setContextEmail
+      navigate("/activate-account");
     } catch (err) {
       deactivateSpinner();
       setIsButtonDisabled(false);

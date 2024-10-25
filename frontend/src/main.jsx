@@ -11,9 +11,12 @@ import {
   createRoutesFromElements,
 } from "react-router-dom";
 
+import { UserProvider } from "./context/UserContext"; // Import UserProvider
+
 import LoginForm from "./components/LoginForm.jsx";
 import SignUpForm from "./components/SignUpForm.jsx";
 import PasswordReset from "./components/PasswordReset.jsx";
+import ActivateAccount from "./components/Activation.jsx";
 import Layout from "./Layout.jsx";
 import ClientPage from "./components/clientPage.jsx";
 import Home from "./components/Home.jsx";
@@ -25,6 +28,7 @@ const router = createBrowserRouter(
       <Route path="login" element={<LoginForm />} />
       <Route path="signup" element={<SignUpForm />} />
       <Route path="reset-password" element={<PasswordReset />} />
+      <Route path="/activate-account" element={<ActivateAccount />} />
       <Route path="client" element={<ClientPage />} />
     </Route>
   )
@@ -32,6 +36,10 @@ const router = createBrowserRouter(
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <UserProvider>
+      {" "}
+      {/* Wrap RouterProvider with UserProvider */}
+      <RouterProvider router={router} />
+    </UserProvider>
   </StrictMode>
 );

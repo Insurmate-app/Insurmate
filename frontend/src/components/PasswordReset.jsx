@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import useSpinner from "../hooks/useSpinner";
 import useModal from "../hooks/useModal";
 import Modal from "./Modal";
 import usePasswordReset from "../hooks/passwordReset/usePasswordReset";
+import { UserContext } from "../context/UserContext"; // Ensure correct import
 import * as Yup from "yup";
 
 const base_url = import.meta.env.VITE_API_BASE_URL;
@@ -24,6 +26,9 @@ const PasswordReset = () => {
 
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
+
+  const { setEmail: setContextEmail } = useContext(UserContext); // Correct context property
+  const navigate = useNavigate();
 
   const schema = Yup.object().shape({
     email: Yup.string()
@@ -66,10 +71,11 @@ const PasswordReset = () => {
 
       activateSpinner();
 
-      console.log(data);
       const res = await axios.put(password_reset_url, data);
 
-      showModal(res.data);
+      showModal("Password reset successful");
+      setContextEmail(email); // Use setContextEmail instead of setContextEmail
+      navigate("/activate-account");
     } catch (err) {
       deactivateSpinner();
       if (err.name === "ValidationError") {

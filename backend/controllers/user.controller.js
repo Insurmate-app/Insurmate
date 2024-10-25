@@ -93,7 +93,6 @@ const logoutUser = (req, res, next) => {
   }
 }
 
-
 const verifyUser = async (req, res, next) => {
   try {
     let { email, otpToken } = req.body;
