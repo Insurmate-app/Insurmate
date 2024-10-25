@@ -43,7 +43,7 @@ jobs:
 
       # Deploy to Vercel from the 'backend' directory (optional)
       - name: Deploy to Vercel
-        working-directory: backend
+        working-directory: frontend
         run: |
           npm install -g vercel
           vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
