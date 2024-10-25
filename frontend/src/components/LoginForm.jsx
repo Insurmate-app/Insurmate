@@ -8,7 +8,7 @@ import axios from "axios";
 import * as Yup from "yup";
 
 const base_url = import.meta.env.VITE_API_BASE_URL;
-const login_url = base_url + "/auth/user/login";
+const login_url = base_url + "/user/login";
 
 const LoginForm = () => {
   const {
@@ -67,9 +67,9 @@ const LoginForm = () => {
 
       // If validation passes, make the axios post request
       activateSpinner(); // Start spinner if necessary
-      const res = await axios.post(login_url, data);
+      await axios.post(login_url, data);
 
-      showModal("Loghin Successful");
+      showModal("Login Successful");
     } catch (err) {
       deactivateSpinner();
       setIsButtonDisabled(false);

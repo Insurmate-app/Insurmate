@@ -8,7 +8,7 @@ import usePasswordReset from "../hooks/passwordReset/usePasswordReset";
 import * as Yup from "yup";
 
 const base_url = import.meta.env.VITE_API_BASE_URL;
-const password_reset_url = base_url + "/auth/user/reset";
+const password_reset_url = base_url + "/user/reset-password";
 
 const PasswordReset = () => {
   const {
@@ -26,13 +26,13 @@ const PasswordReset = () => {
   const { isVisible, message, showModal, hideModal } = useModal();
 
   const schema = Yup.object().shape({
-    emailL: Yup.string()
+    email: Yup.string()
       .required("Email is required")
       .matches(
         /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
         "Please enter a valid email address"
       ),
-    newPassword: Yup.string()
+    password: Yup.string()
       .required("A new password is required")
       .min(8, "Password must be at least 8 characters long")
       .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
@@ -44,7 +44,7 @@ const PasswordReset = () => {
 
   const data = {
     email: email,
-    newPassword: newPassword,
+    password: newPassword,
   };
 
   const handleEmailChange = (e) => {
@@ -59,11 +59,14 @@ const PasswordReset = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    activateSpinner();
+    setIsButtonDisabled(true);
     try {
       await schema.validate(data);
 
       activateSpinner();
+
+      console.log(data);
       const res = await axios.put(password_reset_url, data);
 
       showModal(res.data);

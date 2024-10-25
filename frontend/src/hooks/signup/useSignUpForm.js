@@ -4,10 +4,14 @@ function useSignUpForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [phone, setPhone] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [businessName, setBusinessName] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [address, setAddress] = useState({
+    addressLine1: "",
+    addressLine2: "",
+    city: "",
+    state: "",
+    zipCode: "",
+  });
   const [isTermsAccepted, setIsTermsAccepted] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
@@ -22,14 +26,10 @@ function useSignUpForm() {
     setPassword,
     showPassword,
     togglePasswordVisibility,
-    phone,
-    setPhone,
-    firstName,
-    setFirstName,
-    lastName,
-    setLastName,
-    businessName,
-    setBusinessName,
+    companyName,
+    setCompanyName,
+    address,
+    setAddress,
     isTermsAccepted,
     setIsTermsAccepted,
     isButtonDisabled,
