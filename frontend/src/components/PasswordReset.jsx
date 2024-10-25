@@ -78,11 +78,14 @@ const PasswordReset = () => {
       }
     }
   };
-
   return (
-    <div className="container d-flex justify-content-center align-items-center vh-100">
-      <div className="signup-container card p-4">
-        <form onSubmit={handleSubmit}>
+    <div className="container-fluid d-flex justify-content-center align-items-center vh-100 bg-light">
+      <div
+        className="signup-container card shadow p-4 rounded"
+        style={{ maxWidth: "400px", width: "100%" }}
+      >
+        <h2 className="text-center mb-4">Reset Password</h2>
+        <form onSubmit={handleSubmit} noValidate>
           <div className="mb-3">
             <label htmlFor="email" className="form-label">
               Email
@@ -91,9 +94,11 @@ const PasswordReset = () => {
               required
               type="email"
               className="form-control"
+              id="email"
               placeholder="user@email.com"
               value={email}
               onChange={handleEmailChange}
+              style={{ borderRadius: "8px" }}
             />
           </div>
           <div className="mb-3">
@@ -104,14 +109,17 @@ const PasswordReset = () => {
               <input
                 required
                 type={showPassword ? "text" : "password"}
+                id="password"
                 className="form-control"
                 value={newPassword}
                 onChange={handlePasswordChange}
+                style={{ borderRadius: "8px" }}
               />
               <span
                 className="input-group-text toggle-password"
                 role="button"
                 onClick={togglePasswordVisibility}
+                style={{ cursor: "pointer", borderRadius: "8px" }}
               >
                 <i
                   className={showPassword ? "bi bi-eye-slash" : "bi bi-eye"}
@@ -121,28 +129,42 @@ const PasswordReset = () => {
           </div>
           <button
             type="submit"
-            className="btn btn-success w-100 mb-3"
+            className="btn btn-primary w-100"
             disabled={isButtonDisabled}
+            style={{
+              backgroundColor: isButtonDisabled ? "#ccc" : "#6c63ff",
+              borderRadius: "8px",
+              cursor: isButtonDisabled ? "not-allowed" : "pointer",
+            }}
           >
             {isSpinnerVisible && (
               <span
-                className="spinner-border spinner-border-sm text-dark mt-2"
+                className="spinner-border spinner-border-sm text-light"
                 role="status"
               ></span>
             )}
             Reset Password
           </button>
         </form>
+
         <div className="mt-3">
           <p className="text-center">
-            Return to <Link to="/login">Login</Link>
+            Return to{" "}
+            <Link to="/login" className="text-primary">
+              Login
+            </Link>
           </p>
           <p className="text-center">
-            Don't have an account? <Link to="/signup">Sign Up</Link>
+            Don't have an account?{" "}
+            <Link to="/signup" className="text-primary">
+              Sign Up
+            </Link>
           </p>
         </div>
+
+        {/* Modal for any error or success messages */}
+        <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
       </div>
-      <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
     </div>
   );
 };

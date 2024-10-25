@@ -1,8 +1,32 @@
 const userService = require("../services/user.service");
 
+// Helper function to safely uppercase a string
+const safeUpperCase = (value) =>
+  typeof value === "string" ? value.trim().toUpperCase() : value;
+
 const createUser = async (req, res, next) => {
   try {
     const userData = req.body;
+
+    // Apply safeUpperCase to all relevant fields
+    userData.email = safeUpperCase(userData.email);
+    userData.firstName = safeUpperCase(userData.firstName);
+    userData.lastName = safeUpperCase(userData.lastName);
+    userData.companyName = safeUpperCase(userData.companyName);
+
+    // Check if address exists before accessing its properties
+    if (userData.address) {
+      userData.address.addressLine1 = safeUpperCase(
+        userData.address.addressLine1
+      );
+      userData.address.addressLine2 = safeUpperCase(
+        userData.address.addressLine2
+      );
+      userData.address.city = safeUpperCase(userData.address.city);
+      userData.address.state = safeUpperCase(userData.address.state);
+      // No need to modify zipCode as it's not being uppercased
+    }
+
     const user = await userService.createUser(userData);
     res.status(201).json(user);
   } catch (error) {
@@ -12,7 +36,8 @@ const createUser = async (req, res, next) => {
 
 const resetPassword = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+    email = safeUpperCase(email);
     await userService.resetPassword(email, password);
     res.status(200).json("Password reset successful.");
   } catch (error) {
@@ -22,7 +47,8 @@ const resetPassword = async (req, res, next) => {
 
 const loginUser = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+    email = safeUpperCase(email);
     await userService.loginUser(email, password);
     res.status(200).json("Login successful.");
   } catch (error) {
@@ -34,7 +60,8 @@ const loginUser = async (req, res, next) => {
 
 const verifyUser = async (req, res, next) => {
   try {
-    const { email, otpToken } = req.body;
+    let { email, otpToken } = req.body;
+    email = safeUpperCase(email);
     await userService.verifyUser(email, otpToken);
     res.status(200).json("Verification Successful.");
   } catch (error) {
@@ -44,7 +71,8 @@ const verifyUser = async (req, res, next) => {
 
 const regenerateOtp = async (req, res, next) => {
   try {
-    const { email } = req.body;
+    let { email } = req.body;
+    email = safeUpperCase(email);
     await userService.regenerateOtp(email);
     res.status(200).json("OTP regenerated successfully.");
   } catch (error) {

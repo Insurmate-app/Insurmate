@@ -1,15 +1,18 @@
 import React from "react";
+import "../style.css"; // Import the global CSS
 
 function Footer() {
-  const date = new Date();
-  const year = date.toString().split(" ")[3];
+  const year = new Date().getFullYear();
+
   return (
-    <div style={{ textAlign: "center" }}>
-      <div id="error-message" style={{ color: "red" }}></div>
+    <footer className="footer">
+      <div id="error-message" className="text-danger mb-2"></div>
       <div id="copyright-text">
-        <p className="mb-0">&copy; {year} Copyright: We Care Insurance INC.</p>
+        <p className="mb-0">
+          &copy; {year} We Care Insurance Inc. All rights reserved.
+        </p>
       </div>
-    </div>
+    </footer>
   );
 }
 

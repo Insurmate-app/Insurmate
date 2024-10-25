@@ -61,10 +61,6 @@ const LoginForm = () => {
     e.preventDefault();
     activateSpinner();
     setIsButtonDisabled(true);
-    // Axios post request with email and password as data
-    // Is status 200 received, deactivate spinne and show modal with success message
-    // res.data
-    // err.data (if status is not 200) display error message using modal & reactivate spinner, enable button agian
     try {
       // Validate the data using Yup
       await schema.validate(data, { abortEarly: false });
@@ -92,20 +88,25 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center vh-100">
-      <div className="login-container card p-4">
+    <div className="container-fluid d-flex justify-content-center align-items-center vh-100 bg-light">
+      <div
+        className="login-container card shadow p-4 rounded"
+        style={{ maxWidth: "400px", width: "100%" }}
+      >
+        <h2 className="text-center mb-4">Login</h2>
         <form id="login-form" noValidate onSubmit={handleSubmit}>
           <div className="mb-3">
             <label htmlFor="email" className="form-label">
               Email
             </label>
             <input
-              type="text"
+              type="email"
               className="form-control"
               id="email"
               placeholder="user@email.com"
               value={email}
               onChange={handleEmailChange}
+              style={{ borderRadius: "8px" }}
             />
           </div>
           <div className="mb-3">
@@ -119,11 +120,13 @@ const LoginForm = () => {
                 className="form-control"
                 value={password}
                 onChange={handlePasswordChange}
+                style={{ borderRadius: "8px" }}
               />
               <span
                 className="input-group-text toggle-password"
                 role="button"
                 onClick={togglePasswordVisibility}
+                style={{ cursor: "pointer", borderRadius: "8px" }}
               >
                 <i
                   className={showPassword ? "bi bi-eye-slash" : "bi bi-eye"}
@@ -134,29 +137,36 @@ const LoginForm = () => {
           <button
             type="submit"
             id="login_button"
-            className="btn btn-success w-100"
+            className="btn btn-primary w-100"
             disabled={isButtonDisabled}
+            style={{
+              backgroundColor: isButtonDisabled ? "#ccc" : "#6c63ff",
+              borderRadius: "8px",
+              cursor: isButtonDisabled ? "not-allowed" : "pointer",
+            }}
           >
             {isSpinnerVisible && (
               <span
-                className="spinner-border spinner-border-sm text-dark mt-2"
+                className="spinner-border spinner-border-sm text-light"
                 role="status"
               ></span>
             )}
             Login
           </button>
         </form>
+
         <div className="mt-3">
           <p className="text-center">
-            Don't have an account? <Link to="/signup">Sign Up</Link>
+            Don't have an account?{" "}
+            <Link to="/signup" className="text-primary">
+              Sign Up
+            </Link>
           </p>
           <p className="text-center">
-            <Link to="/reset-password">Reset Password</Link>
+            <Link to="/reset-password" className="text-primary">
+              Reset Password
+            </Link>
           </p>
-        </div>
-        <div style={{ textAlign: "center" }}>
-          <div id="error-message" style={{ color: "red" }}></div>
-          <div id="copyright-text"></div>
         </div>
         {/* Bootstrap Modal */}
         <Modal isVisible={isVisible} message={message} hideModal={hideModal} />

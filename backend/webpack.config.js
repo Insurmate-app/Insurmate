@@ -6,7 +6,7 @@ module.exports = {
   entry: "./app.js", // Entry point for your application
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "final.js", // Output bundle
+    filename: "app.js", // Output bundle
   },
   target: "node", // Set Webpack target to Node.js environment
   externals: [nodeExternals()], // Exclude node_modules from being bundled
