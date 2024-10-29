@@ -181,6 +181,7 @@ const regenerateOtp = async (email) => {
       { new: true }
     );
 
+    console.log(email);
     const otpToken = await passwordService.generateOtp(email);
 
     await sendVerificationEmail(user.email, otpToken);

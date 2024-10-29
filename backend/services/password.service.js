@@ -60,9 +60,10 @@ const generateOtp = async (id) => {
 
 const verifyOtp = async (id, token) => {
   try {
+    console.log("id", id, "token", token);
     // Retrieve the OTP and secret from the cache
+    
     const cachedOtpData = otpCache.get(id);
-
     if (!cachedOtpData) {
       log.error(`OTP not found or expired for id: ${id}`);
       throw CustomError("OTP not found or expired.", 401);

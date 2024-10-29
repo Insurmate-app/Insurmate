@@ -25,7 +25,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: backend/node_modules # Path to the node_modules in the backend
-          key: npm-${{ hashFiles('backend/package-lock.json') }} # Unique key based on the package-lock.json hash
+          key: npm-${{ hashFiles('frontend/package-lock.json') }} # Unique key based on the package-lock.json hash
           restore-keys: |
             npm-
 

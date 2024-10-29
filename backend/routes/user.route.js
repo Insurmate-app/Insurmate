@@ -157,6 +157,10 @@ router.post(
   userController.regenerateOtp
 );
 
-router.post("/logout", passport.authenticate("jwt", { session: false }), userController.logoutUser); 
+router.post(
+  "/logout",
+  passport.authenticate("jwt", { session: false }),
+  userController.logoutUser
+);
 
 module.exports = router;
