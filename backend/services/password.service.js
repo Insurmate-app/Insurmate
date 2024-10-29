@@ -10,9 +10,9 @@ otplib.authenticator.options = { step: 900 };
 
 const otpCache = new LRUCache({
   max: 300,
-  maxSize: 30,
-  sizeCalculation: (value, key) => value.otp.length,
-  ttl: 1000 * 60 * 60,
+  maxSize: 300,
+  sizeCalculation: () => 1, // Every entry counts as 1
+  ttl: 1000 * 60 * 15, // 15 minutes TTL
   ttlAutopurge: true,
 });
 
@@ -60,9 +60,10 @@ const generateOtp = async (id) => {
 
 const verifyOtp = async (id, token) => {
   try {
+    //console.log("Current Cache Contents:", otpCache.dump());
     console.log("id", id, "token", token);
     // Retrieve the OTP and secret from the cache
-    
+
     const cachedOtpData = otpCache.get(id);
     if (!cachedOtpData) {
       log.error(`OTP not found or expired for id: ${id}`);
