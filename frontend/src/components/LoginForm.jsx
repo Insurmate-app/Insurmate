@@ -70,6 +70,7 @@ const LoginForm = () => {
       await axios.post(login_url, data);
 
       showModal("Login Successful");
+      deactivateSpinner();
     } catch (err) {
       deactivateSpinner();
       setIsButtonDisabled(false);
