@@ -34,7 +34,7 @@ const loginUser = async (req, res, next) => {
       expiresIn: "15m", // 15 minutes
     });
     // Set the token as a cookie (HttpOnly for security)
-    res.cookie("app", token, {
+    res.cookie("token", token, {
       httpOnly: true, // Makes the cookie inaccessible to JavaScript on the client-side
       secure: process.env.NODE_ENV === "production", // Ensure HTTPS in production
       maxAge: 900000, // 15 minutes in milliseconds
