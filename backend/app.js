@@ -8,6 +8,8 @@ const healthcheck = require("express-healthcheck");
 const gracefulShutdown = require("express-graceful-shutdown");
 const rateLimit = require("express-rate-limit");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const passport = require("passport");
 const app = express();
 
 const errorHandler = require("./middlewares/errorHandler.js");
@@ -40,6 +42,11 @@ app.use(limiter);
 
 // Allow all origins or configure specific origins
 app.use(cors());
+
+// Initialize passport middleware
+app.use(passport.initialize());
+
+app.use(cookieParser());
 
 // middleware
 app.use(express.json());

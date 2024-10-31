@@ -34,13 +34,14 @@ const loginUser = async (req, res, next) => {
       expiresIn: "15m", // 15 minutes
     });
     // Set the token as a cookie (HttpOnly for security)
-    res.cookie("token", token, {
+    res.cookie("app", token, {
       httpOnly: true, // Makes the cookie inaccessible to JavaScript on the client-side
       secure: process.env.NODE_ENV === "production", // Ensure HTTPS in production
-      maxAge: 900000, // 1 hour in milliseconds
+      maxAge: 900000, // 15 minutes in milliseconds
     });
 
-    res.status(200).json({ message: token });
+    //res.status(200).json({ message: token });
+    res.status(200).json("Login successful.");
   } catch (error) {
     // Pass the error to the global error handler using next()
     //res.status(500).json({ message: error.message });
