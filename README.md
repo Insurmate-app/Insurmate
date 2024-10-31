@@ -102,7 +102,7 @@ graph TD
 
 - **Tech** Postman
 
-### Datbase
+### Database
 
 - **Tech** MongoDb
 

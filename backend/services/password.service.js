@@ -38,11 +38,11 @@ async function checkPassword(plainPassword, hashedPassword) {
 
 const generateOtp = async (id) => {
   try {
-    const cachedOtpData = otpCache.get(id);
+    // const cachedOtpData = otpCache.get(id);
 
-    if (cachedOtpData) {
-      otpCache.delete(id);
-    }
+    // if (cachedOtpData) {
+    //   otpCache.delete(id);
+    // }
     // Generate a unique secret for each OTP generation
     const dynamicSecret = otplib.authenticator.generateSecret();
 
