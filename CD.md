@@ -10,8 +10,7 @@ graph TD
     B --> C["OCI Web Server (Blockchain Network + Express.js)"]
 
     %% Web Server to Database
-    C --> D["Oracle Application Server"]
-    D --> E["MongoDB Atlas Cluster"]
+    C --> D["MongoDB Atlas Cluster"]
 
     %% Legend and Notes
     classDef node fill:#add8e6,stroke:#333,stroke-width:2px;

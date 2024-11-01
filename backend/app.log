@@ -123,3 +123,51 @@
 2024-10-27T02:18:31.299Z info: Cached OTP: 125960, Secret: FBZC4332DVWWYFQR, Provided Token: 125960 for id: toearkar@protonmail.com
 2024-10-27T02:18:33.992Z error: OTP not found or expired for id: toearkar@protonmail.com
 2024-10-27T02:18:33.992Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T15:53:27.229Z info: Email sent: 
+2024-10-29T15:54:27.792Z info: Cached OTP: 591107, Secret: AZLVGQLOGFRQC5LZ, Provided Token: 742919 for id: toearkar@protonmail.com
+2024-10-29T15:54:27.792Z error: Provided token does not match cached OTP for id: toearkar@protonmail.com
+2024-10-29T15:54:27.792Z error: Error during OTP verification for id: toearkar@protonmail.com - Invalid OTP
+2024-10-29T15:55:41.495Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T15:55:41.496Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T15:55:43.975Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T15:55:43.976Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T15:58:55.163Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T15:58:55.164Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T15:58:57.249Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T15:58:57.250Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T16:01:09.331Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T16:01:09.331Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T16:01:10.432Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T16:01:10.432Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T16:01:10.607Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T16:01:10.607Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T16:01:10.778Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T16:01:10.779Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T16:01:10.961Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T16:01:10.961Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T16:01:11.123Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T16:01:11.124Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T16:01:11.292Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T16:01:11.292Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T16:01:11.468Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T16:01:11.468Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T16:01:11.629Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T16:01:11.630Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T16:01:11.813Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T16:01:11.813Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T16:01:11.975Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T16:01:11.975Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T16:01:12.139Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T16:01:12.140Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T16:11:35.416Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T16:11:35.418Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T16:12:12.464Z error: OTP not found or expired for id: toearkar@protonmail.com
+2024-10-29T16:12:12.464Z error: Error during OTP verification for id: toearkar@protonmail.com - OTP not found or expired.
+2024-10-29T16:13:23.023Z error: invalid size value (must be positive integer). When maxSize or maxEntrySize is used, sizeCalculation or size must be set.
+2024-10-29T16:13:23.024Z error: invalid size value (must be positive integer). When maxSize or maxEntrySize is used, sizeCalculation or size must be set.
+2024-10-29T16:14:16.293Z info: Email sent: 
+2024-10-29T16:14:44.499Z info: Cached OTP: 315748, Secret: PNKE6XTUMB4EAWC5, Provided Token: 315748 for id: toearkar@protonmail.com
+2024-10-29T16:15:06.810Z info: Email sent: 
+2024-10-29T16:15:36.649Z info: Cached OTP: 335125, Secret: CJJFIRRJBJUBOJBE, Provided Token: 335125 for id: toearkar@protonmail.com
+2024-10-31T16:33:21.415Z info: Email sent: 
+2024-10-31T16:33:49.734Z info: Cached OTP: 285270, Secret: L4GBM4S4GQZBMDCT, Provided Token: 285270 for id: toearkar@protonmail.com
