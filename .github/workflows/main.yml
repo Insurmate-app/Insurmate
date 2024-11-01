@@ -46,4 +46,4 @@ jobs:
         working-directory: frontend
         run: |
           npm install -g vercel@latest
-          vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
+          vercel dist --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
