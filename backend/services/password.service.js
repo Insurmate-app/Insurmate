@@ -38,11 +38,6 @@ async function checkPassword(plainPassword, hashedPassword) {
 
 const generateOtp = async (id) => {
   try {
-    // const cachedOtpData = otpCache.get(id);
-
-    // if (cachedOtpData) {
-    //   otpCache.delete(id);
-    // }
     // Generate a unique secret for each OTP generation
     const dynamicSecret = otplib.authenticator.generateSecret();
 
@@ -60,11 +55,9 @@ const generateOtp = async (id) => {
 
 const verifyOtp = async (id, token) => {
   try {
-    //console.log("Current Cache Contents:", otpCache.dump());
-    console.log("id", id, "token", token);
     // Retrieve the OTP and secret from the cache
-
     const cachedOtpData = otpCache.get(id);
+
     if (!cachedOtpData) {
       log.error(`OTP not found or expired for id: ${id}`);
       throw CustomError("OTP not found or expired.", 401);
@@ -72,22 +65,23 @@ const verifyOtp = async (id, token) => {
 
     // Retrieve the OTP and secret from the cached data
     const { otp, secret } = cachedOtpData;
-    log.info(
+    console.log(
       `Cached OTP: ${otp}, Secret: ${secret}, Provided Token: ${token} for id: ${id}`
     );
 
     if (otp.toString().trim() !== token.toString().trim()) {
-      log.error(`Provided token does not match cached OTP for id: ${id}`);
       throw CustomError("Invalid OTP", 401);
     }
 
     // If OTP is valid, remove it from the cache
     otpCache.delete(id);
   } catch (error) {
-    log.error(`Error during OTP verification for id: ${id} - ${error.message}`);
     if (error.statusCode >= 400 && error.statusCode < 500) {
       throw error;
     } else {
+      log.error(
+        `Error during OTP verification for id: ${id} - ${error.message}`
+      );
       throw CustomError("Your OTP is invalid. Please try again.", 500);
     }
   }
