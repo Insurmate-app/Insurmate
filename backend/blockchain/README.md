@@ -1,6 +1,3 @@
-
----
-
 # **Using Node.js as an Application Developer with Hyperledger Fabric**
 
 This guide covers prerequisites, setup instructions, and steps for developing a Node.js application integrated with Hyperledger Fabric.
@@ -17,16 +14,82 @@ This guide covers prerequisites, setup instructions, and steps for developing a 
    brew install node jq
    ```
 
-### For Linux:
+### For Linux (if you are using Github codespaces):
 
-1. **Docker**: Install Docker using your preferred package manager (e.g., `apt-get`, `yum`).
-2. **Node.js, jq, and npm**: Install with your package manager (e.g., `apt-get`, `yum`).
+Install `jq` on Ubuntu:
+
+```bash
+sudo apt update
+sudo apt install -y jq
+```
+
+You can verify the installation by checking the version:
+
+```bash
+jq --version
+```
+
+1. **Update Package Index**
+
+   ```bash
+   sudo apt-get update
+   ```
+
+2. **Install Required Packages**
+
+   ```bash
+   sudo apt-get install -y \
+       ca-certificates \
+       curl \
+       gnupg \
+       lsb-release
+   ```
+
+3. **Add Docker’s Official GPG Key**
+
+   ```bash
+   sudo mkdir -p /etc/apt/keyrings
+   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+   sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+   ```
+
+4. **Set Up the Stable Repository**
+
+   ```bash
+   echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+   ```
+
+5. **Update Package Index Again**
+
+   ```bash
+   sudo apt-get update
+   ```
+
+6. **Remove Conflicting Packages**
+
+   ```bash
+   sudo apt-get remove -y moby-cli moby-engine moby-buildx moby-compose moby-containerd moby-runc moby-tini
+   sudo apt-get -y --fix-broken install
+   ```
+
+7. **Install Docker Engine**
+
+   ```bash
+   sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+   ```
+
+8. **Verify the Installation**
+
+   ```bash
+   docker --version
+   docker run hello-world
+   ```
 
 ---
 
 ## Step 1: Install Fabric Samples, Binaries, and Docker Images
 
-**Note:** If you have already installed these, you can skip this step. Otherwise, run:
+Run the following:
 
 ```sh
 curl -sSL https://bit.ly/2ysbOFE | bash -s
@@ -38,55 +101,47 @@ curl -sSL https://bit.ly/2ysbOFE | bash -s
 
 ### macOS:
 
-1. **Add Fabric binaries and configuration to your PATH** by appending the following lines to your `.zshrc` or equivalent:
+Add Fabric binaries to your PATH by appending these lines to `.zshrc`:
 
-   ```sh
-   echo 'export PATH=$PWD/bin:$PATH' >> ~/.zshrc
-   echo 'export FABRIC_CFG_PATH=$PWD/config' >> ~/.zshrc
+```sh
+echo 'export PATH=$PWD/bin:$PATH' >> ~/.zshrc
+echo 'export FABRIC_CFG_PATH=$PWD/config' >> ~/.zshrc
+echo 'export CORE_PEER_TLS_ENABLED=true' >> ~/.zshrc
+echo 'export CORE_PEER_LOCALMSPID=Org1MSP' >> ~/.zshrc
+echo 'export CORE_PEER_TLS_ROOTCERT_FILE=${PWD}/test-network/organizations/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem' >> ~/.zshrc
+echo 'export CORE_PEER_MSPCONFIGPATH=${PWD}/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp' >> ~/.zshrc
+echo 'export CORE_PEER_ADDRESS=localhost:7051' >> ~/.zshrc
+```
 
-   echo 'export CORE_PEER_TLS_ENABLED=true' >> ~/.zshrc
-   echo 'export CORE_PEER_LOCALMSPID=Org1MSP' >> ~/.zshrc
-   echo 'export CORE_PEER_TLS_ROOTCERT_FILE=${PWD}/test-network/organizations/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem' >> ~/.zshrc
-   echo 'export CORE_PEER_MSPCONFIGPATH=${PWD}/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp' >> ~/.zshrc
-   echo 'export CORE_PEER_ADDRESS=localhost:7051' >> ~/.zshrc
-   ```
+Source the profile:
 
-2. **Apply changes by sourcing the profile**:
-
-   ```sh
-   source ~/.zshrc
-   ```
+```sh
+source ~/.zshrc
+```
 
 ### Linux:
 
-1. **Add Fabric binaries to your PATH** by appending the following lines to your `~/.bashrc` or equivalent:
+Add Fabric binaries to your PATH by appending to `~/.bashrc`:
 
-   ```sh
-   echo 'export PATH=$PWD/bin:$PATH' >> ~/.bashrc
-   echo 'export FABRIC_CFG_PATH=$PWD/config' >> ~/.bashrc
+```sh
+echo 'export PATH=$PWD/bin:$PATH' >> ~/.bashrc
+echo 'export FABRIC_CFG_PATH=$PWD/config' >> ~/.bashrc
+echo 'export CORE_PEER_TLS_ENABLED=true' >> ~/.bashrc
+echo 'export CORE_PEER_LOCALMSPID=Org1MSP' >> ~/.bashrc
+echo 'export CORE_PEER_TLS_ROOTCERT_FILE=${PWD}/test-network/organizations/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem' >> ~/.bashrc
+echo 'export CORE_PEER_MSPCONFIGPATH=${PWD}/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp' >> ~/.bashrc
+echo 'export CORE_PEER_ADDRESS=localhost:7051' >> ~/.bashrc
+```
 
-   echo 'export CORE_PEER_TLS_ENABLED=true' >> ~/.bashrc
-   echo 'export CORE_PEER_LOCALMSPID=Org1MSP' >> ~/.bashrc
-   echo 'export CORE_PEER_TLS_ROOTCERT_FILE=${PWD}/test-network/organizations/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem' >> ~/.bashrc
-   echo 'export CORE_PEER_MSPCONFIGPATH=${PWD}/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp' >> ~/.bashrc
-   echo 'export CORE_PEER_ADDRESS=localhost:7051' >> ~/.bashrc
-   ```
+Source the profile:
 
-2. **Apply changes by sourcing the profile**:
-
-   ```sh
-   source ~/.bashrc
-   ```
+```sh
+source ~/.bashrc
+```
 
 ---
 
 ## Step 3: Launch the Test Network
-
-### To convert files in `test-network` to Unix format (if needed):
-
-```sh
-find test-network -type f -not -path "*.git*" -exec dos2unix {} +
-```
 
 1. **Navigate to the test network directory**:
 
@@ -94,7 +149,7 @@ find test-network -type f -not -path "*.git*" -exec dos2unix {} +
    cd test-network
    ```
 
-2. **Stop any existing network** (if running):
+2. **Stop any existing network**:
 
    ```sh
    ./network.sh down
@@ -116,7 +171,7 @@ find test-network -type f -not -path "*.git*" -exec dos2unix {} +
 
 ## Step 4: Install and Instantiate Chaincode
 
-1. **Deploy the chaincode using Node.js**:
+1. **Deploy the chaincode**:
 
    ```sh
    ./network.sh deployCC -ccn basic -ccp ../chaincode-javascript/ -ccl javascript
@@ -129,19 +184,13 @@ find test-network -type f -not -path "*.git*" -exec dos2unix {} +
 1. **Navigate to the application directory**:
 
    ```sh
-   cd backend/src
+   cd backend
    ```
 
-2. **Install the required Node.js packages**:
+2. **Install Node.js packages**:
 
    ```sh
    npm install
-   ```
-
-3. **Run the application**:
-
-   ```sh
-   node app.js
    ```
 
 ---
@@ -162,7 +211,23 @@ find test-network -type f -not -path "*.git*" -exec dos2unix {} +
 
 ---
 
-## Step 7: Verify the Setup
+## Step 7: Interact with the Application
+
+1. **Go to the `src` directory**:
+
+   ```bash
+   cd src
+   ```
+
+2. **Start the Node.js application**:
+
+   ```bash
+   node app.js
+   ```
+
+---
+
+## Step 8: Verify the Setup
 
 1. **Check Docker containers** to ensure the Hyperledger Fabric components are running:
 
@@ -170,7 +235,7 @@ find test-network -type f -not -path "*.git*" -exec dos2unix {} +
    docker ps
    ```
 
-2. **Interact with the application** to confirm that it communicates with the Hyperledger Fabric network as expected.
+2. **Interact with the application** to confirm it communicates with Hyperledger Fabric as expected.
 
 ---
 
@@ -180,5 +245,3 @@ find test-network -type f -not -path "*.git*" -exec dos2unix {} +
 - [Hyperledger Fabric Samples GitHub](https://github.com/hyperledger/fabric-samples)
 
 ---
-
-This README provides a complete guide to setting up and using Node.js as an application developer with Hyperledger Fabric on macOS and Linux systems.

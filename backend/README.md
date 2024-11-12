@@ -29,10 +29,11 @@ flowchart LR
 
 ### MongoDB Setup
 
-To set up MongoDB and manage Docker containers and volumes, use the following commands:
+Note: If you are using GitHub Codespaces, ensure that you install Docker by following the instructions in /backend/blockchain/README.md.
 
 1. **Restart MongoDB**  
    Run the script to restart MongoDB:
+
    ```bash
    ../db_docker_scripts/mongo_db_restart.sh
    ```
@@ -49,12 +50,14 @@ To start the Node.js application, follow these steps:
 
 1. **Navigate to the Backend Folder**  
    Ensure you're in the backend directory:
+
    ```bash
    cd backend
    ```
 
 2. **Install Dependencies**  
    Download all required npm packages from `package.json`:
+
    ```bash
    npm install
    ```
