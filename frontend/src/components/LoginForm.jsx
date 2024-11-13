@@ -3,7 +3,7 @@ import useLoginForm from "../hooks/login/useLoginForm";
 import useSpinner from "../hooks/useSpinner";
 import useModal from "../hooks/useModal";
 import Modal from "./Modal";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import * as Yup from "yup";
 
@@ -21,6 +21,8 @@ const LoginForm = () => {
     setIsButtonDisabled,
     isButtonDisabled,
   } = useLoginForm();
+
+  const navigate = useNavigate();
 
   const schema = Yup.object().shape({
     email: Yup.string()
@@ -67,10 +69,22 @@ const LoginForm = () => {
 
       // If validation passes, make the axios post request
       activateSpinner(); // Start spinner if necessary
-      await axios.post(login_url, data);
 
-      showModal("Login Successful");
-      deactivateSpinner();
+      axios
+        .post(login_url, data)
+        .then((response) => {
+          const token = response.data.token; // Get the token from the response
+
+          //Set the token as a cookie manually
+          document.cookie = `token=${token}; path=/; max-age=${
+            15 * 60
+          }; secure=${window.location.protocol === "https:"}; samesite=strict;`;
+
+          navigate("/dashboard");
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
     } catch (err) {
       deactivateSpinner();
       setIsButtonDisabled(false);

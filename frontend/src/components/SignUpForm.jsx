@@ -1,10 +1,9 @@
 import React, { useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import useSignUpForm from "../hooks/signup/useSignUpForm";
 import useSpinner from "../hooks/useSpinner";
 import useModal from "../hooks/useModal";
 import Modal from "./Modal";
-import { Link } from "react-router-dom";
 import { UserContext } from "../context/UserContext"; // Ensure correct import
 import axios from "axios";
 import * as Yup from "yup";

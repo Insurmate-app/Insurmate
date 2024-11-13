@@ -40,8 +40,11 @@ const limiter = rateLimit({
 // Apply the rate limiter to all requests
 app.use(limiter);
 
-// Allow all origins or configure specific origins
-app.use(cors());
+const corsOptions = {
+  origin: process.env.FRONTEND_URL, // Replace with your front-end URL
+  credentials: true, // Allow cookies to be sent
+};
+app.use(cors(corsOptions));
 
 // Initialize passport middleware
 app.use(passport.initialize());

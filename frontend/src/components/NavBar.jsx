@@ -5,44 +5,43 @@ import { Link } from "react-router-dom";
 const NavBar = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
-      <div className="container-fluid d-flex align-items-center">
-        <div>
-          <img src={wecarelogo} alt="We Care logo" width="50" height="50" />
-          We Care Insurance
+      <div className="container-fluid d-flex align-items-center justify-content-between">
+        <div className="d-flex align-items-center">
+          <img
+            src={wecarelogo}
+            alt="We Care logo"
+            width="50"
+            height="50"
+            className="me-2"
+          />
+          <span className="navbar-brand mb-0 h1">Insurmate</span>
         </div>
-        <div className="d-flex align-items-center justify-content-start">
-          <Link className="p-3">Client</Link>
-
-          <Link className="p-3">Lenders</Link>
-
-          <Link className="p-3">Users</Link>
-        </div>
-        <div className="d-flex align-items-center justify-content-end">
-          <div className="dropdown">
-
-            <button
-              className="btn btn-secondary dropdown-toggle"
-              type="button"
-              id="dropdownMenuButton"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-            <i className="bi bi-person-circle p-1"/>
-              User Name
-            </button>
-            <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              <li>
-                <Link className="dropdown-item" to="/login">
-                  Sign Out
-                </Link>
-              </li>
-              <li>
-                <Link className="dropdown-item" to="/">
-                  View Profile
-                </Link>
-              </li>
-            </ul>
-          </div>
+        <div className="dropdown">
+          <button
+            className="btn btn-secondary dropdown-toggle"
+            type="button"
+            id="dropdownMenuButton"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            <i className="bi bi-person-circle me-1" />
+            User Name
+          </button>
+          <ul
+            className="dropdown-menu dropdown-menu-end"
+            aria-labelledby="dropdownMenuButton"
+          >
+            <li>
+              <Link className="dropdown-item" to="/profile">
+                View Profile
+              </Link>
+            </li>
+            <li>
+              <Link className="dropdown-item" to="/login">
+                Sign Out
+              </Link>
+            </li>
+          </ul>
         </div>
       </div>
     </nav>

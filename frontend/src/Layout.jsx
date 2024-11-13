@@ -1,14 +1,27 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
-import Footer from "./components/Footer";
+import { Outlet, useLocation } from "react-router-dom";
+import NavBar from "./components/NavBar";
 
-function Layout() {
+const Layout = () => {
+  const location = useLocation();
+
+  // Define paths where NavBar should not be displayed
+  const pathsWithoutNavBar = [
+    "/",
+    "/login",
+    "/signup",
+    "/reset-password",
+    "/activate-account",
+  ];
+
   return (
-    <>
+    <div>
+      {/* Show NavBar only if the current path is not in pathsWithoutNavBar */}
+      {!pathsWithoutNavBar.includes(location.pathname) && <NavBar />}
+
       <Outlet />
-      <Footer />
-    </>
+    </div>
   );
-}
+};
 
 export default Layout;

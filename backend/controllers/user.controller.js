@@ -40,8 +40,7 @@ const loginUser = async (req, res, next) => {
       maxAge: 900000, // 15 minutes in milliseconds
     });
 
-    //res.status(200).json({ message: token });
-    res.status(200).json("Login successful.");
+    res.status(200).json({ token: token });
   } catch (error) {
     // Pass the error to the global error handler using next()
     //res.status(500).json({ message: error.message });
