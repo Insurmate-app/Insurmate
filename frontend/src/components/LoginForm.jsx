@@ -138,10 +138,9 @@ const LoginForm = () => {
                 style={{ borderRadius: "8px" }}
               />
               <span
-                className="input-group-text toggle-password"
+                className={`input-group-text toggle-password ${togglePasswordVisibility}`}
                 role="button"
                 onClick={togglePasswordVisibility}
-                style={{ cursor: "pointer", borderRadius: "8px" }}
               >
                 <i
                   className={showPassword ? "bi bi-eye-slash" : "bi bi-eye"}

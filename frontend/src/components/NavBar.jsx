@@ -24,20 +24,14 @@ const NavBar = () => {
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            <i className="bi bi-person-circle me-1" />
-            User Name
+            <i className="bi bi-person-circle me-1" /> Dummy User
           </button>
           <ul
             className="dropdown-menu dropdown-menu-end"
             aria-labelledby="dropdownMenuButton"
           >
             <li>
-              <Link className="dropdown-item" to="/profile">
-                View Profile
-              </Link>
-            </li>
-            <li>
-              <Link className="dropdown-item" to="/login">
+              <Link className="dropdown-item" to="#">
                 Sign Out
               </Link>
             </li>
