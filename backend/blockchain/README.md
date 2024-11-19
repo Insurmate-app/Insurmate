@@ -184,7 +184,7 @@ source ~/.bashrc
 1. **Navigate to the application directory**:
 
    ```sh
-   cd backend
+   cd ../backend
    ```
 
 2. **Install Node.js packages**:
@@ -197,13 +197,19 @@ source ~/.bashrc
 
 ## Step 6: Enroll Users
 
-1. **Enroll Admin User**:
+1. **Go to the `src` directory**:
+
+   ```bash
+   cd src
+   ```
+
+2. **Enroll Admin User**:
 
    ```bash
    node caActions.js admin <orgName>
    ```
 
-2. **Register and Enroll Application User**:
+3. **Register and Enroll Application User**:
 
    ```bash
    node caActions.js user <orgName> <username>
@@ -213,13 +219,7 @@ source ~/.bashrc
 
 ## Step 7: Interact with the Application
 
-1. **Go to the `src` directory**:
-
-   ```bash
-   cd src
-   ```
-
-2. **Start the Node.js application**:
+1. **Start the Node.js application**:
 
    ```bash
    node app.js
