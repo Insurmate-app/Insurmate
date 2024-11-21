@@ -20,7 +20,5 @@ function usePasswordReset() {
     setIsButtonDisabled,
     isButtonDisabled,
   };
-  
 }
-
 export default usePasswordReset;

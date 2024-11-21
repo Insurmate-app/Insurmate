@@ -1,5 +1,6 @@
 // AddPolicyModal.jsx
 import React, { useState } from "react";
+
 import axios from "axios";
 
 const AddPolicyModal = ({ showModal, setShowModal, onAddPolicy }) => {
@@ -7,7 +8,7 @@ const AddPolicyModal = ({ showModal, setShowModal, onAddPolicy }) => {
     firstName: "",
     lastName: "",
     status: "",
-    policyNumber: ""
+    policyNumber: "",
   });
   const [error, setError] = useState(null);
 
@@ -28,7 +29,12 @@ const AddPolicyModal = ({ showModal, setShowModal, onAddPolicy }) => {
       const response = await axios.post("/api/assets", newPolicy); // Replace with actual endpoint
       onAddPolicy(response.data); // Pass the new policy back to the parent
       setShowModal(false); // Close modal after adding
-      setNewPolicy({ firstName: "", lastName: "", status: "", policyNumber: "" }); // Reset form
+      setNewPolicy({
+        firstName: "",
+        lastName: "",
+        status: "",
+        policyNumber: "",
+      }); // Reset form
     } catch (error) {
       setError("Error adding policy");
       console.error("Error adding policy:", error);

@@ -1,18 +1,16 @@
-import React, { useContext, useState, useEffect } from "react";
-import { UserContext } from "../context/UserContext.jsx";
+import React, { useEffect, useState } from "react";
+
 import axios from "axios";
 
-const base_url = import.meta.env.VITE_API_BASE_URL;
-const activation_url = `${base_url}/user/verify`;
-const regenerate_otp_url = `${base_url}/user/regenerate-otp`;
-
 const ActivateAccount = () => {
-  const { email } = useContext(UserContext);
+  const [email, setEmail] = useState(""); // Added missing email state
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [timer, setTimer] = useState(300); // 5 minutes in seconds
   const [isOtpExpired, setIsOtpExpired] = useState(false);
+
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
   // Function to format time in MM:SS format
   const formatTime = (seconds) => {
@@ -20,6 +18,17 @@ const ActivateAccount = () => {
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
   };
+
+  // Extract email from the query parameters
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const emailFromQuery = params.get("email");
+    if (emailFromQuery) {
+      setEmail(decodeURIComponent(emailFromQuery));
+    } else {
+      setMessage("No email provided. Please return to the reset page.");
+    }
+  }, []);
 
   // Countdown Timer Logic
   useEffect(() => {
@@ -36,14 +45,20 @@ const ActivateAccount = () => {
 
   // Function to generate or regenerate OTP
   const generateOtp = async () => {
+    if (!email) {
+      setMessage("Email is missing. Cannot generate OTP.");
+      return;
+    }
+
     try {
-      await axios.post(regenerate_otp_url, { email });
-      setOtp("");
+      await axios.post(`${baseUrl}/user/regenerate-otp`, { email });
+      setOtp(""); // Clear OTP input
       setTimer(300); // Reset timer to 5 minutes
       setIsOtpExpired(false);
       setMessage("A new OTP has been sent to your email.");
     } catch (err) {
-      setMessage("Failed to generate a new OTP. Please try again.");
+      console.error(err);
+      setMessage("Failed to generate a new OTP. Please try again later.");
     }
   };
 
@@ -52,10 +67,17 @@ const ActivateAccount = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    if (!email) {
+      setMessage("Email is missing. Cannot activate account.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      await axios.post(activation_url, { email, otpToken: otp });
+      await axios.post(`${baseUrl}/user/verify`, { email, otpToken: otp });
       setMessage("Account activated successfully.");
     } catch (err) {
+      console.error(err);
       setMessage("Invalid OTP or email. Please try again.");
     } finally {
       setIsLoading(false);
@@ -70,6 +92,14 @@ const ActivateAccount = () => {
       >
         <form onSubmit={handleActivate}>
           <h4 className="mb-3 text-center">Activate Your Account</h4>
+
+          {email && (
+            <div className="mb-3">
+              <p>
+                <strong>Email:</strong> {email}
+              </p>
+            </div>
+          )}
 
           <div className="mb-3">
             <label className="form-label">OTP</label>
@@ -99,6 +129,7 @@ const ActivateAccount = () => {
             type="button"
             className="btn btn-secondary w-100 mt-2"
             onClick={generateOtp}
+            disabled={isOtpExpired}
           >
             Regenerate OTP
           </button>

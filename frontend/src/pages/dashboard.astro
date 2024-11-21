@@ -1,0 +1,13 @@
+---
+import Dash from "../components/Dashboard.jsx";
+import NavBar from "../components/NavBar.astro";
+import MainLayout from "../layouts/MainLayout.astro";
+
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
+---
+
+<MainLayout title="Dashboard" description="Dashboard">
+  <NavBar />
+  <Dash client:load/>
+</MainLayout>
