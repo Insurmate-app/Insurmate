@@ -1,0 +1,16 @@
+---
+// component import
+import MainHead from "./MainHead.astro";
+
+const { title,description } = Astro.props;
+
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
+---
+
+<html lang="en">
+  <MainHead {title} {description} />
+  <body>
+    <slot></slot>
+  </body>
+</html>
