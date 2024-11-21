@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { CSVLink } from "react-csv";
 
 import { DataGrid } from "@mui/x-data-grid";
+import fileSaver from "file-saver";
+import Papa from "papaparse";
 
+// Use default import
 import AddPolicyModal from "./AddPolicy";
 
 const Dash = () => {
@@ -32,19 +34,19 @@ const Dash = () => {
     setShowModal(false);
   };
 
+  // Handle CSV export
+  const handleExportCSV = () => {
+    const csv = Papa.unparse(filteredData); // Convert filtered data to CSV format
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" }); // Create a CSV Blob
+    fileSaver.saveAs(blob, "policies.csv"); // Trigger the download
+  };
+
   // Define table columns
   const columns = [
     { field: "firstName", headerName: "First Name", flex: 1 },
     { field: "lastName", headerName: "Last Name", flex: 1 },
     { field: "status", headerName: "Status", flex: 1 },
     { field: "policyNumber", headerName: "Policy Number", flex: 1 },
-  ];
-
-  const csvHeaders = [
-    { label: "First Name", key: "firstName" },
-    { label: "Last Name", key: "lastName" },
-    { label: "Status", key: "status" },
-    { label: "Policy Number", key: "policyNumber" },
   ];
 
   const filteredData = Array.isArray(data)
@@ -68,14 +70,9 @@ const Dash = () => {
           Add Policy
         </button>
         {/* Export to CSV Button */}
-        <CSVLink
-          data={filteredData}
-          headers={csvHeaders}
-          filename="policies.csv"
-          className="btn btn-secondary"
-        >
+        <button onClick={handleExportCSV} className="btn btn-secondary">
           Export to CSV
-        </CSVLink>
+        </button>
       </div>
 
       {/* Global Search */}
