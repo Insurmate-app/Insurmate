@@ -1,21 +1,10 @@
 ---
 import Footer from '../components/Footer.astro'
 import Home from '../components/Home.astro'
-
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
+import MainLayout from "../layouts/MainLayout.astro";
 ---
 
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <title>Insurmate</title>
-</head>
-<body>
+<MainLayout title="Insurmate">
   <Home />
   <Footer />
-</body>
-</html>
+</MainLayout>
