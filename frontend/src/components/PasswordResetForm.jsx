@@ -1,18 +1,14 @@
-import React, { useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
+
 import axios from "axios";
-import { Link } from "react-router-dom";
-import useSpinner from "../hooks/useSpinner";
-import useModal from "../hooks/useModal";
-import Modal from "./Modal";
-import usePasswordReset from "../hooks/passwordReset/usePasswordReset";
-import { UserContext } from "../context/UserContext"; // Ensure correct import
 import * as Yup from "yup";
 
-const base_url = import.meta.env.VITE_API_BASE_URL;
-const password_reset_url = base_url + "/user/reset-password";
+import usePasswordReset from "../hooks/passwordReset/usePasswordReset";
+import useModal from "../hooks/useModal";
+import useSpinner from "../hooks/useSpinner";
+import Modal from "./Modal";
 
-const PasswordReset = () => {
+const PasswordResetForm = () => {
   const {
     email,
     setEmail,
@@ -23,19 +19,15 @@ const PasswordReset = () => {
     setIsButtonDisabled,
     isButtonDisabled,
   } = usePasswordReset();
-
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
-
-  const { setEmail: setContextEmail } = useContext(UserContext); // Correct context property
-  const navigate = useNavigate();
 
   const schema = Yup.object().shape({
     email: Yup.string()
       .required("Email is required")
       .matches(
         /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        "Please enter a valid email address"
+        "Please enter a valid email address",
       ),
     password: Yup.string()
       .required("A new password is required")
@@ -43,7 +35,7 @@ const PasswordReset = () => {
       .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
       .matches(
         /[!@#$%^&*,"?":{}|<>]/,
-        "Password must contain at least one special character"
+        "Password must contain at least one special character",
       ),
   });
 
@@ -52,15 +44,9 @@ const PasswordReset = () => {
     password: newPassword,
   };
 
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-    setIsButtonDisabled(e.target.value === "" || newPassword === "");
-  };
-
-  const handlePasswordChange = (e) => {
-    setNewPassword(e.target.value);
-    setIsButtonDisabled(email === "" || e.target.value === "");
-  };
+  useEffect(() => {
+    setIsButtonDisabled(email === "" || newPassword === "");
+  }, [email, newPassword]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,13 +55,12 @@ const PasswordReset = () => {
     try {
       await schema.validate(data);
 
-      activateSpinner();
+      await axios.put(
+        `${import.meta.env.VITE_API_BASE_URL}/user/reset-password`,
+        data,
+      );
 
-      const res = await axios.put(password_reset_url, data);
-
-      showModal("Password reset successful");
-      setContextEmail(email); // Use setContextEmail instead of setContextEmail
-      navigate("/activate-account");
+      window.location.href = `/activate?email=${encodeURIComponent(email)}`;
     } catch (err) {
       deactivateSpinner();
       if (err.name === "ValidationError") {
@@ -106,7 +91,7 @@ const PasswordReset = () => {
               id="email"
               placeholder="user@email.com"
               value={email}
-              onChange={handleEmailChange}
+              onChange={(e) => setEmail(e.target.value)}
               style={{ borderRadius: "8px" }}
             />
           </div>
@@ -121,7 +106,7 @@ const PasswordReset = () => {
                 id="password"
                 className="form-control"
                 value={newPassword}
-                onChange={handlePasswordChange}
+                onChange={(e) => setNewPassword(e.target.value)}
                 style={{ borderRadius: "8px" }}
               />
               <span
@@ -155,22 +140,6 @@ const PasswordReset = () => {
             Reset Password
           </button>
         </form>
-
-        <div className="mt-3">
-          <p className="text-center">
-            Return to{" "}
-            <Link to="/login" className="text-primary">
-              Login
-            </Link>
-          </p>
-          <p className="text-center">
-            Don't have an account?{" "}
-            <Link to="/signup" className="text-primary">
-              Sign Up
-            </Link>
-          </p>
-        </div>
-
         {/* Modal for any error or success messages */}
         <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
       </div>
@@ -178,4 +147,4 @@ const PasswordReset = () => {
   );
 };
 
-export default PasswordReset;
+export default PasswordResetForm;

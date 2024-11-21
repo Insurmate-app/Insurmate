@@ -1,27 +1,25 @@
-import React, { useEffect, useContext } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import useSignUpForm from "../hooks/signup/useSignUpForm";
-import useSpinner from "../hooks/useSpinner";
-import useModal from "../hooks/useModal";
-import Modal from "./Modal";
-import { UserContext } from "../context/UserContext"; // Ensure correct import
+import React, { useEffect } from "react";
+
 import axios from "axios";
 import * as Yup from "yup";
 
-const base_url = import.meta.env.VITE_API_BASE_URL;
-const signup_url = `${base_url}/user/create`;
+import useSignUpForm from "../hooks/signup/useSignUpForm";
+import useModal from "../hooks/useModal";
+import useSpinner from "../hooks/useSpinner";
+import Modal from "./Modal";
 
+// InputField Component
 const InputField = ({
   label,
   type,
   placeholder,
   value,
   onChange,
-  required,
   error,
+  required = false,
 }) => (
   <div className="mb-3">
-    <label className="form-label mb-1">{label}</label>
+    <label className="form-label">{label}</label>
     <input
       type={type}
       className="form-control border-0 border-bottom rounded-0"
@@ -29,7 +27,6 @@ const InputField = ({
       value={value}
       onChange={onChange}
       required={required}
-      style={{ paddingLeft: "5px" }}
     />
     {error && <small className="text-danger">{error}</small>}
   </div>
@@ -52,86 +49,73 @@ const SignUpForm = () => {
     isButtonDisabled,
     setIsButtonDisabled,
   } = useSignUpForm();
-
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
 
-  const { setEmail: setContextEmail } = useContext(UserContext); // Correct context property
-  const navigate = useNavigate();
-
+  // Validation schema
   const validationSchema = Yup.object().shape({
-    email: Yup.string().email("Please enter a valid email address").required(),
+    email: Yup.string()
+      .email("Enter a valid email")
+      .required("Email is required"),
     password: Yup.string()
-      .min(8, "Password must be at least 8 characters long")
+      .min(8, "At least 8 characters")
       .matches(/[A-Z]/, "Must contain an uppercase letter")
       .matches(/[!@#$%^&*]/, "Must contain a special character")
-      .required(),
+      .required("Password is required"),
     companyName: Yup.string()
-      .required("Company name is required")
-      .min(8, "Company name must be at least 8 characters")
-      .max(28, "Company name must not exceed 28 characters"),
+      .min(8, "At least 8 characters")
+      .max(28, "No more than 28 characters")
+      .required("Company name is required"),
     address: Yup.object().shape({
-      addressLine1: Yup.string().required(),
+      addressLine1: Yup.string().required("Address line 1 is required"),
       addressLine2: Yup.string(),
-      city: Yup.string().required(),
-      state: Yup.string().required(),
+      city: Yup.string().required("City is required"),
+      state: Yup.string().required("State is required"),
       zipCode: Yup.string()
         .matches(/^\d{5}$/, "Zip code must be 5 digits")
-        .required(),
+        .required("Zip code is required"),
     }),
-    isTermsAccepted: Yup.boolean().oneOf([true], "Accept the terms"),
+    isTermsAccepted: Yup.boolean().oneOf([true], "You must accept the terms"),
   });
 
-  const form = {
-    email,
-    password,
-    companyName,
-    address,
-    isTermsAccepted,
-  };
+  // Form data
+  const formData = { email, password, companyName, address, isTermsAccepted };
 
-  const checkFormCompletion = () => {
-    setIsButtonDisabled(!Object.values(form).every((field) => field));
-  };
+  // Validate and check if the form is complete
+  const checkFormCompletion = () =>
+    setIsButtonDisabled(!Object.values(formData).every((field) => field));
 
-  useEffect(() => {
-    checkFormCompletion();
-  }, [email, password, companyName, address, isTermsAccepted]);
+  useEffect(
+    () => checkFormCompletion(),
+    [email, password, companyName, address, isTermsAccepted],
+  );
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     activateSpinner();
-    setIsButtonDisabled(true);
 
     try {
-      await validationSchema.validate(form, { abortEarly: false });
+      await validationSchema.validate(formData, { abortEarly: false });
 
-      await axios.post(signup_url, {
-        email: email,
-        password: password,
-        companyName: companyName,
-        address: {
-          addressLine1: address.addressLine1,
-          addressLine2: address.addressLine2,
-          city: address.city,
-          state: address.state,
-          zipCode: address.zipCode,
-        },
-      });
+      // API call
+      await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/user/create`,
+        formData,
+      );
 
-      showModal("Sign up successful");
-      setContextEmail(email); // Use setContextEmail instead of setContextEmail
-      navigate("/activate-account");
+      window.location.href = `/activate?email=${encodeURIComponent(email)}`;
     } catch (err) {
       deactivateSpinner();
-      setIsButtonDisabled(false);
       if (err.name === "ValidationError") {
         showModal(err.errors.join("\n"));
       } else if (err.response) {
-        showModal(err.response.data.message);
+        showModal(err.response.data.message || "Error from server");
       } else {
         showModal("An unexpected error occurred");
       }
+    } finally {
+      setIsButtonDisabled(false);
     }
   };
 
@@ -150,9 +134,8 @@ const SignUpForm = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-
           <div className="mb-3">
-            <label className="form-label mb-1">Password</label>
+            <label className="form-label">Password</label>
             <div className="input-group">
               <input
                 type={showPassword ? "text" : "password"}
@@ -160,16 +143,14 @@ const SignUpForm = () => {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                style={{ paddingLeft: "5px" }}
               />
               <span
                 className="input-group-text bg-transparent border-0"
                 onClick={togglePasswordVisibility}
                 role="button"
-                aria-label="Toggle password visibility"
               >
                 <i
-                  className={showPassword ? "bi bi-eye-slash" : "bi bi-eye"}
+                  className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
                 ></i>
               </span>
             </div>
@@ -182,70 +163,39 @@ const SignUpForm = () => {
             onChange={(e) => setCompanyName(e.target.value)}
             required
           />
-
-          {/* Responsive Address Fields */}
-          <div className="row">
-            <div className="col-12 mb-3">
-              <InputField
-                label="Address Line 1"
-                type="text"
-                placeholder="123 Main St"
-                value={address.addressLine1}
-                onChange={(e) =>
-                  setAddress({ ...address, addressLine1: e.target.value })
-                }
-              />
-            </div>
-            <div className="col-12 mb-3">
-              <InputField
-                label="Address Line 2"
-                type="text"
-                placeholder="Apt, Suite, etc."
-                value={address.addressLine2}
-                onChange={(e) =>
-                  setAddress({ ...address, addressLine2: e.target.value })
-                }
-              />
-            </div>
-            <div className="col-12 col-md-6 mb-3">
-              <InputField
-                label="City"
-                type="text"
-                placeholder="New York"
-                value={address.city}
-                onChange={(e) =>
-                  setAddress({ ...address, city: e.target.value })
-                }
-                required
-              />
-            </div>
-            <div className="col-6 col-md-3 mb-3">
-              <InputField
-                label="State"
-                type="text"
-                placeholder="NY"
-                value={address.state}
-                onChange={(e) =>
-                  setAddress({ ...address, state: e.target.value })
-                }
-                required
-              />
-            </div>
-            <div className="col-6 col-md-3 mb-3">
-              <InputField
-                label="Zip Code"
-                type="text"
-                placeholder="10001"
-                value={address.zipCode}
-                onChange={(e) =>
-                  setAddress({ ...address, zipCode: e.target.value })
-                }
-                required
-              />
-            </div>
-          </div>
-
-          <div className="mb-3 form-check">
+          <InputField
+            label="Address Line 1"
+            type="text"
+            placeholder="123 Main St"
+            value={address.addressLine1}
+            onChange={(e) =>
+              setAddress({ ...address, addressLine1: e.target.value })
+            }
+          />
+          <InputField
+            label="City"
+            type="text"
+            placeholder="City"
+            value={address.city}
+            onChange={(e) => setAddress({ ...address, city: e.target.value })}
+          />
+          <InputField
+            label="State"
+            type="text"
+            placeholder="State"
+            value={address.state}
+            onChange={(e) => setAddress({ ...address, state: e.target.value })}
+          />
+          <InputField
+            label="Zip Code"
+            type="text"
+            placeholder="12345"
+            value={address.zipCode}
+            onChange={(e) =>
+              setAddress({ ...address, zipCode: e.target.value })
+            }
+          />
+          <div className="form-check mb-3">
             <input
               type="checkbox"
               className="form-check-input"
@@ -259,31 +209,25 @@ const SignUpForm = () => {
               </a>
             </label>
           </div>
-
           <button
             type="submit"
-            className="btn btn-gradient rounded-pill w-100 mb-3"
+            className="btn btn-primary w-100"
             disabled={isButtonDisabled}
-            style={{
-              background: "linear-gradient(135deg, #6a11cb, #2575fc)",
-              color: "#fff",
-              transition: "0.3s",
-            }}
           >
             {isSpinnerVisible && (
               <span
-                className="spinner-border spinner-border-sm text-light"
+                className="spinner-border spinner-border-sm"
                 role="status"
               ></span>
             )}{" "}
             Sign Up
           </button>
         </form>
-        <p className="text-center">
+        <p className="text-center mt-3">
           Already have an account?{" "}
-          <Link to="/login" className="text-decoration-none">
+          <a href="/login" className="text-decoration-none">
             Login
-          </Link>
+          </a>
         </p>
       </div>
       <Modal isVisible={isVisible} message={message} hideModal={hideModal} />

@@ -1,34 +1,23 @@
-import React from "react";
-import useLoginForm from "../hooks/login/useLoginForm";
-import useSpinner from "../hooks/useSpinner";
-import useModal from "../hooks/useModal";
-import Modal from "./Modal";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+
 import axios from "axios";
 import * as Yup from "yup";
 
-const base_url = import.meta.env.VITE_API_BASE_URL;
-const login_url = base_url + "/user/login";
+import useModal from "../hooks/useModal";
+import useSpinner from "../hooks/useSpinner";
+import Modal from "./Modal";
 
 const LoginForm = () => {
-  const {
-    email,
-    setEmail,
-    password,
-    setPassword,
-    showPassword,
-    togglePasswordVisibility,
-    setIsButtonDisabled,
-    isButtonDisabled,
-  } = useLoginForm();
-
-  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
   const schema = Yup.object().shape({
     email: Yup.string()
       .matches(
         /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        "Please enter a valid email address"
+        "Please enter a valid email address",
       )
       .required("Email is required"),
     password: Yup.string()
@@ -36,7 +25,7 @@ const LoginForm = () => {
       .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
       .matches(
         /[!@#$%^&*(),.?":{}|<>]/,
-        "Password must contain at least one special character"
+        "Password must contain at least one special character",
       )
       .required("Password is required"),
   });
@@ -49,15 +38,12 @@ const LoginForm = () => {
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
 
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-    setIsButtonDisabled(e.target.value === "" || password === "");
-  };
+  useEffect(() => {
+    setIsButtonDisabled(email.trim() === "" || password.trim() === "");
+  }, [email, password]);
 
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
-    setIsButtonDisabled(email === "" || e.target.value === "");
-  };
+  // Toggle password visibility
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -67,24 +53,21 @@ const LoginForm = () => {
       // Validate the data using Yup
       await schema.validate(data, { abortEarly: false });
 
-      // If validation passes, make the axios post request
-      activateSpinner(); // Start spinner if necessary
+      // Make the Axios post request
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/user/login`,
+        data,
+      );
 
-      axios
-        .post(login_url, data)
-        .then((response) => {
-          const token = response.data.token; // Get the token from the response
+      // Get the token from the response and set it as a cookie
+      const token = response.data.token;
 
-          //Set the token as a cookie manually
-          document.cookie = `token=${token}; path=/; max-age=${
-            15 * 60
-          }; secure=${window.location.protocol === "https:"}; samesite=strict;`;
+      document.cookie = `token=${token}; path=/; max-age=${15 * 60}; secure=${
+        window.location.protocol === "https:"
+      }; samesite=strict;`;
 
-          navigate("/dashboard");
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-        });
+      // Redirect to dashboard (or handle success further)
+      window.location.href = "/dashboard";
     } catch (err) {
       deactivateSpinner();
       setIsButtonDisabled(false);
@@ -118,9 +101,9 @@ const LoginForm = () => {
               type="email"
               className="form-control"
               id="email"
-              placeholder="user@email.com"
+              placeholder="Enter email"
               value={email}
-              onChange={handleEmailChange}
+              onChange={(e) => setEmail(e.target.value)}
               style={{ borderRadius: "8px" }}
             />
           </div>
@@ -133,12 +116,13 @@ const LoginForm = () => {
                 type={showPassword ? "text" : "password"}
                 id="password"
                 className="form-control"
+                placeholder="Enter password"
                 value={password}
-                onChange={handlePasswordChange}
+                onChange={(e) => setPassword(e.target.value)}
                 style={{ borderRadius: "8px" }}
               />
               <span
-                className={`input-group-text toggle-password ${togglePasswordVisibility}`}
+                className="input-group-text toggle-password"
                 role="button"
                 onClick={togglePasswordVisibility}
               >
@@ -168,23 +152,16 @@ const LoginForm = () => {
             Login
           </button>
         </form>
-
         <div className="mt-3">
           <p className="text-center">
-            Don't have an account?{" "}
-            <Link to="/signup" className="text-primary">
-              Sign Up
-            </Link>
+            Don't have an account? <a href="/signup"> Sign Up</a>
           </p>
           <p className="text-center">
-            <Link to="/reset-password" className="text-primary">
-              Reset Password
-            </Link>
+            <a href="/password-reset">Reset Password</a>
           </p>
         </div>
-        {/* Bootstrap Modal */}
-        <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
       </div>
+      <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
     </div>
   );
 };
