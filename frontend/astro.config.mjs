@@ -1,5 +1,5 @@
-import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
+import { defineConfig } from "astro/config";
 import dotenv from "dotenv";
 
 // Explicitly load environment variables

@@ -1,78 +1,102 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { CSVLink } from "react-csv";
+
+import { DataGrid } from "@mui/x-data-grid";
+
 import AddPolicyModal from "./AddPolicy";
 
-const Dashboard = () => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+const Dash = () => {
+  const [data, setData] = useState([
+    {
+      id: 1,
+      firstName: "Jon",
+      lastName: "Snow",
+      status: "Active",
+      policyNumber: "P12345",
+    },
+    {
+      id: 2,
+      firstName: "Cersei",
+      lastName: "Lannister",
+      status: "Inactive",
+      policyNumber: "P54321",
+    },
+  ]);
 
-  // Fetch data from API
-  const fetchData = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await axios.get(""); // Replace with actual endpoint
-      setData(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      setError("Error fetching data");
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [globalFilter, setGlobalFilter] = useState(""); // Global search filter
+  const [showModal, setShowModal] = useState(false); // Modal visibility state
 
-  // Callback to handle adding a new policy
+  // Add a new policy to the table
   const handleAddPolicy = (newPolicy) => {
-    setData((prevData) => [...prevData, newPolicy]); // Add new policy to data without refetching
+    setData((prev) => [...prev, { ...newPolicy, id: prev.length + 1 }]); // Append with a unique ID
+    setShowModal(false);
   };
+
+  // Define table columns
+  const columns = [
+    { field: "firstName", headerName: "First Name", flex: 1 },
+    { field: "lastName", headerName: "Last Name", flex: 1 },
+    { field: "status", headerName: "Status", flex: 1 },
+    { field: "policyNumber", headerName: "Policy Number", flex: 1 },
+  ];
+
+  const csvHeaders = [
+    { label: "First Name", key: "firstName" },
+    { label: "Last Name", key: "lastName" },
+    { label: "Status", key: "status" },
+    { label: "Policy Number", key: "policyNumber" },
+  ];
+
+  const filteredData = Array.isArray(data)
+    ? data.filter((row) =>
+        Object.values(row || {}).some(
+          (value) =>
+            value &&
+            value.toString().toLowerCase().includes(globalFilter.toLowerCase()),
+        ),
+      )
+    : [];
 
   return (
     <div className="container my-4">
       <h2 className="text-primary mb-3">Policy Dashboard</h2>
-      <button onClick={fetchData} className="btn btn-primary mb-4 me-2">
-        Refresh Data
-      </button>
-      <button
-        onClick={() => setShowModal(true)}
-        className="btn btn-success mb-4"
-      >
-        Add Policy
-      </button>
+      <div className="mb-3">
+        <button
+          onClick={() => setShowModal(true)}
+          className="btn btn-success me-2"
+        >
+          Add Policy
+        </button>
+        {/* Export to CSV Button */}
+        <CSVLink
+          data={filteredData}
+          headers={csvHeaders}
+          filename="policies.csv"
+          className="btn btn-secondary"
+        >
+          Export to CSV
+        </CSVLink>
+      </div>
 
-      {loading && <div className="alert alert-info">Loading...</div>}
-      {error && <div className="alert alert-danger">{error}</div>}
+      {/* Global Search */}
+      <input
+        type="text"
+        value={globalFilter || ""}
+        onChange={(e) => setGlobalFilter(e.target.value)}
+        placeholder="Search all columns..."
+        className="form-control mb-3"
+      />
 
-      <table className="table table-striped table-bordered">
-        <thead className="thead-dark">
-          <tr>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Status</th>
-            <th>Policy Number</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.length > 0 ? (
-            data.map((policy, index) => (
-              <tr key={index}>
-                <td>{policy.firstName}</td>
-                <td>{policy.lastName}</td>
-                <td>{policy.status}</td>
-                <td>{policy.policyNumber}</td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="5" className="text-center">
-                No data available
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+      {/* Table using DataGrid */}
+      <div style={{ height: 400, width: "100%" }}>
+        <DataGrid
+          rows={filteredData}
+          columns={columns}
+          pageSize={5}
+          rowsPerPageOptions={[5, 10, 20]}
+          getRowId={(row) => row.id} // Ensure a unique key
+        />
+      </div>
 
       {/* Add Policy Modal */}
       <AddPolicyModal
@@ -84,4 +108,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Dash;

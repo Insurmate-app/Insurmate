@@ -1,10 +1,12 @@
-import React, { useContext, useEffect } from "react";
+import React, { useEffect } from "react";
+
 import axios from "axios";
-import useSpinner from "../hooks/useSpinner";
-import useModal from "../hooks/useModal";
-import Modal from "./Modal";
-import usePasswordReset from "../hooks/passwordReset/usePasswordReset";
 import * as Yup from "yup";
+
+import usePasswordReset from "../hooks/passwordReset/usePasswordReset";
+import useModal from "../hooks/useModal";
+import useSpinner from "../hooks/useSpinner";
+import Modal from "./Modal";
 
 const PasswordResetForm = () => {
   const {
@@ -25,7 +27,7 @@ const PasswordResetForm = () => {
       .required("Email is required")
       .matches(
         /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        "Please enter a valid email address"
+        "Please enter a valid email address",
       ),
     password: Yup.string()
       .required("A new password is required")
@@ -33,7 +35,7 @@ const PasswordResetForm = () => {
       .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
       .matches(
         /[!@#$%^&*,"?":{}|<>]/,
-        "Password must contain at least one special character"
+        "Password must contain at least one special character",
       ),
   });
 
@@ -55,9 +57,9 @@ const PasswordResetForm = () => {
 
       await axios.put(
         `${import.meta.env.VITE_API_BASE_URL}/user/reset-password`,
-        data
+        data,
       );
-      
+
       window.location.href = `/activate?email=${encodeURIComponent(email)}`;
     } catch (err) {
       deactivateSpinner();
