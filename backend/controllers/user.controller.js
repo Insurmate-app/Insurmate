@@ -70,6 +70,21 @@ const regenerateOtp = async (req, res, next) => {
 
 const logoutUser = (req, res, next) => {
   try {
+    // Retrieve the token from cookies
+    const token = req.cookies.token;
+
+    // Verify or decode the JWT to get its payload
+    let payload;
+    if (token) {
+      // Use jwt.verify if you need to validate the token
+      // Replace 'your-secret-key' with your actual JWT secret
+      payload = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key");
+
+      // If you only want the payload without verifying, use jwt.decode
+      payload = jwt.decode(token);
+
+      console.log(payload.id);
+    }
     // Clear the cookie by setting the token cookie's maxAge to
     res.clearCookie("token", passport.authenticate("jwt", { session: false }), {
       httpOnly: true, // Ensure cookie is only accessible by the server

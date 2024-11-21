@@ -1,7 +1,7 @@
 const {
   evaluateTransaction,
   submitTransaction,
-} = require("../chaincodeHelper");
+} = require("../../blockchain/backend/src/chaincodeHelper");
 
 // Hardcoded values for now; replace with environment variables if needed
 const userId = "admin";
