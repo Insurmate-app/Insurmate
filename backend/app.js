@@ -14,6 +14,7 @@ const app = express();
 
 const errorHandler = require("./middlewares/errorHandler.js");
 const userRoute = require("./routes/user.route.js");
+const assetRoute = require("./routes/asset.route.js");
 
 const dbUrl = process.env.DATABASE_URL;
 const maxPoolSize = process.env.MAX_POOL_SIZE;
@@ -40,10 +41,26 @@ const limiter = rateLimit({
 // Apply the rate limiter to all requests
 app.use(limiter);
 
+// List of allowed origins
+const allowedOrigins = [
+  process.env.FRONTEND_URL, // Frontend URL from environment variables
+  "http://localhost:3000", // Additional allowed origin
+];
+
+// CORS options
 const corsOptions = {
-  origin: process.env.FRONTEND_URL, // Replace with your front-end URL
-  credentials: true, // Allow cookies to be sent
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or Postman)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true, // Allow cookies and authentication headers
 };
+
+// Use CORS middleware
 app.use(cors(corsOptions));
 
 // Initialize passport middleware
@@ -62,6 +79,7 @@ app.use("/health", healthcheck());
 
 // route
 app.use("/v1/api/user", userRoute);
+app.use("/v1/api/asset", assetRoute);
 
 app.get("/", (req, res) => res.send("App is working!"));
 

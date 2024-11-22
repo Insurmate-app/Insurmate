@@ -1,63 +1,92 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { DataGrid } from "@mui/x-data-grid";
+import axios from "axios";
 import fileSaver from "file-saver";
 import Papa from "papaparse";
 
-// Use default import
+// Import Modal Component
 import AddPolicyModal from "./AddPolicy";
 
 const Dash = () => {
-  const [data, setData] = useState([
-    {
-      id: 1,
-      firstName: "Jon",
-      lastName: "Snow",
-      status: "Active",
-      policyNumber: "P12345",
-    },
-    {
-      id: 2,
-      firstName: "Cersei",
-      lastName: "Lannister",
-      status: "Inactive",
-      policyNumber: "P54321",
-    },
-  ]);
-
-  const [globalFilter, setGlobalFilter] = useState(""); // Global search filter
+  const [data, setData] = useState([]); // State to hold fetched data
+  const [globalFilter, setGlobalFilter] = useState(""); // Search filter state
   const [showModal, setShowModal] = useState(false); // Modal visibility state
 
-  // Add a new policy to the table
+  // Fetch data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/asset/get-all`,
+          {
+            withCredentials: true,
+          },
+        );
+
+        // Transform the data to flatten the structure
+        const transformedData = response.data.map((item) => ({
+          id: item.id, // Keep the id
+          ...item.data, // Spread the fields inside the `data` object to the top level
+        }));
+
+        setData(transformedData); // Update state with transformed data
+      } catch (error) {
+        window.location.href = "/login";
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Debug to check the data state
+  useEffect(() => {
+    console.log("Data state updated:", data);
+  }, [data]);
+
+  // Handle adding a new policy
   const handleAddPolicy = (newPolicy) => {
-    setData((prev) => [...prev, { ...newPolicy, id: prev.length + 1 }]); // Append with a unique ID
+    setData((prev) => [...prev, { ...newPolicy, id: prev.length + 1 }]);
     setShowModal(false);
   };
 
   // Handle CSV export
   const handleExportCSV = () => {
-    const csv = Papa.unparse(filteredData); // Convert filtered data to CSV format
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" }); // Create a CSV Blob
-    fileSaver.saveAs(blob, "policies.csv"); // Trigger the download
+    const csv = Papa.unparse(data); // Convert data to CSV
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" }); // Create CSV Blob
+    fileSaver.saveAs(blob, "policies.csv"); // Trigger download
   };
 
-  // Define table columns
-  const columns = [
-    { field: "firstName", headerName: "First Name", flex: 1 },
-    { field: "lastName", headerName: "Last Name", flex: 1 },
-    { field: "status", headerName: "Status", flex: 1 },
-    { field: "policyNumber", headerName: "Policy Number", flex: 1 },
-  ];
+  // Define DataGrid columns
+  const columns = useMemo(
+    () => [
+      { field: "firstName", headerName: "First Name", flex: 1 },
+      { field: "lastName", headerName: "Last Name", flex: 1 },
+      { field: "email", headerName: "Email", flex: 1 },
+      { field: "owner", headerName: "Owner", flex: 1 },
+      { field: "policyNumber", headerName: "Policy Number", flex: 1 },
+    ],
+    [],
+  );
 
-  const filteredData = Array.isArray(data)
-    ? data.filter((row) =>
-        Object.values(row || {}).some(
-          (value) =>
-            value &&
-            value.toString().toLowerCase().includes(globalFilter.toLowerCase()),
-        ),
-      )
-    : [];
+  // Filter data based on global search
+  const filteredData = useMemo(() => {
+    const result =
+      Array.isArray(data) && data.length
+        ? data.filter((row) =>
+            Object.values(row || {}).some(
+              (value) =>
+                value &&
+                value
+                  .toString()
+                  .toLowerCase()
+                  .includes(globalFilter.toLowerCase()),
+            ),
+          )
+        : [];
+    return result;
+  }, [data, globalFilter]);
 
   return (
     <div className="container my-4">
@@ -69,7 +98,6 @@ const Dash = () => {
         >
           Add Policy
         </button>
-        {/* Export to CSV Button */}
         <button onClick={handleExportCSV} className="btn btn-secondary">
           Export to CSV
         </button>
@@ -84,14 +112,14 @@ const Dash = () => {
         className="form-control mb-3"
       />
 
-      {/* Table using DataGrid */}
+      {/* DataGrid */}
       <div style={{ height: 400, width: "100%" }}>
         <DataGrid
-          rows={filteredData}
-          columns={columns}
+          rows={filteredData} // Use filtered data
+          columns={columns} // Define columns
           pageSize={5}
           rowsPerPageOptions={[5, 10, 20]}
-          getRowId={(row) => row.id} // Ensure a unique key
+          getRowId={(row) => row.id} // Ensure the `id` field is used for uniqueness
         />
       </div>
 
