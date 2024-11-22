@@ -43,8 +43,8 @@ app.use(limiter);
 
 // List of allowed origins
 const allowedOrigins = [
-  process.env.FRONTEND_URL,  // Frontend URL from environment variables
-  "http://localhost:3000",      // Additional allowed origin
+  process.env.FRONTEND_URL, // Frontend URL from environment variables
+  "http://localhost:3000", // Additional allowed origin
 ];
 
 // CORS options

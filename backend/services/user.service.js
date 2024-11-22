@@ -18,6 +18,7 @@ const createUser = async (userData) => {
     // Without this, the client will have capabilities to change failed login attempts and active account status
     userData.failedLoginAttempts = 0;
     userData.activeAccount = false;
+    userData.role = "user";
 
     // hashes the password the user sent before the User is created
     const hashedPassword = await passwordService.hashPassword(
@@ -100,6 +101,15 @@ const resetPassword = async (email, newPassword) => {
       throw CustomError("Unable to reset password.", 500); // Convert to 500 and re-throw
     }
   }
+};
+
+
+const findUserById = async (id) => {
+  const user = await User.findOne({ id });
+  if (!user) {
+    throw CustomError("User not found.", 404);
+  }
+  return user;
 };
 
 const findUserByEmail = async (email) => {
@@ -234,4 +244,5 @@ module.exports = {
   loginUser,
   verifyUser,
   regenerateOtp,
+  findUserById
 };

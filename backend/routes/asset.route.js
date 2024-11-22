@@ -40,22 +40,8 @@ router.post(
     body("data.policyNumber")
       .notEmpty()
       .withMessage("Policy number is required")
-      .isNumeric()
-      .withMessage("Policy number must be numeric")
       .isLength({ min: 6, max: 10 })
       .withMessage("Policy number must be between 6 and 10 digits"),
-    body("data.owner")
-      .notEmpty()
-      .withMessage("Owner is required")
-      .isString()
-      .withMessage("Owner must be a string"),
-    body("data.status")
-      .notEmpty()
-      .withMessage("Status is required")
-      .isString()
-      .withMessage("Status must be a string")
-      .isIn(["Active", "Inactive", "Pending"])
-      .withMessage("Status must be 'Active', 'Inactive', or 'Pending'"),
   ],
   validate,
   assetController.createAsset
@@ -97,15 +83,8 @@ router.put(
     body("data.policyNumber")
       .notEmpty()
       .withMessage("Policy number is required")
-      .isNumeric()
-      .withMessage("Policy number must be numeric")
       .isLength({ min: 6, max: 10 })
       .withMessage("Policy number must be between 6 and 10 digits"),
-    body("data.owner")
-      .notEmpty()
-      .withMessage("Owner is required")
-      .isString()
-      .withMessage("Owner must be a string"),
     body("data.status")
       .notEmpty()
       .withMessage("Status is required")
@@ -153,12 +132,12 @@ router.put(
   [
     body("assetId")
       .notEmpty()
-      .withMessage("Asset ID is required")
+      .withMessage("Asset ID and new owner are required.")
       .isString()
       .withMessage("Asset ID must be a string"),
     body("newOwner")
       .notEmpty()
-      .withMessage("New owner is required")
+      .withMessage("Asset ID and new owner are required.")
       .isString()
       .withMessage("New owner must be a string"),
   ],
