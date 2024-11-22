@@ -1,7 +1,8 @@
 const {
   evaluateTransaction,
   submitTransaction,
-} = require("../../blockchain/backend/src/chaincodeHelper");
+} = require("../blockchain/backend/src/chaincodeHelper");
+const CustomError = require("../errorhandling/errorUtil");
 
 // Hardcoded values for now; replace with environment variables if needed
 const userId = "admin";
@@ -128,15 +129,16 @@ async function transferAsset(assetId, newOwner) {
   }
 }
 
-// Helper function for error handling
 function handleServiceError(error, defaultMessage, assetId = "") {
-  if (error.message.includes("does not exist")) {
-    throw {
-      status: 404,
-      message: `Asset not found${assetId ? `: ${assetId}` : ""}`,
-    };
-  }
-  throw { status: 500, message: `${defaultMessage}: ${error.message}` };
+  console.log(error.message); // Log the error message for debugging
+  if (error.message && error.message.toLowerCase().includes("does not exist"))
+    throw CustomError(`Asset not found${assetId ? `: ${assetId}` : ""}`, 404);
+
+  // Handle cases where the error doesn't match "does not exist"
+  throw CustomError(
+    `${defaultMessage}: ${error.message || "Unknown error"}`,
+    500
+  );
 }
 
 module.exports = {

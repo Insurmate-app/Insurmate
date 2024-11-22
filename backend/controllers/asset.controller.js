@@ -1,8 +1,10 @@
-const assetService = require("../services/assetService");
+const assetService = require("../services/asset.service");
+const { v4: uuidv4 } = require("uuid");
 
 const createAsset = async (req, res, next) => {
   try {
-    const { id, data } = req.body;
+    const { data } = req.body;
+    const id = uuidv4(); // Generate a UUID
     const result = await assetService.createAsset({ id, data });
     res.status(201).json(result);
   } catch (error) {

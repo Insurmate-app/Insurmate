@@ -85,48 +85,46 @@ class AssetTransfer extends Contract {
     if (!assetJSON || assetJSON.length === 0) {
       throw new Error(`The asset ${id} does not exist`);
     }
-    return assetJSON.toString();
+
+    const assetData = JSON.parse(assetJSON.toString());
+    return JSON.stringify({ id, data: assetData });
   }
 
-  // TransferAsset updates the owner field of asset with given id in the world state
+  // TransferAsset transfers an asset to a new owner
   async TransferAsset(ctx, id, newOwner) {
-    const assetString = await this.ReadAsset(ctx, id);
-    const asset = JSON.parse(assetString);
-    asset.owner = newOwner;
-
-    await ctx.stub.putState(
-      id,
-      Buffer.from(stringify(sortKeysRecursive(asset)))
-    );
-    return `Asset ownership of ${id} transferred to ${newOwner}`;
-  }
-
-  // GetAssetHistory returns the history of an asset with given id
-  async GetAssetHistory(ctx, id) {
-    const exists = await this.AssetExists(ctx, id);
-    if (!exists) {
+    const assetJSON = await ctx.stub.getState(id);
+    if (!assetJSON || assetJSON.length === 0) {
       throw new Error(`The asset ${id} does not exist`);
     }
 
+    const assetData = JSON.parse(assetJSON.toString());
+    assetData.owner = newOwner;
+
+    // Update the asset in the world state
+    await ctx.stub.putState(id, Buffer.from(JSON.stringify(assetData)));
+
+    return JSON.stringify({ id, data: assetData });
+  }
+
+  // GetAssetHistory returns the history of an asset with given id
+  // GetAssetHistory returns the history of a specific asset
+  async GetAssetHistory(ctx, id) {
     const iterator = await ctx.stub.getHistoryForKey(id);
-    const allResults = [];
+    const history = [];
 
     while (true) {
       const res = await iterator.next();
 
-      if (res.value && res.value.value.toString()) {
-        const timestamp = res.value.timestamp;
-        const txId = res.value.tx_id;
-        let asset;
-
-        try {
-          asset = JSON.parse(res.value.value.toString("utf8"));
-        } catch (err) {
-          console.log(err);
-          asset = res.value.value.toString("utf8");
-        }
-
-        allResults.push({ txId, timestamp, asset });
+      if (res.value) {
+        const tx = {
+          txId: res.value.txId,
+          timestamp: res.value.timestamp,
+          isDelete: res.value.isDelete,
+          data: res.value.value
+            ? JSON.parse(res.value.value.toString("utf8"))
+            : null,
+        };
+        history.push(tx);
       }
 
       if (res.done) {
@@ -135,7 +133,7 @@ class AssetTransfer extends Contract {
       }
     }
 
-    return JSON.stringify(allResults);
+    return JSON.stringify({ id, history });
   }
 
   // GetAllAssets returns all assets found in the world state
@@ -144,31 +142,20 @@ class AssetTransfer extends Contract {
     const iterator = await ctx.stub.getStateByRange("", "");
 
     while (true) {
-      const result = await iterator.next();
+      const res = await iterator.next();
 
-      if (result.value && result.value.value.toString()) {
-        const strValue = result.value.value.toString("utf8");
-        let record;
-
-        try {
-          record = JSON.parse(strValue);
-        } catch (err) {
-          console.log("Error parsing record:", err);
-          record = strValue;
-        }
-
-        console.log("Retrieved asset:", record);
-        allResults.push(record);
+      if (res.value && res.value.value.toString()) {
+        const id = res.value.key;
+        const assetData = JSON.parse(res.value.value.toString("utf8"));
+        allResults.push({ id, data: assetData });
       }
 
-      if (result.done) {
-        console.log("No more assets found.");
+      if (res.done) {
         await iterator.close();
         break;
       }
     }
 
-    console.log("All assets retrieved:", allResults);
     return JSON.stringify(allResults);
   }
 }
