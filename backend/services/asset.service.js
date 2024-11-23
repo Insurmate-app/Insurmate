@@ -87,11 +87,13 @@ const getAllAssets = async (email) => {
   try {
     const user = await userService.findUserByEmail(email);
 
-    if (user.role !== "admin") {
-      throw new CustomError("Regular user cannot retrieve all assets", 403);
-    }
+    const role = user.role;
 
-    const org = user.isAdmin ? org2 : org1;
+    // if (role !== "admin") {
+    //   throw new CustomError("Regular user cannot retrieve all assets", 403);
+    // }
+
+    const org = role === "admin" ? org2 : org1;
 
     const result = await evaluateTransaction(
       userId,
@@ -138,8 +140,6 @@ const getAssetById = async (email, assetId) => {
     const user = await userService.findUserByEmail(email);
 
     const org = whichOrg(user.role);
-
-    console.log(org);
 
     const result = await evaluateTransaction(
       userId,
