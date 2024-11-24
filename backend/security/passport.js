@@ -29,13 +29,13 @@
 
 // The configured passport instance is exported as a module.
 
-
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") }); // Explicitly set the path to .env
 
-const JwtStrategy = require("passport-jwt").Strategy;
-const ExtractJwt = require("passport-jwt").ExtractJwt;
 const passport = require("passport");
+const passportJWT = require("passport-jwt");
+const JwtStrategy = passportJWT.Strategy;
+const ExtractJwt = passportJWT.ExtractJwt;
 const userService = require("../services/user.service");
 
 // Function to extract token from cookies
@@ -48,7 +48,8 @@ const cookieExtractor = (req) => {
 };
 
 const opts = {
-  jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
+  //jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
   secretOrKey: process.env.JWT_SECRET, // Ensure this is correctly set
 };
 

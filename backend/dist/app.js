@@ -1,1 +1,2363 @@
-(()=>{var e={760:(e,t,s)=>{const r=s(134),a=s(829),o=process.env.JWT_SECRET,n=s(278);s(392),e.exports={createUser:async(e,t,s)=>{try{const s=e.body,a=await r.createUser(s);t.status(201).json(a)}catch(e){s(e)}},resetPassword:async(e,t,s)=>{try{const{email:s,password:a}=e.body;await r.resetPassword(s,a),t.status(200).json("Password reset successful.")}catch(e){s(e)}},loginUser:async(e,t,s)=>{try{const{email:s,password:n}=e.body;await r.loginUser(s,n);const i=a.sign({id:s},o,{expiresIn:"15m"});t.cookie("token",i,{httpOnly:!0,secure:!0,maxAge:9e5}),t.status(200).json({token:i})}catch(e){s(e)}},verifyUser:async(e,t,s)=>{try{const{email:s,otpToken:a}=e.body;await r.verifyUser(s,a),t.status(200).json("Verification Successful.")}catch(e){s(e)}},regenerateOtp:async(e,t,s)=>{try{const{email:s}=e.body;await r.regenerateOtp(s),t.status(200).json("OTP regenerated successfully.")}catch(e){s(e)}},logoutUser:(e,t,s)=>{try{t.clearCookie("token",n.authenticate("jwt",{session:!1}),{httpOnly:!0,secure:!0}),t.status(200).json({message:"Logged out successfully."})}catch(e){s(e)}}}},647:e=>{e.exports=function(e,t=500){const s=new Error(e);return s.statusCode=t,s}},509:(e,t,s)=>{const{createLogger:r,format:a,transports:o}=s(124),{combine:n,timestamp:i,printf:c}=a,d=c((({level:e,message:t,timestamp:s})=>`${s} ${e}: ${t}`)),u=r({level:"info",format:n(i(),d),transports:[new o.Console,new o.File({filename:"app.log"})]});e.exports=u},857:e=>{e.exports=(e,t,s,r)=>{const a=e.statusCode||500;s.status(a).json({statusCode:a,message:e.message||"Internal Server Error"})}},870:(e,t,s)=>{const{validationResult:r}=s(356);e.exports=function(e,t,s){const a=r(e);if(!a.isEmpty()){const e=a.array().map((e=>e.msg));return t.status(400).json({message:"Validation failed",errors:e})}s()}},778:(e,t,s)=>{const r=s(37),a=new r.Schema({email:{type:String,unique:!0,required:!0,match:[/.+@.+\..+/,"Please enter a valid email address"],maxlength:100},password:{type:String,required:!0,minlength:8,maxlength:128},companyName:{type:String,required:!0,minlength:8,maxlength:100},failedLoginAttempts:{type:Number,default:0,required:!0},activeAccount:{type:Boolean,default:!0,required:!0},address:{addressLine1:{type:String,required:!0,maxLength:300},addressLine2:{type:String,maxLength:50},city:{type:String,required:!0,maxLength:30},state:{type:String,required:!0,maxLength:30},zipCode:{type:String,required:!0,maxLength:30}}},{timestamps:!0});e.exports=r.model("User",a)},414:(e,t,s)=>{const r=s(252).Router(),a=s(278);s(392);const o=s(870),{check:n}=s(356),i=s(760),c=/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,d=/^(?=.*[A-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,}$/;r.post("/create",[n("email").notEmpty().withMessage("Email is required").isLength({max:100}).withMessage("Email must be no more than 100 characters long").matches(c).withMessage("Invalid email format"),n("password").notEmpty().withMessage("Password is required").isLength({min:8,max:28}).withMessage("Password must be between 8 and 28 characters long").matches(d).withMessage("Password must contain at least one uppercase letter and one special character"),n("companyName").notEmpty().withMessage("Company name is required").isLength({min:8,max:28}).withMessage("Company name must be between 8 and 28 characters long"),n("address.addressLine1").notEmpty().withMessage("Address line 1 is required").isLength({max:300}).withMessage("Address line 1 must be no more than 300 characters long"),n("address.addressLine2").optional().isLength({max:50}).withMessage("Address line 2 must be no more than 50 characters long"),n("address.city").notEmpty().withMessage("City is required").isLength({max:30}).withMessage("City must be no more than 30 characters long"),n("address.state").notEmpty().withMessage("State is required").isLength({max:30}).withMessage("State must be no more than 30 characters long"),n("address.zipCode").notEmpty().withMessage("Zip code is required").isLength({max:30}).withMessage("Zip code must be no more than 30 characters long")],o,i.createUser),r.post("/login",[n("email").notEmpty().withMessage("Email is required").isLength({max:100}).withMessage("Email must be no more than 100 characters long").matches(c).withMessage("Invalid email format"),n("password").notEmpty().withMessage("Password is required").isLength({min:8,max:28}).withMessage("Password must be between 8 and 28 characters long").matches(d).withMessage("Password must contain at least one uppercase letter and one special character")],o,i.loginUser),r.post("/verify",[n("email").notEmpty().withMessage("Email is required").isLength({max:100}).withMessage("Email must be no more than 100 characters long").matches(c).withMessage("Invalid email format"),n("otpToken").notEmpty().withMessage("OTP Token is required").isNumeric().isLength({max:6}).withMessage("OTP Token must be no more than 6 digits or less than long")],o,i.verifyUser),r.put("/reset-password",[n("email").notEmpty().withMessage("Email is required").isLength({max:100}).withMessage("Email must be no more than 100 characters long").matches(c).withMessage("Invalid email format"),n("password").notEmpty().withMessage("Password is required").isLength({min:8,max:28}).withMessage("Password must be between 8 and 28 characters long").matches(d).withMessage("Password must contain at least one uppercase letter and one special character")],o,i.resetPassword),r.post("/regenerate-otp",[n("email").notEmpty().withMessage("Email is required").isLength({max:100}).withMessage("Email must be no more than 100 characters long").matches(c).withMessage("Invalid email format")],o,i.regenerateOtp),r.post("/logout",a.authenticate("jwt",{session:!1}),i.logoutUser),e.exports=r},392:(e,t,s)=>{const r=s(928);s(818).config({path:r.resolve(__dirname,"../.env")});const a=s(714).Strategy,o=s(714).ExtractJwt,n=s(278),i=s(134),c={jwtFromRequest:o.fromExtractors([e=>{let t=null;return e&&e.cookies&&(t=e.cookies.token),t}]),secretOrKey:process.env.JWT_SECRET};n.use(new a(c,(async(e,t)=>{try{return t(null,await i.findUserByEmail(e.id)||!1)}catch(e){return t(e,!1)}}))),e.exports=n},975:(e,t,s)=>{s(818).config();const r=s(572),a=s(509),o=process.env.EMAIL,n=process.env.PASSWORD,i=r.createTransport({host:"mail.wecare-insurance.com",port:587,auth:{user:o,pass:n}});e.exports={sendEmail:async({to:e,subject:t,text:s})=>{const r={from:o,to:e,subject:t,text:s};try{return await i.sendMail(r)}catch(e){throw a.error("Error sending email:",e),new Error("Error sending email")}}}},224:(e,t,s)=>{const r=s(486),a=s(288),{LRUCache:o}=s(678),n=s(509),i=s(647);a.authenticator.options={step:900};const c=new o({max:300,maxSize:300,sizeCalculation:()=>1,ttl:9e5,ttlAutopurge:!0});e.exports={hashPassword:async function(e){try{return await r.hash(e,10)}catch(e){throw n.error(e.message),e}},checkPassword:async function(e,t){try{return await r.compare(e,t)}catch(e){throw n.error(e.message),e}},generateOtp:async e=>{try{const t=a.authenticator.generateSecret(),s=a.authenticator.generate(t);return c.set(e,{otp:s,secret:t}),s}catch(e){throw n.error(e.message),e}},verifyOtp:async(e,t)=>{try{const s=c.get(e);if(!s)throw n.error(`OTP not found or expired for id: ${e}`),i("OTP not found or expired.",401);const{otp:r,secret:a}=s;if(console.log(`Cached OTP: ${r}, Secret: ${a}, Provided Token: ${t} for id: ${e}`),r.toString().trim()!==t.toString().trim())throw i("Invalid OTP",401);c.delete(e)}catch(t){throw t.statusCode>=400&&t.statusCode<500?t:(n.error(`Error during OTP verification for id: ${e} - ${t.message}`),i("Your OTP is invalid. Please try again.",500))}}}},134:(e,t,s)=>{const r=s(778),a=s(975),o=s(825),n=s(509),i=s(647),c=s(224),d=async(e,t)=>{await a.sendEmail({to:e,subject:"Activate Account",text:`Hi there, \nPlease use the following OTP to activate your account: ${t}. This OTP is valid for 5 minutes.`})},u=async e=>{const t=await r.findOne({email:e});if(!t)throw i("User not found.",404);return t};e.exports={findUserByEmail:u,createUser:async e=>{try{e.failedLoginAttempts=0,e.activeAccount=!1;const t=await c.hashPassword(e.password);e.password=t;const s=await r.create(e),a=await c.generateOtp(s.email);return s&&await d(s.email,a),o.pick(s,["email","companyName","address.addressLine1","address.addressLine2","address.city","address.state","address.zipCode"])}catch(e){if(11e3===e.code){const t=Object.keys(e.keyValue)[0];throw i(`Duplicate field value: '${t}' already exists.`,409)}throw n.error(e.message),e}},resetPassword:async(e,t)=>{try{const s=await u(e);if(!s)throw i("User not found.",404);t=await c.hashPassword(t);const a=await r.findByIdAndUpdate(s._id,{password:t,activeAccount:!1},{new:!0});if(!a)throw i("User not found.",404);const o=await c.generateOtp(s.email);a&&await d(a.email,o)}catch(e){throw e.statusCode>=400&&e.statusCode<500?e:(n.error(e.message),i("Unable to reset password.",500))}},loginUser:async(e,t)=>{try{const s=await u(e);if(!s)throw i("User not found.",400);if(!s.activeAccount)throw i("Account is inactive, a new verification code has been sent to your email address.",401);if(s.failedLoginAttempts>=5)throw i("Account is locked due to more than 5 failed login attempts.",401);if(!await c.checkPassword(t,s.password))throw s.failedLoginAttempts+=1,await s.save(),i("Invalid password.",401);s.failedLoginAttempts=0,s.activeAccount=!0,await s.save()}catch(e){throw e.statusCode>=400&&e.statusCode<500?e:(n.error(e.message),i("Unable to login.",500))}},verifyUser:async(e,t)=>{try{const s=await u(e);if(!s)throw i("User not found.",400);await c.verifyOtp(e,t),s.activeAccount=!0,s.failedLoginAttempts=0,await s.save()}catch(e){throw e.statusCode>=400&&e.statusCode<500?e:(n.error(e.message),i("Unable to verify.",500))}},regenerateOtp:async e=>{try{const t=await u(e);if(!t)throw i("User not found.",404);if(t.activeAccount)throw i("Account is already active.",400);await r.findByIdAndUpdate(t._id,{activeAccount:!1},{new:!0}),console.log(e);const s=await c.generateOtp(e);await d(t.email,s)}catch(e){if(e.statusCode>=400&&e.statusCode<500)throw e;n.error(e.message)}}}},486:e=>{"use strict";e.exports=require("bcrypt")},898:e=>{"use strict";e.exports=require("cookie-parser")},577:e=>{"use strict";e.exports=require("cors")},818:e=>{"use strict";e.exports=require("dotenv")},252:e=>{"use strict";e.exports=require("express")},617:e=>{"use strict";e.exports=require("express-graceful-shutdown")},239:e=>{"use strict";e.exports=require("express-healthcheck")},763:e=>{"use strict";e.exports=require("express-rate-limit")},356:e=>{"use strict";e.exports=require("express-validator")},525:e=>{"use strict";e.exports=require("helmet")},829:e=>{"use strict";e.exports=require("jsonwebtoken")},825:e=>{"use strict";e.exports=require("lodash")},678:e=>{"use strict";e.exports=require("lru-cache")},37:e=>{"use strict";e.exports=require("mongoose")},572:e=>{"use strict";e.exports=require("nodemailer")},288:e=>{"use strict";e.exports=require("otplib")},278:e=>{"use strict";e.exports=require("passport")},714:e=>{"use strict";e.exports=require("passport-jwt")},124:e=>{"use strict";e.exports=require("winston")},928:e=>{"use strict";e.exports=require("path")}},t={};function s(r){var a=t[r];if(void 0!==a)return a.exports;var o=t[r]={exports:{}};return e[r](o,o.exports,s),o.exports}(()=>{"use strict";s(818).config();const e=s(525),t=s(37),r=s(252),a=s(239),o=s(617),n=s(763),i=s(577),c=s(898),d=s(278),u=r(),l=s(857),m=s(414),h=process.env.DATABASE_URL,p=process.env.MAX_POOL_SIZE,g=process.env.MAX_Idle_Time_MS,w=process.env.CONECTION_TIMEOUT_MS;u.use(e()),u.use(((e,t,s)=>{t.setHeader("X-XSS-Protection","1; mode=block"),s()}));const y=n({windowMs:9e5,max:1e3,message:"Too many requests from this IP, please try again later"});u.use(y);const f={origin:process.env.FRONTEND_URL,credentials:!0};u.use(i(f)),u.use(d.initialize()),u.use(c()),u.use(r.json()),u.use(r.urlencoded({extended:!1}));const x=process.env.PORT||3e3;u.use("/health",a()),u.use("/v1/api/user",m),u.get("/",((e,t)=>t.send("App is working!"))),u.use(l),u.use(o(u));const v=u.listen(x,(()=>{console.log(`Server is running on port ${x}`)}));v.on("close",(()=>{console.log("Server has closed all connections.")})),t.connect(h,{maxPoolSize:p,maxIdleTimeMS:g,connectTimeoutMS:w}).then((()=>{console.log("Connected to database!")})).catch((e=>{console.log(e),console.log("Connection failed!")}));const E=async()=>{console.log("Graceful shutdown initiated."),v.close((e=>{e&&(console.error("Error closing server:",e),process.exit(1)),console.log("HTTP server closed, now closing MongoDB connection."),t.disconnect()})),setTimeout((()=>{console.log("Forcing shutdown after timeout."),process.exit(1)}),1e4)};process.on("SIGTERM",E),process.on("SIGINT",E)})()})();
+/******/ (() => { // webpackBootstrap
+/******/ 	var __webpack_modules__ = ({
+
+/***/ 790:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+var assetService = __webpack_require__(388);
+var _require = __webpack_require__(903),
+  uuidv4 = _require.v4;
+var jwt = __webpack_require__(829);
+var extractToken = __webpack_require__(642);
+var createAsset = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res, next) {
+    var token, payload, data, id, result;
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _context.prev = 0;
+          token = extractToken(req);
+          if (!token) {
+            _context.next = 11;
+            break;
+          }
+          payload = jwt.verify(token, process.env.JWT_SECRET);
+          payload = jwt.decode(token);
+          data = req.body.data;
+          id = uuidv4(); // Generate a UUID
+          _context.next = 9;
+          return assetService.createAsset(payload.id, {
+            id: id,
+            data: data
+          });
+        case 9:
+          result = _context.sent;
+          res.status(201).json(result);
+        case 11:
+          _context.next = 16;
+          break;
+        case 13:
+          _context.prev = 13;
+          _context.t0 = _context["catch"](0);
+          next(_context.t0);
+        case 16:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee, null, [[0, 13]]);
+  }));
+  return function createAsset(_x, _x2, _x3) {
+    return _ref.apply(this, arguments);
+  };
+}();
+var updateAsset = /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2(req, res, next) {
+    var token, payload, _req$body, id, data, result;
+    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          _context2.prev = 0;
+          token = extractToken(req);
+          if (!token) {
+            _context2.next = 10;
+            break;
+          }
+          payload = jwt.verify(token, process.env.JWT_SECRET);
+          payload = jwt.decode(token);
+          _req$body = req.body, id = _req$body.id, data = _req$body.data;
+          _context2.next = 8;
+          return assetService.updateAsset(payload.id, {
+            id: id,
+            data: data
+          });
+        case 8:
+          result = _context2.sent;
+          res.status(200).json(result);
+        case 10:
+          _context2.next = 15;
+          break;
+        case 12:
+          _context2.prev = 12;
+          _context2.t0 = _context2["catch"](0);
+          next(_context2.t0);
+        case 15:
+        case "end":
+          return _context2.stop();
+      }
+    }, _callee2, null, [[0, 12]]);
+  }));
+  return function updateAsset(_x4, _x5, _x6) {
+    return _ref2.apply(this, arguments);
+  };
+}();
+var getAllAssets = /*#__PURE__*/function () {
+  var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3(req, res, next) {
+    var token, payload, assets;
+    return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+      while (1) switch (_context3.prev = _context3.next) {
+        case 0:
+          _context3.prev = 0;
+          // Retrieve the token from cookies
+          //const token = req.headers.cookie;
+          // Usage
+          token = extractToken(req);
+          console.log("Extracted Token:", token);
+          if (!token) {
+            _context3.next = 10;
+            break;
+          }
+          payload = jwt.verify(token, process.env.JWT_SECRET);
+
+          // If you only want the payload without verifying, use jwt.decode
+          payload = jwt.decode(token);
+          _context3.next = 8;
+          return assetService.getAllAssets(payload.id);
+        case 8:
+          assets = _context3.sent;
+          res.status(200).json(assets);
+        case 10:
+          _context3.next = 15;
+          break;
+        case 12:
+          _context3.prev = 12;
+          _context3.t0 = _context3["catch"](0);
+          next(_context3.t0);
+        case 15:
+        case "end":
+          return _context3.stop();
+      }
+    }, _callee3, null, [[0, 12]]);
+  }));
+  return function getAllAssets(_x7, _x8, _x9) {
+    return _ref3.apply(this, arguments);
+  };
+}();
+var getAssetById = /*#__PURE__*/function () {
+  var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4(req, res, next) {
+    var token, payload, assetId, asset;
+    return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+      while (1) switch (_context4.prev = _context4.next) {
+        case 0:
+          _context4.prev = 0;
+          // Retrieve the token from cookies
+          token = extractToken(req);
+          if (!token) {
+            _context4.next = 10;
+            break;
+          }
+          // Use jwt.verify if you need to validate the token
+
+          payload = jwt.verify(token, process.env.JWT_SECRET);
+          payload = jwt.decode(token);
+          assetId = req.params.id;
+          _context4.next = 8;
+          return assetService.getAssetById(payload.id, assetId);
+        case 8:
+          asset = _context4.sent;
+          res.status(200).json(asset);
+        case 10:
+          _context4.next = 15;
+          break;
+        case 12:
+          _context4.prev = 12;
+          _context4.t0 = _context4["catch"](0);
+          next(_context4.t0);
+        case 15:
+        case "end":
+          return _context4.stop();
+      }
+    }, _callee4, null, [[0, 12]]);
+  }));
+  return function getAssetById(_x10, _x11, _x12) {
+    return _ref4.apply(this, arguments);
+  };
+}();
+var getAssetHistory = /*#__PURE__*/function () {
+  var _ref5 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5(req, res, next) {
+    var token, payload, assetId, history;
+    return _regeneratorRuntime().wrap(function _callee5$(_context5) {
+      while (1) switch (_context5.prev = _context5.next) {
+        case 0:
+          _context5.prev = 0;
+          // Retrieve the token from cookies
+          token = extractToken(req);
+          if (!token) {
+            _context5.next = 10;
+            break;
+          }
+          // Use jwt.verify if you need to validate the token
+
+          payload = jwt.verify(token, process.env.JWT_SECRET);
+          payload = jwt.decode(token);
+          assetId = req.params.id;
+          _context5.next = 8;
+          return assetService.getAssetHistory(payload.id, assetId);
+        case 8:
+          history = _context5.sent;
+          res.status(200).json(history);
+        case 10:
+          _context5.next = 15;
+          break;
+        case 12:
+          _context5.prev = 12;
+          _context5.t0 = _context5["catch"](0);
+          next(_context5.t0);
+        case 15:
+        case "end":
+          return _context5.stop();
+      }
+    }, _callee5, null, [[0, 12]]);
+  }));
+  return function getAssetHistory(_x13, _x14, _x15) {
+    return _ref5.apply(this, arguments);
+  };
+}();
+var deleteAsset = /*#__PURE__*/function () {
+  var _ref6 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee6(req, res, next) {
+    var token, payload, assetId, result;
+    return _regeneratorRuntime().wrap(function _callee6$(_context6) {
+      while (1) switch (_context6.prev = _context6.next) {
+        case 0:
+          _context6.prev = 0;
+          // Retrieve the token from cookies
+          token = extractToken(req);
+          if (!token) {
+            _context6.next = 10;
+            break;
+          }
+          payload = jwt.verify(token, process.env.JWT_SECRET);
+          payload = jwt.decode(token);
+          assetId = req.params.id;
+          _context6.next = 8;
+          return assetService.deleteAsset(payload.id, assetId);
+        case 8:
+          result = _context6.sent;
+          res.status(200).json(result);
+        case 10:
+          _context6.next = 15;
+          break;
+        case 12:
+          _context6.prev = 12;
+          _context6.t0 = _context6["catch"](0);
+          next(_context6.t0);
+        case 15:
+        case "end":
+          return _context6.stop();
+      }
+    }, _callee6, null, [[0, 12]]);
+  }));
+  return function deleteAsset(_x16, _x17, _x18) {
+    return _ref6.apply(this, arguments);
+  };
+}();
+var transferAsset = /*#__PURE__*/function () {
+  var _ref7 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee7(req, res, next) {
+    var token, payload, _req$body2, assetId, newOwner, result;
+    return _regeneratorRuntime().wrap(function _callee7$(_context7) {
+      while (1) switch (_context7.prev = _context7.next) {
+        case 0:
+          _context7.prev = 0;
+          token = extractToken(req);
+          if (!token) {
+            _context7.next = 10;
+            break;
+          }
+          payload = jwt.verify(token, process.env.JWT_SECRET);
+
+          // If you only want the payload without verifying, use jwt.decode
+          payload = jwt.decode(token);
+          _req$body2 = req.body, assetId = _req$body2.assetId, newOwner = _req$body2.newOwner;
+          _context7.next = 8;
+          return assetService.transferAsset(payload.id, assetId, newOwner);
+        case 8:
+          result = _context7.sent;
+          res.status(200).json(result);
+        case 10:
+          _context7.next = 15;
+          break;
+        case 12:
+          _context7.prev = 12;
+          _context7.t0 = _context7["catch"](0);
+          next(_context7.t0);
+        case 15:
+        case "end":
+          return _context7.stop();
+      }
+    }, _callee7, null, [[0, 12]]);
+  }));
+  return function transferAsset(_x19, _x20, _x21) {
+    return _ref7.apply(this, arguments);
+  };
+}();
+module.exports = {
+  createAsset: createAsset,
+  updateAsset: updateAsset,
+  getAllAssets: getAllAssets,
+  getAssetById: getAssetById,
+  getAssetHistory: getAssetHistory,
+  deleteAsset: deleteAsset,
+  transferAsset: transferAsset
+};
+
+/***/ }),
+
+/***/ 109:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+var userService = __webpack_require__(211);
+var jwt = __webpack_require__(829);
+var JWT_SECRET = process.env.JWT_SECRET;
+var passport = __webpack_require__(278);
+__webpack_require__(537); // Import Passport JWT configuration
+
+var createUser = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res, next) {
+    var userData, user;
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _context.prev = 0;
+          userData = req.body;
+          _context.next = 4;
+          return userService.createUser(userData);
+        case 4:
+          user = _context.sent;
+          res.status(201).json(user);
+          _context.next = 11;
+          break;
+        case 8:
+          _context.prev = 8;
+          _context.t0 = _context["catch"](0);
+          next(_context.t0);
+        case 11:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee, null, [[0, 8]]);
+  }));
+  return function createUser(_x, _x2, _x3) {
+    return _ref.apply(this, arguments);
+  };
+}();
+var resetPassword = /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2(req, res, next) {
+    var _req$body, email, password;
+    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          _context2.prev = 0;
+          _req$body = req.body, email = _req$body.email, password = _req$body.password;
+          _context2.next = 4;
+          return userService.resetPassword(email, password);
+        case 4:
+          res.status(200).json("Password reset successful.");
+          _context2.next = 10;
+          break;
+        case 7:
+          _context2.prev = 7;
+          _context2.t0 = _context2["catch"](0);
+          next(_context2.t0);
+        case 10:
+        case "end":
+          return _context2.stop();
+      }
+    }, _callee2, null, [[0, 7]]);
+  }));
+  return function resetPassword(_x4, _x5, _x6) {
+    return _ref2.apply(this, arguments);
+  };
+}();
+var loginUser = /*#__PURE__*/function () {
+  var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3(req, res, next) {
+    var _req$body2, email, password, token;
+    return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+      while (1) switch (_context3.prev = _context3.next) {
+        case 0:
+          _context3.prev = 0;
+          _req$body2 = req.body, email = _req$body2.email, password = _req$body2.password;
+          _context3.next = 4;
+          return userService.loginUser(email, password);
+        case 4:
+          // Generate JWT token
+          token = jwt.sign({
+            id: email
+          }, JWT_SECRET, {
+            expiresIn: "15m" // 15 minutes
+          }); // Set the token as a cookie (HttpOnly for security)
+
+          res.cookie("token", token, {
+            httpOnly: true,
+            // Makes the cookie inaccessible to JavaScript on the client-side
+            secure: true,
+            //process.env.NODE_ENV === "production", // Secure only in production
+            sameSite: "None",
+            maxAge: 900000 // 15 minutes in milliseconds
+          });
+          res.status(200).json({
+            token: token
+          });
+          _context3.next = 12;
+          break;
+        case 9:
+          _context3.prev = 9;
+          _context3.t0 = _context3["catch"](0);
+          // Pass the error to the global error handler using next()
+          //res.status(500).json({ message: error.message });
+          next(_context3.t0); // Pass the error to the error-handling middleware
+        case 12:
+        case "end":
+          return _context3.stop();
+      }
+    }, _callee3, null, [[0, 9]]);
+  }));
+  return function loginUser(_x7, _x8, _x9) {
+    return _ref3.apply(this, arguments);
+  };
+}();
+var verifyUser = /*#__PURE__*/function () {
+  var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4(req, res, next) {
+    var _req$body3, email, otpToken;
+    return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+      while (1) switch (_context4.prev = _context4.next) {
+        case 0:
+          _context4.prev = 0;
+          _req$body3 = req.body, email = _req$body3.email, otpToken = _req$body3.otpToken;
+          _context4.next = 4;
+          return userService.verifyUser(email, otpToken);
+        case 4:
+          res.status(200).json("Verification Successful.");
+          _context4.next = 10;
+          break;
+        case 7:
+          _context4.prev = 7;
+          _context4.t0 = _context4["catch"](0);
+          next(_context4.t0);
+        case 10:
+        case "end":
+          return _context4.stop();
+      }
+    }, _callee4, null, [[0, 7]]);
+  }));
+  return function verifyUser(_x10, _x11, _x12) {
+    return _ref4.apply(this, arguments);
+  };
+}();
+var regenerateOtp = /*#__PURE__*/function () {
+  var _ref5 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5(req, res, next) {
+    var email;
+    return _regeneratorRuntime().wrap(function _callee5$(_context5) {
+      while (1) switch (_context5.prev = _context5.next) {
+        case 0:
+          _context5.prev = 0;
+          email = req.body.email;
+          _context5.next = 4;
+          return userService.regenerateOtp(email);
+        case 4:
+          res.status(200).json("OTP regenerated successfully.");
+          _context5.next = 10;
+          break;
+        case 7:
+          _context5.prev = 7;
+          _context5.t0 = _context5["catch"](0);
+          next(_context5.t0);
+        case 10:
+        case "end":
+          return _context5.stop();
+      }
+    }, _callee5, null, [[0, 7]]);
+  }));
+  return function regenerateOtp(_x13, _x14, _x15) {
+    return _ref5.apply(this, arguments);
+  };
+}();
+var logoutUser = function logoutUser(req, res, next) {
+  try {
+    console.log("Cookies:", req.cookies.token);
+    // Clear the cookie by setting the token cookie's maxAge to
+    res.clearCookie("token", passport.authenticate("jwt", {
+      session: false
+    }), {
+      httpOnly: true,
+      // Ensure cookie is only accessible by the server
+      secure: "production" === "production" // Only use HTTPS in production
+    });
+    // Send a response indicating the user has been logged out
+    res.status(200).json({
+      message: "Logged out successfully."
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+module.exports = {
+  createUser: createUser,
+  resetPassword: resetPassword,
+  loginUser: loginUser,
+  verifyUser: verifyUser,
+  regenerateOtp: regenerateOtp,
+  logoutUser: logoutUser
+};
+
+/***/ }),
+
+/***/ 686:
+/***/ ((module) => {
+
+function CustomError(message) {
+  var statusCode = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 500;
+  var error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+}
+module.exports = CustomError;
+
+/***/ }),
+
+/***/ 622:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+// logger.js
+var _require = __webpack_require__(124),
+  createLogger = _require.createLogger,
+  format = _require.format,
+  transports = _require.transports;
+var combine = format.combine,
+  timestamp = format.timestamp,
+  printf = format.printf;
+
+// Custom log format
+var logFormat = printf(function (_ref) {
+  var level = _ref.level,
+    message = _ref.message,
+    timestamp = _ref.timestamp;
+  return "".concat(timestamp, " ").concat(level, ": ").concat(message);
+});
+
+// Create a logger instance
+var logger = createLogger({
+  level: "info",
+  // Set the log level
+  format: combine(timestamp(), logFormat),
+  transports: [new transports.Console(), new transports.File({
+    filename: "app.log"
+  }) // Log to a file
+  ]
+});
+module.exports = logger;
+
+/***/ }),
+
+/***/ 994:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var jwt = __webpack_require__(829);
+var JWT_SECRET = process.env.JWT_SECRET;
+function verifyToken(req, res, next) {
+  var token = req.header("Authorization");
+  if (!token) return res.status(401).json({
+    error: "Access denied"
+  });
+  try {
+    var decoded = jwt.verify(token, JWT_SECRET);
+    req.id = decoded.id;
+    next();
+  } catch (error) {
+    res.status(401).json({
+      error: "Invalid token"
+    });
+  }
+}
+module.exports = verifyToken;
+
+/***/ }),
+
+/***/ 946:
+/***/ ((module) => {
+
+var errorHandler = function errorHandler(err, req, res, next) {
+  // If statusCode is not set, default to 500 (Internal Server Error)
+  var statusCode = err.statusCode || 500;
+
+  // Send the error message along with the correct status code
+  res.status(statusCode).json({
+    statusCode: statusCode,
+    message: err.message || "Internal Server Error"
+  });
+};
+module.exports = errorHandler;
+
+/***/ }),
+
+/***/ 465:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var _require = __webpack_require__(975),
+  validationResult = _require.validationResult;
+function validate(req, res, next) {
+  var errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    var errorMessages = errors.array().map(function (err) {
+      return err.msg;
+    }); // Extract only the error messages
+    return res.status(400).json({
+      message: "Validation failed",
+      errors: errorMessages
+    });
+  }
+  next();
+}
+module.exports = validate;
+
+/***/ }),
+
+/***/ 767:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var mongoose = __webpack_require__(37);
+var userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    unique: true,
+    required: true,
+    match: [/.+@.+\..+/, "Please enter a valid email address"],
+    // Regex for basic email validation
+    maxlength: 100
+  },
+  password: {
+    type: String,
+    required: true,
+    minlength: 8,
+    maxlength: 128
+  },
+  companyName: {
+    type: String,
+    required: true,
+    minlength: 8,
+    maxlength: 100
+  },
+  failedLoginAttempts: {
+    type: Number,
+    "default": 0,
+    required: true
+  },
+  activeAccount: {
+    type: Boolean,
+    "default": true,
+    required: true
+  },
+  role: {
+    type: String,
+    "enum": ["admin", "user"],
+    "default": "user",
+    required: true
+  },
+  address: {
+    addressLine1: {
+      type: String,
+      required: true,
+      maxLength: 300
+    },
+    addressLine2: {
+      type: String,
+      maxLength: 50
+    },
+    city: {
+      type: String,
+      required: true,
+      maxLength: 30
+    },
+    state: {
+      type: String,
+      required: true,
+      maxLength: 30
+    },
+    zipCode: {
+      type: String,
+      required: true,
+      maxLength: 30
+    }
+  }
+}, {
+  timestamps: true
+});
+module.exports = mongoose.model("User", userSchema);
+
+/***/ }),
+
+/***/ 576:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var express = __webpack_require__(252);
+var _require = __webpack_require__(975),
+  body = _require.body;
+var router = express.Router();
+var passport = __webpack_require__(278);
+__webpack_require__(537);
+var assetController = __webpack_require__(790);
+var validate = __webpack_require__(465);
+var verifyToken = __webpack_require__(994);
+var emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+// Route to create an asset
+router.post("/create", passport.authenticate("jwt", {
+  session: false
+}), [body("data.firstName").notEmpty().withMessage("First name is required").isString().withMessage("First name must be a string").isLength({
+  min: 2
+}).withMessage("First name must be at least 2 characters long"), body("data.lastName").notEmpty().withMessage("Last name is required").isString().withMessage("Last name must be a string").isLength({
+  min: 2
+}).withMessage("Last name must be at least 2 characters long"), body("data.email").notEmpty().withMessage("Email is required").isString().withMessage("Email must be a string").isLength({
+  max: 100
+}).withMessage("Email must be no more than 100 characters long").matches(emailRegex).withMessage("Invalid email format"), body("data.policyNumber").notEmpty().withMessage("Policy number is required").isLength({
+  min: 6,
+  max: 10
+}).withMessage("Policy number must be between 6 and 10 digits")], validate, assetController.createAsset);
+
+// Route to update an asset
+router.put("/update", passport.authenticate("jwt", {
+  session: false
+}), [body("id").notEmpty().withMessage("Asset ID is required").isString().withMessage("Asset ID must be a string"), body("data.firstName").notEmpty().withMessage("First name is required").isString().withMessage("First name must be a string").isLength({
+  min: 2
+}).withMessage("First name must be at least 2 characters long"), body("data.lastName").notEmpty().withMessage("Last name is required").isString().withMessage("Last name must be a string").isLength({
+  min: 2
+}).withMessage("Last name must be at least 2 characters long"), body("data.email").notEmpty().withMessage("Email is required").isString().withMessage("Email must be a string").isLength({
+  max: 100
+}).withMessage("Email must be no more than 100 characters long").matches(emailRegex).withMessage("Invalid email format"), body("data.policyNumber").notEmpty().withMessage("Policy number is required").isLength({
+  min: 6,
+  max: 10
+}).withMessage("Policy number must be between 6 and 10 digits"), body("data.status").notEmpty().withMessage("Status is required").isString().withMessage("Status must be a string").isIn(["Active", "Inactive", "Pending"]).withMessage("Status must be 'Active', 'Inactive', or 'Pending'")], validate, assetController.updateAsset);
+
+// Route to get all assets
+router.get("/get-all", passport.authenticate("jwt", {
+  session: false
+}), assetController.getAllAssets);
+
+// Route to get a single asset by ID
+router.get("/get/:id", passport.authenticate("jwt", {
+  session: false
+}), assetController.getAssetById);
+
+// Route to get asset history by ID
+router.get("/history/:id", passport.authenticate("jwt", {
+  session: false
+}), assetController.getAssetHistory);
+
+// Route to delete an asset by ID
+router["delete"]("/delete/:id", passport.authenticate("jwt", {
+  session: false
+}), assetController.deleteAsset);
+
+// Route to transfer an asset to a new owner
+router.put("/transfer", passport.authenticate("jwt", {
+  session: false
+}), [body("assetId").notEmpty().withMessage("Asset ID and new owner are required.").isString().withMessage("Asset ID must be a string"), body("newOwner").notEmpty().withMessage("Asset ID and new owner are required.").isString().withMessage("New owner must be a string")], validate, assetController.transferAsset);
+module.exports = router;
+
+/***/ }),
+
+/***/ 611:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var express = __webpack_require__(252);
+var router = express.Router();
+var passport = __webpack_require__(278);
+__webpack_require__(537); // Import Passport JWT configuration
+
+var verifyToken = __webpack_require__(994);
+var validate = __webpack_require__(465);
+var _require = __webpack_require__(975),
+  check = _require.check;
+var userController = __webpack_require__(109);
+var emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+var passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,}$/;
+router.post("/create", [check("email").notEmpty().withMessage("Email is required").isLength({
+  max: 100
+}).withMessage("Email must be no more than 100 characters long").matches(emailRegex).withMessage("Invalid email format"), check("password").notEmpty().withMessage("Password is required").isLength({
+  min: 8,
+  max: 28
+}).withMessage("Password must be between 8 and 28 characters long").matches(passwordRegex).withMessage("Password must contain at least one uppercase letter and one special character"), check("companyName").notEmpty().withMessage("Company name is required").isLength({
+  min: 8,
+  max: 28
+}).withMessage("Company name must be between 8 and 28 characters long"), check("address.addressLine1").notEmpty().withMessage("Address line 1 is required").isLength({
+  max: 300
+}).withMessage("Address line 1 must be no more than 300 characters long"), check("address.addressLine2").optional() // Allow this field to be optional
+.isLength({
+  max: 50
+}).withMessage("Address line 2 must be no more than 50 characters long"), check("address.city").notEmpty().withMessage("City is required").isLength({
+  max: 30
+}).withMessage("City must be no more than 30 characters long"), check("address.state").notEmpty().withMessage("State is required").isLength({
+  max: 30
+}).withMessage("State must be no more than 30 characters long"), check("address.zipCode").notEmpty().withMessage("Zip code is required").isLength({
+  max: 30
+}).withMessage("Zip code must be no more than 30 characters long")], validate, userController.createUser);
+router.post("/login", [check("email").notEmpty().withMessage("Email is required").isLength({
+  max: 100
+}).withMessage("Email must be no more than 100 characters long").matches(emailRegex).withMessage("Invalid email format"), check("password").notEmpty().withMessage("Password is required").isLength({
+  min: 8,
+  max: 28
+}).withMessage("Password must be between 8 and 28 characters long").matches(passwordRegex).withMessage("Password must contain at least one uppercase letter and one special character")], validate, userController.loginUser);
+router.post("/verify", [check("email").notEmpty().withMessage("Email is required").isLength({
+  max: 100
+}).withMessage("Email must be no more than 100 characters long").matches(emailRegex).withMessage("Invalid email format"), check("otpToken").notEmpty().withMessage("OTP Token is required").isNumeric().isLength({
+  max: 6
+}).withMessage("OTP Token must be no more than 6 digits or less than long")], validate, userController.verifyUser);
+router.put("/reset-password", [check("email").notEmpty().withMessage("Email is required").isLength({
+  max: 100
+}).withMessage("Email must be no more than 100 characters long").matches(emailRegex).withMessage("Invalid email format"), check("password").notEmpty().withMessage("Password is required").isLength({
+  min: 8,
+  max: 28
+}).withMessage("Password must be between 8 and 28 characters long").matches(passwordRegex).withMessage("Password must contain at least one uppercase letter and one special character")], validate, userController.resetPassword);
+router.post("/regenerate-otp", [check("email").notEmpty().withMessage("Email is required").isLength({
+  max: 100
+}).withMessage("Email must be no more than 100 characters long").matches(emailRegex).withMessage("Invalid email format")], validate, userController.regenerateOtp);
+router.post("/logout", passport.authenticate("jwt", {
+  session: false
+}),
+// verifyToken,
+userController.logoutUser);
+module.exports = router;
+
+/***/ }),
+
+/***/ 537:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+// Environment Setup
+
+// The code requires the `path` module and uses it to resolve the path to a `.env` file, which contains environment variables.
+// The `dotenv` module is used to load the environment variables from the `.env` file.
+
+// Passport Setup
+
+// The code requires the `passport` module and sets up a JWT (JSON Web Token) strategy using the `passport-jwt` module.
+// The `ExtractJwt` module is used to extract the JWT token from the request.
+
+// Token Extraction
+
+// A custom function `cookieExtractor` is defined to extract the JWT token from the request cookies.
+
+// Passport Options
+
+// An options object `opts` is created to configure the passport JWT strategy.
+// The `jwtFromRequest` option is set to use the `cookieExtractor` function to extract the JWT token from the request cookies.
+// The `secretOrKey` option is set to the value of the `JWT_SECRET` environment variable.
+
+// Passport Strategy
+
+// The passport JWT strategy is created using the `opts` object.
+// The strategy uses an async function to verify the JWT token and find a user by email using the `userService` module.
+// If a user is found, the strategy returns the user object. If not, it returns `false`.
+// If an error occurs, the strategy returns the error.
+
+// Export
+
+// The configured passport instance is exported as a module.
+
+var path = __webpack_require__(3);
+(__webpack_require__(818).config)({
+  path: path.resolve(__dirname, "../.env")
+}); // Explicitly set the path to .env
+
+var passport = __webpack_require__(278);
+var passportJWT = __webpack_require__(714);
+var JwtStrategy = passportJWT.Strategy;
+var ExtractJwt = passportJWT.ExtractJwt;
+var userService = __webpack_require__(211);
+
+// Function to extract token from cookies
+var cookieExtractor = function cookieExtractor(req) {
+  var token = null;
+  if (req && req.cookies) {
+    token = req.cookies.token; // 'token' is the name of the cookie set in the login route
+  }
+  return token;
+};
+var opts = {
+  //jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: process.env.JWT_SECRET // Ensure this is correctly set
+};
+passport.use(new JwtStrategy(opts, /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(jwt_payload, done) {
+    var user;
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _context.prev = 0;
+          _context.next = 3;
+          return userService.findUserByEmail(jwt_payload.id);
+        case 3:
+          user = _context.sent;
+          if (!user) {
+            _context.next = 8;
+            break;
+          }
+          return _context.abrupt("return", done(null, user));
+        case 8:
+          return _context.abrupt("return", done(null, false));
+        case 9:
+          _context.next = 14;
+          break;
+        case 11:
+          _context.prev = 11;
+          _context.t0 = _context["catch"](0);
+          return _context.abrupt("return", done(_context.t0, false));
+        case 14:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee, null, [[0, 11]]);
+  }));
+  return function (_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}()));
+module.exports = passport;
+
+/***/ }),
+
+/***/ 388:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+var _require = __webpack_require__(870),
+  evaluateTransaction = _require.evaluateTransaction,
+  submitTransaction = _require.submitTransaction;
+var userService = __webpack_require__(211);
+var CustomError = __webpack_require__(686);
+var log = __webpack_require__(622);
+
+// TODO: Hardcoded values for now; replace with environment variables / mongoDB if needed
+var userId = "admin";
+var org1 = "org1"; // for regular user
+var org2 = "org2"; // for admin user
+var channel = "mychannel";
+var chaincodeName = "basic";
+function whichOrg(role) {
+  return role === "admin" ? org2 : org1;
+}
+
+// Create an Asset
+var createAsset = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(email, data) {
+    var _user, _org, result;
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _context.prev = 0;
+          _context.next = 3;
+          return userService.findUserByEmail(email);
+        case 3:
+          _user = _context.sent;
+          data.data.owner = _user._id;
+          _org = whichOrg(_user.role);
+          data.status = "pending";
+          _context.next = 9;
+          return submitTransaction(userId, _org, channel, chaincodeName, "CreateAsset", JSON.stringify(data));
+        case 9:
+          result = _context.sent;
+          return _context.abrupt("return", JSON.parse(result));
+        case 13:
+          _context.prev = 13;
+          _context.t0 = _context["catch"](0);
+          if (!(_context.t0.statusCode >= 400 && _context.t0.statusCode < 500)) {
+            _context.next = 19;
+            break;
+          }
+          throw _context.t0;
+        case 19:
+          // Handle 500-series or unexpected errors
+          log.error(_context.t0.message);
+          // You can log the full error details or take specific actions
+          throw CustomError("Error creating asset", 500);
+        case 21:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee, null, [[0, 13]]);
+  }));
+  return function createAsset(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+// Update an Asset
+var updateAsset = /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2(email, data) {
+    var asset, result;
+    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          _context2.prev = 0;
+          asset = getAssetById(email, data.id);
+          data.data.owner = asset.data.owner;
+          _context2.next = 5;
+          return submitTransaction(userId, org, channel, chaincodeName, "UpdateAsset", JSON.stringify(data));
+        case 5:
+          result = _context2.sent;
+          return _context2.abrupt("return", JSON.parse(result));
+        case 9:
+          _context2.prev = 9;
+          _context2.t0 = _context2["catch"](0);
+          if (!(_context2.t0.statusCode >= 400 && _context2.t0.statusCode < 500)) {
+            _context2.next = 15;
+            break;
+          }
+          throw _context2.t0;
+        case 15:
+          // Handle 500-series or unexpected errors
+          log.error(_context2.t0.message);
+          // You can log the full error details or take specific actions
+          throw CustomError("Error updating asset", 500);
+        case 17:
+        case "end":
+          return _context2.stop();
+      }
+    }, _callee2, null, [[0, 9]]);
+  }));
+  return function updateAsset(_x3, _x4) {
+    return _ref2.apply(this, arguments);
+  };
+}();
+
+// Retrieve All Assets
+var getAllAssets = /*#__PURE__*/function () {
+  var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3(email) {
+    var _user2, role, _org2, result, assets;
+    return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+      while (1) switch (_context3.prev = _context3.next) {
+        case 0:
+          _context3.prev = 0;
+          _context3.next = 3;
+          return userService.findUserByEmail(email);
+        case 3:
+          _user2 = _context3.sent;
+          role = _user2.role; // if (role !== "admin") {
+          //   throw new CustomError("Regular user cannot retrieve all assets", 403);
+          // }
+          _org2 = role === "admin" ? org2 : org1;
+          _context3.next = 8;
+          return evaluateTransaction(userId, _org2, channel, chaincodeName, "GetAllAssets");
+        case 8:
+          result = _context3.sent;
+          assets = JSON.parse(result); // TODO:Map the owner field to the user's full name
+          // assets = await Promise.all(
+          //   assets.map(async (asset) => {
+          //     const ownerUser = await userService.findUserById(asset.owner); // Retrieve user by owner
+          //     console.log(ownerUser);
+          //     return {
+          //       ...asset,
+          //       owner: ownerUser
+          //         ? `${ownerUser.firstName} ${ownerUser.lastName}`
+          //         : asset.owner, // Fallback to original owner if user not found
+          //     };
+          //   })
+          // );
+          return _context3.abrupt("return", assets);
+        case 13:
+          _context3.prev = 13;
+          _context3.t0 = _context3["catch"](0);
+          if (!(_context3.t0.statusCode >= 400 && _context3.t0.statusCode < 500)) {
+            _context3.next = 19;
+            break;
+          }
+          throw _context3.t0;
+        case 19:
+          // Handle 500-series or unexpected errors
+          log.error(_context3.t0.message);
+          // You can log the full error details or take specific actions
+          throw CustomError("Error retrieving assets", 500);
+        case 21:
+        case "end":
+          return _context3.stop();
+      }
+    }, _callee3, null, [[0, 13]]);
+  }));
+  return function getAllAssets(_x5) {
+    return _ref3.apply(this, arguments);
+  };
+}();
+
+// Retrieve an Asset by ID
+var getAssetById = /*#__PURE__*/function () {
+  var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4(email, assetId) {
+    var _user3, _org3, result, resultJSON;
+    return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+      while (1) switch (_context4.prev = _context4.next) {
+        case 0:
+          _context4.prev = 0;
+          _context4.next = 3;
+          return userService.findUserByEmail(email);
+        case 3:
+          _user3 = _context4.sent;
+          _org3 = whichOrg(_user3.role);
+          _context4.next = 7;
+          return evaluateTransaction(userId, _org3, channel, chaincodeName, "ReadAsset", assetId);
+        case 7:
+          result = _context4.sent;
+          resultJSON = JSON.parse(result);
+          if (!(_user3.role !== "admin" && resultJSON.data.owner.toString() !== _user3._id.toString())) {
+            _context4.next = 11;
+            break;
+          }
+          throw new CustomError("You do not have permission to access this asset", 403);
+        case 11:
+          return _context4.abrupt("return", resultJSON);
+        case 14:
+          _context4.prev = 14;
+          _context4.t0 = _context4["catch"](0);
+          if (!(_context4.t0.message && _context4.t0.message.toLowerCase().includes("does not exist"))) {
+            _context4.next = 18;
+            break;
+          }
+          throw CustomError("Asset not found".concat(assetId ? ": ".concat(assetId) : ""), 404);
+        case 18:
+          if (!(_context4.t0.statusCode >= 400 && _context4.t0.statusCode < 500)) {
+            _context4.next = 22;
+            break;
+          }
+          throw _context4.t0;
+        case 22:
+          // Handle 500-series or unexpected errors
+          log.error(_context4.t0.message);
+          // You can log the full error details or take specific actions
+          throw CustomError("Error retrieving asset", 500);
+        case 24:
+        case "end":
+          return _context4.stop();
+      }
+    }, _callee4, null, [[0, 14]]);
+  }));
+  return function getAssetById(_x6, _x7) {
+    return _ref4.apply(this, arguments);
+  };
+}();
+
+// Get Asset History
+var getAssetHistory = /*#__PURE__*/function () {
+  var _ref5 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5(email, assetId) {
+    var _org4, result;
+    return _regeneratorRuntime().wrap(function _callee5$(_context5) {
+      while (1) switch (_context5.prev = _context5.next) {
+        case 0:
+          _context5.prev = 0;
+          getAssetById(email, assetId);
+          _org4 = user.isAdmin ? org2 : org1;
+          _context5.next = 5;
+          return evaluateTransaction(userId, _org4, channel, chaincodeName, "GetAssetHistory", assetId);
+        case 5:
+          result = _context5.sent;
+          return _context5.abrupt("return", JSON.parse(result));
+        case 9:
+          _context5.prev = 9;
+          _context5.t0 = _context5["catch"](0);
+          if (!(_context5.t0.statusCode >= 400 && _context5.t0.statusCode < 500)) {
+            _context5.next = 15;
+            break;
+          }
+          throw _context5.t0;
+        case 15:
+          // Handle 500-series or unexpected errors
+          log.error(_context5.t0.message);
+          // You can log the full error details or take specific actions
+          throw CustomError("Error getting asset history", 500);
+        case 17:
+        case "end":
+          return _context5.stop();
+      }
+    }, _callee5, null, [[0, 9]]);
+  }));
+  return function getAssetHistory(_x8, _x9) {
+    return _ref5.apply(this, arguments);
+  };
+}();
+
+// Delete an Asset
+var deleteAsset = /*#__PURE__*/function () {
+  var _ref6 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee6(email, assetId) {
+    return _regeneratorRuntime().wrap(function _callee6$(_context6) {
+      while (1) switch (_context6.prev = _context6.next) {
+        case 0:
+          _context6.prev = 0;
+          getAssetById(email, assetId);
+          _context6.next = 4;
+          return submitTransaction(userId, org, channel, chaincodeName, "DeleteAsset", assetId);
+        case 4:
+          return _context6.abrupt("return", {
+            message: "Asset with ID ".concat(assetId, " has been deleted.")
+          });
+        case 7:
+          _context6.prev = 7;
+          _context6.t0 = _context6["catch"](0);
+          if (!(_context6.t0.statusCode >= 400 && _context6.t0.statusCode < 500)) {
+            _context6.next = 13;
+            break;
+          }
+          throw _context6.t0;
+        case 13:
+          // Handle 500-series or unexpected errors
+          log.error(_context6.t0.message);
+          // You can log the full error details or take specific actions
+          throw CustomError("Error deleting asset", 500);
+        case 15:
+        case "end":
+          return _context6.stop();
+      }
+    }, _callee6, null, [[0, 7]]);
+  }));
+  return function deleteAsset(_x10, _x11) {
+    return _ref6.apply(this, arguments);
+  };
+}();
+
+// Transfer an Asset to a New Owner
+function transferAsset(_x12, _x13, _x14) {
+  return _transferAsset.apply(this, arguments);
+}
+function _transferAsset() {
+  _transferAsset = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee7(email, assetId, newOwner) {
+    var result;
+    return _regeneratorRuntime().wrap(function _callee7$(_context7) {
+      while (1) switch (_context7.prev = _context7.next) {
+        case 0:
+          _context7.prev = 0;
+          _context7.next = 3;
+          return submitTransaction(userId, org, channel, chaincodeName, "TransferAsset", assetId, newOwner);
+        case 3:
+          result = _context7.sent;
+          return _context7.abrupt("return", {
+            assetId: assetId,
+            newOwner: newOwner,
+            oldOwner: result
+          });
+        case 7:
+          _context7.prev = 7;
+          _context7.t0 = _context7["catch"](0);
+          if (!(_context7.t0.statusCode >= 400 && _context7.t0.statusCode < 500)) {
+            _context7.next = 13;
+            break;
+          }
+          throw _context7.t0;
+        case 13:
+          // Handle 500-series or unexpected errors
+          log.error(_context7.t0.message);
+          // You can log the full error details or take specific actions
+          throw CustomError("Error transferring asset", 500);
+        case 15:
+        case "end":
+          return _context7.stop();
+      }
+    }, _callee7, null, [[0, 7]]);
+  }));
+  return _transferAsset.apply(this, arguments);
+}
+module.exports = {
+  createAsset: createAsset,
+  updateAsset: updateAsset,
+  getAllAssets: getAllAssets,
+  getAssetById: getAssetById,
+  getAssetHistory: getAssetHistory,
+  deleteAsset: deleteAsset,
+  transferAsset: transferAsset
+};
+
+/***/ }),
+
+/***/ 604:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+//https://medium.com/coox-tech/send-mail-using-node-js-express-js-with-nodemailer-93f4d62c83ee
+
+(__webpack_require__(818).config)();
+var nodemailer = __webpack_require__(572);
+var logger = __webpack_require__(622);
+var sender = process.env.EMAIL;
+var password = process.env.PASSWORD;
+
+// Configure Nodemailer transport using custom SMTP settings
+var transporter = nodemailer.createTransport({
+  host: "mail.wecare-insurance.com",
+  // SMTP host
+  port: 587,
+  // Port (587 for TLS, 465 for SSL)
+  auth: {
+    user: sender,
+    pass: password
+  }
+});
+
+// Function to send email
+var sendEmail = /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(_ref) {
+    var to, subject, text, mailOptions, info;
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          to = _ref.to, subject = _ref.subject, text = _ref.text;
+          mailOptions = {
+            from: sender,
+            to: to,
+            // Recipient email
+            subject: subject,
+            // Email subject
+            text: text // Email content (you can also add 'html' if needed)
+          };
+          _context.prev = 2;
+          _context.next = 5;
+          return transporter.sendMail(mailOptions);
+        case 5:
+          info = _context.sent;
+          return _context.abrupt("return", info);
+        case 9:
+          _context.prev = 9;
+          _context.t0 = _context["catch"](2);
+          logger.error("Error sending email:", _context.t0);
+          throw new Error("Error sending email");
+        case 13:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee, null, [[2, 9]]);
+  }));
+  return function sendEmail(_x) {
+    return _ref2.apply(this, arguments);
+  };
+}();
+module.exports = {
+  sendEmail: sendEmail
+};
+
+/***/ }),
+
+/***/ 261:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+var bcrypt = __webpack_require__(486);
+var otplib = __webpack_require__(288);
+var _require = __webpack_require__(678),
+  LRUCache = _require.LRUCache;
+var log = __webpack_require__(622);
+var CustomError = __webpack_require__(686);
+var saltRounds = 10;
+otplib.authenticator.options = {
+  step: 900
+};
+var otpCache = new LRUCache({
+  max: 300,
+  maxSize: 300,
+  sizeCalculation: function sizeCalculation() {
+    return 1;
+  },
+  // Every entry counts as 1
+  ttl: 1000 * 60 * 15,
+  // 15 minutes TTL
+  ttlAutopurge: true
+});
+function hashPassword(_x) {
+  return _hashPassword.apply(this, arguments);
+}
+function _hashPassword() {
+  _hashPassword = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3(password) {
+    var hashedPassword;
+    return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+      while (1) switch (_context3.prev = _context3.next) {
+        case 0:
+          _context3.prev = 0;
+          _context3.next = 3;
+          return bcrypt.hash(password, saltRounds);
+        case 3:
+          hashedPassword = _context3.sent;
+          return _context3.abrupt("return", hashedPassword);
+        case 7:
+          _context3.prev = 7;
+          _context3.t0 = _context3["catch"](0);
+          log.error(_context3.t0.message);
+          throw _context3.t0;
+        case 11:
+        case "end":
+          return _context3.stop();
+      }
+    }, _callee3, null, [[0, 7]]);
+  }));
+  return _hashPassword.apply(this, arguments);
+}
+function checkPassword(_x2, _x3) {
+  return _checkPassword.apply(this, arguments);
+}
+function _checkPassword() {
+  _checkPassword = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4(plainPassword, hashedPassword) {
+    var isMatch;
+    return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+      while (1) switch (_context4.prev = _context4.next) {
+        case 0:
+          _context4.prev = 0;
+          _context4.next = 3;
+          return bcrypt.compare(plainPassword, hashedPassword);
+        case 3:
+          isMatch = _context4.sent;
+          return _context4.abrupt("return", isMatch);
+        case 7:
+          _context4.prev = 7;
+          _context4.t0 = _context4["catch"](0);
+          log.error(_context4.t0.message);
+          throw _context4.t0;
+        case 11:
+        case "end":
+          return _context4.stop();
+      }
+    }, _callee4, null, [[0, 7]]);
+  }));
+  return _checkPassword.apply(this, arguments);
+}
+var generateOtp = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(id) {
+    var dynamicSecret, otp;
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _context.prev = 0;
+          // Generate a unique secret for each OTP generation
+          dynamicSecret = otplib.authenticator.generateSecret(); // Generate the OTP using the dynamic secret
+          otp = otplib.authenticator.generate(dynamicSecret); // Store the OTP and secret in the cache with the user's ID as the key
+          otpCache.set(id, {
+            otp: otp,
+            secret: dynamicSecret
+          });
+          return _context.abrupt("return", otp);
+        case 7:
+          _context.prev = 7;
+          _context.t0 = _context["catch"](0);
+          log.error(_context.t0.message);
+          throw _context.t0;
+        case 11:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee, null, [[0, 7]]);
+  }));
+  return function generateOtp(_x4) {
+    return _ref.apply(this, arguments);
+  };
+}();
+var verifyOtp = /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2(id, token) {
+    var cachedOtpData, otp, secret;
+    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          _context2.prev = 0;
+          // Retrieve the OTP and secret from the cache
+          cachedOtpData = otpCache.get(id);
+          if (cachedOtpData) {
+            _context2.next = 5;
+            break;
+          }
+          log.error("OTP not found or expired for id: ".concat(id));
+          throw CustomError("OTP not found or expired.", 401);
+        case 5:
+          // Retrieve the OTP and secret from the cached data
+          otp = cachedOtpData.otp, secret = cachedOtpData.secret;
+          console.log("Cached OTP: ".concat(otp, ", Secret: ").concat(secret, ", Provided Token: ").concat(token, " for id: ").concat(id));
+          if (!(otp.toString().trim() !== token.toString().trim())) {
+            _context2.next = 9;
+            break;
+          }
+          throw CustomError("Invalid OTP", 401);
+        case 9:
+          // If OTP is valid, remove it from the cache
+          otpCache["delete"](id);
+          _context2.next = 20;
+          break;
+        case 12:
+          _context2.prev = 12;
+          _context2.t0 = _context2["catch"](0);
+          if (!(_context2.t0.statusCode >= 400 && _context2.t0.statusCode < 500)) {
+            _context2.next = 18;
+            break;
+          }
+          throw _context2.t0;
+        case 18:
+          log.error("Error during OTP verification for id: ".concat(id, " - ").concat(_context2.t0.message));
+          throw CustomError("Your OTP is invalid. Please try again.", 500);
+        case 20:
+        case "end":
+          return _context2.stop();
+      }
+    }, _callee2, null, [[0, 12]]);
+  }));
+  return function verifyOtp(_x5, _x6) {
+    return _ref2.apply(this, arguments);
+  };
+}();
+module.exports = {
+  hashPassword: hashPassword,
+  checkPassword: checkPassword,
+  generateOtp: generateOtp,
+  verifyOtp: verifyOtp
+};
+
+/***/ }),
+
+/***/ 211:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+var User = __webpack_require__(767);
+var emailService = __webpack_require__(604);
+var modelMapper = __webpack_require__(825);
+var log = __webpack_require__(622);
+var CustomError = __webpack_require__(686);
+var passwordService = __webpack_require__(261);
+var sendVerificationEmail = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(email, otp) {
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _context.next = 2;
+          return emailService.sendEmail({
+            to: email,
+            subject: "Activate Account",
+            text: "Hi there, \nPlease use the following OTP to activate your account: ".concat(otp, ". This OTP is valid for 5 minutes.")
+          });
+        case 2:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  }));
+  return function sendVerificationEmail(_x, _x2) {
+    return _ref.apply(this, arguments);
+  };
+}();
+var createUser = /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2(userData) {
+    var hashedPassword, user, otpToken, userDto, duplicateField, errorMessage;
+    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          _context2.prev = 0;
+          // Without this, the client will have capabilities to change failed login attempts and active account status
+          userData.failedLoginAttempts = 0;
+          userData.activeAccount = false;
+          userData.role = "user";
+
+          // hashes the password the user sent before the User is created
+          _context2.next = 6;
+          return passwordService.hashPassword(userData.password);
+        case 6:
+          hashedPassword = _context2.sent;
+          userData.password = hashedPassword;
+          _context2.next = 10;
+          return User.create(userData);
+        case 10:
+          user = _context2.sent;
+          _context2.next = 13;
+          return passwordService.generateOtp(user.email);
+        case 13:
+          otpToken = _context2.sent;
+          if (!user) {
+            _context2.next = 17;
+            break;
+          }
+          _context2.next = 17;
+          return sendVerificationEmail(user.email, otpToken);
+        case 17:
+          userDto = modelMapper.pick(user, ["email", "companyName", "address.addressLine1", "address.addressLine2", "address.city", "address.state", "address.zipCode"]);
+          return _context2.abrupt("return", userDto);
+        case 21:
+          _context2.prev = 21;
+          _context2.t0 = _context2["catch"](0);
+          if (!(_context2.t0.code === 11000)) {
+            _context2.next = 29;
+            break;
+          }
+          // Extract the duplicated field (e.g., email, username)
+          duplicateField = Object.keys(_context2.t0.keyValue)[0];
+          errorMessage = "Duplicate field value: '".concat(duplicateField, "' already exists."); // Throw a custom error with a 409 conflict status code
+          throw CustomError(errorMessage, 409);
+        case 29:
+          log.error(_context2.t0.message);
+          // Handle other types of errors
+          throw _context2.t0;
+        case 31:
+        case "end":
+          return _context2.stop();
+      }
+    }, _callee2, null, [[0, 21]]);
+  }));
+  return function createUser(_x3) {
+    return _ref2.apply(this, arguments);
+  };
+}();
+var resetPassword = /*#__PURE__*/function () {
+  var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3(email, newPassword) {
+    var user, updatedUser, otpToken;
+    return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+      while (1) switch (_context3.prev = _context3.next) {
+        case 0:
+          _context3.prev = 0;
+          _context3.next = 3;
+          return findUserByEmail(email);
+        case 3:
+          user = _context3.sent;
+          if (user) {
+            _context3.next = 6;
+            break;
+          }
+          throw CustomError("User not found.", 404);
+        case 6:
+          _context3.next = 8;
+          return passwordService.hashPassword(newPassword);
+        case 8:
+          newPassword = _context3.sent;
+          _context3.next = 11;
+          return User.findByIdAndUpdate(user._id, {
+            password: newPassword,
+            activeAccount: false
+          }, {
+            "new": true
+          });
+        case 11:
+          updatedUser = _context3.sent;
+          if (updatedUser) {
+            _context3.next = 14;
+            break;
+          }
+          throw CustomError("User not found.", 404);
+        case 14:
+          _context3.next = 16;
+          return passwordService.generateOtp(user.email);
+        case 16:
+          otpToken = _context3.sent;
+          if (!updatedUser) {
+            _context3.next = 20;
+            break;
+          }
+          _context3.next = 20;
+          return sendVerificationEmail(updatedUser.email, otpToken);
+        case 20:
+          _context3.next = 30;
+          break;
+        case 22:
+          _context3.prev = 22;
+          _context3.t0 = _context3["catch"](0);
+          if (!(_context3.t0.statusCode >= 400 && _context3.t0.statusCode < 500)) {
+            _context3.next = 28;
+            break;
+          }
+          throw _context3.t0;
+        case 28:
+          // Handle 500-series or unexpected errors
+          log.error(_context3.t0.message);
+          // You can log the full error details or take specific actions
+          throw CustomError("Unable to reset password.", 500);
+        case 30:
+        case "end":
+          return _context3.stop();
+      }
+    }, _callee3, null, [[0, 22]]);
+  }));
+  return function resetPassword(_x4, _x5) {
+    return _ref3.apply(this, arguments);
+  };
+}();
+var findUserById = /*#__PURE__*/function () {
+  var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4(id) {
+    var user;
+    return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+      while (1) switch (_context4.prev = _context4.next) {
+        case 0:
+          _context4.next = 2;
+          return User.findOne({
+            id: id
+          });
+        case 2:
+          user = _context4.sent;
+          if (user) {
+            _context4.next = 5;
+            break;
+          }
+          throw CustomError("User not found.", 404);
+        case 5:
+          return _context4.abrupt("return", user);
+        case 6:
+        case "end":
+          return _context4.stop();
+      }
+    }, _callee4);
+  }));
+  return function findUserById(_x6) {
+    return _ref4.apply(this, arguments);
+  };
+}();
+var findUserByEmail = /*#__PURE__*/function () {
+  var _ref5 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5(email) {
+    var user;
+    return _regeneratorRuntime().wrap(function _callee5$(_context5) {
+      while (1) switch (_context5.prev = _context5.next) {
+        case 0:
+          _context5.next = 2;
+          return User.findOne({
+            email: email
+          });
+        case 2:
+          user = _context5.sent;
+          if (user) {
+            _context5.next = 5;
+            break;
+          }
+          throw CustomError("User not found.", 404);
+        case 5:
+          return _context5.abrupt("return", user);
+        case 6:
+        case "end":
+          return _context5.stop();
+      }
+    }, _callee5);
+  }));
+  return function findUserByEmail(_x7) {
+    return _ref5.apply(this, arguments);
+  };
+}();
+
+/**
+ * If the failed login attempt > 5, set activeAccount to false
+ */
+var loginUser = /*#__PURE__*/function () {
+  var _ref6 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee6(email, password) {
+    var user, match;
+    return _regeneratorRuntime().wrap(function _callee6$(_context6) {
+      while (1) switch (_context6.prev = _context6.next) {
+        case 0:
+          _context6.prev = 0;
+          _context6.next = 3;
+          return findUserByEmail(email);
+        case 3:
+          user = _context6.sent;
+          if (user) {
+            _context6.next = 6;
+            break;
+          }
+          throw CustomError("User not found.", 400);
+        case 6:
+          if (user.activeAccount) {
+            _context6.next = 8;
+            break;
+          }
+          throw CustomError("Account is inactive, a new verification code has been sent to your email address.", 401);
+        case 8:
+          if (!(user.failedLoginAttempts >= 5)) {
+            _context6.next = 10;
+            break;
+          }
+          throw CustomError("Account is locked due to more than 5 failed login attempts.", 401);
+        case 10:
+          _context6.next = 12;
+          return passwordService.checkPassword(password, user.password);
+        case 12:
+          match = _context6.sent;
+          if (match) {
+            _context6.next = 18;
+            break;
+          }
+          user.failedLoginAttempts += 1;
+          _context6.next = 17;
+          return user.save();
+        case 17:
+          throw CustomError("Invalid password.", 401);
+        case 18:
+          // Reset failed login attempts and activate account on successful login
+          user.failedLoginAttempts = 0;
+          user.activeAccount = true;
+          _context6.next = 22;
+          return user.save();
+        case 22:
+          _context6.next = 32;
+          break;
+        case 24:
+          _context6.prev = 24;
+          _context6.t0 = _context6["catch"](0);
+          if (!(_context6.t0.statusCode >= 400 && _context6.t0.statusCode < 500)) {
+            _context6.next = 30;
+            break;
+          }
+          throw _context6.t0;
+        case 30:
+          // Handle 500-series or unexpected errors
+          log.error(_context6.t0.message);
+          // You can log the full error details or take specific actions
+          throw CustomError("Unable to login.", 500);
+        case 32:
+        case "end":
+          return _context6.stop();
+      }
+    }, _callee6, null, [[0, 24]]);
+  }));
+  return function loginUser(_x8, _x9) {
+    return _ref6.apply(this, arguments);
+  };
+}();
+var regenerateOtp = /*#__PURE__*/function () {
+  var _ref7 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee7(email) {
+    var user, otpToken;
+    return _regeneratorRuntime().wrap(function _callee7$(_context7) {
+      while (1) switch (_context7.prev = _context7.next) {
+        case 0:
+          _context7.prev = 0;
+          _context7.next = 3;
+          return findUserByEmail(email);
+        case 3:
+          user = _context7.sent;
+          if (user) {
+            _context7.next = 6;
+            break;
+          }
+          throw CustomError("User not found.", 404);
+        case 6:
+          if (!user.activeAccount) {
+            _context7.next = 8;
+            break;
+          }
+          throw CustomError("Account is already active.", 400);
+        case 8:
+          _context7.next = 10;
+          return User.findByIdAndUpdate(user._id, {
+            activeAccount: false
+          }, {
+            "new": true
+          });
+        case 10:
+          console.log(email);
+          _context7.next = 13;
+          return passwordService.generateOtp(email);
+        case 13:
+          otpToken = _context7.sent;
+          _context7.next = 16;
+          return sendVerificationEmail(user.email, otpToken);
+        case 16:
+          _context7.next = 25;
+          break;
+        case 18:
+          _context7.prev = 18;
+          _context7.t0 = _context7["catch"](0);
+          if (!(_context7.t0.statusCode >= 400 && _context7.t0.statusCode < 500)) {
+            _context7.next = 24;
+            break;
+          }
+          throw _context7.t0;
+        case 24:
+          // Handle 500-series or unexpected errors
+          log.error(_context7.t0.message);
+          // You can log the full error details or take specific actions
+        case 25:
+        case "end":
+          return _context7.stop();
+      }
+    }, _callee7, null, [[0, 18]]);
+  }));
+  return function regenerateOtp(_x10) {
+    return _ref7.apply(this, arguments);
+  };
+}();
+var verifyUser = /*#__PURE__*/function () {
+  var _ref8 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee8(email, otpToken) {
+    var user;
+    return _regeneratorRuntime().wrap(function _callee8$(_context8) {
+      while (1) switch (_context8.prev = _context8.next) {
+        case 0:
+          _context8.prev = 0;
+          _context8.next = 3;
+          return findUserByEmail(email);
+        case 3:
+          user = _context8.sent;
+          if (user) {
+            _context8.next = 6;
+            break;
+          }
+          throw CustomError("User not found.", 400);
+        case 6:
+          _context8.next = 8;
+          return passwordService.verifyOtp(email, otpToken);
+        case 8:
+          // Now that the OTP is valid, activate the user account
+          user.activeAccount = true;
+          user.failedLoginAttempts = 0;
+          _context8.next = 12;
+          return user.save();
+        case 12:
+          _context8.next = 22;
+          break;
+        case 14:
+          _context8.prev = 14;
+          _context8.t0 = _context8["catch"](0);
+          if (!(_context8.t0.statusCode >= 400 && _context8.t0.statusCode < 500)) {
+            _context8.next = 20;
+            break;
+          }
+          throw _context8.t0;
+        case 20:
+          // Handle 500-series or unexpected errors
+          log.error(_context8.t0.message);
+          // You can log the full error details or take specific actions
+          throw CustomError("Unable to verify.", 500);
+        case 22:
+        case "end":
+          return _context8.stop();
+      }
+    }, _callee8, null, [[0, 14]]);
+  }));
+  return function verifyUser(_x11, _x12) {
+    return _ref8.apply(this, arguments);
+  };
+}();
+module.exports = {
+  findUserByEmail: findUserByEmail,
+  createUser: createUser,
+  resetPassword: resetPassword,
+  loginUser: loginUser,
+  verifyUser: verifyUser,
+  regenerateOtp: regenerateOtp,
+  findUserById: findUserById
+};
+
+/***/ }),
+
+/***/ 642:
+/***/ ((module) => {
+
+function extractToken(req) {
+  var _req$headers, _req$cookies, _req$query;
+  // Try to extract token from Authorization header
+  var authorizationHeader = (_req$headers = req.headers) === null || _req$headers === void 0 ? void 0 : _req$headers.authorization;
+  if (authorizationHeader && authorizationHeader.startsWith("Bearer ")) {
+    return authorizationHeader.split(" ")[1]; // Extract the token part
+  }
+
+  // Fallback: Try to extract token from cookies
+  if ((_req$cookies = req.cookies) !== null && _req$cookies !== void 0 && _req$cookies.token) {
+    return req.cookies.token; // Extract token from 'token' cookie
+  }
+
+  // Add more fallbacks as needed, such as from query parameters
+  if ((_req$query = req.query) !== null && _req$query !== void 0 && _req$query.token) {
+    return req.query.token; // Extract token from query string
+  }
+
+  // Return null if no token is found
+  return null;
+}
+module.exports = extractToken;
+
+/***/ }),
+
+/***/ 870:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("../blockchain/backend/src/chaincodeHelper");
+
+/***/ }),
+
+/***/ 486:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("bcrypt");
+
+/***/ }),
+
+/***/ 898:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("cookie-parser");
+
+/***/ }),
+
+/***/ 577:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("cors");
+
+/***/ }),
+
+/***/ 818:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("dotenv");
+
+/***/ }),
+
+/***/ 252:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("express");
+
+/***/ }),
+
+/***/ 617:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("express-graceful-shutdown");
+
+/***/ }),
+
+/***/ 239:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("express-healthcheck");
+
+/***/ }),
+
+/***/ 763:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("express-rate-limit");
+
+/***/ }),
+
+/***/ 975:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("express-validator");
+
+/***/ }),
+
+/***/ 525:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("helmet");
+
+/***/ }),
+
+/***/ 829:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("jsonwebtoken");
+
+/***/ }),
+
+/***/ 825:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("lodash");
+
+/***/ }),
+
+/***/ 678:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("lru-cache");
+
+/***/ }),
+
+/***/ 37:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("mongoose");
+
+/***/ }),
+
+/***/ 572:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("nodemailer");
+
+/***/ }),
+
+/***/ 288:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("otplib");
+
+/***/ }),
+
+/***/ 278:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("passport");
+
+/***/ }),
+
+/***/ 714:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("passport-jwt");
+
+/***/ }),
+
+/***/ 3:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("path");
+
+/***/ }),
+
+/***/ 903:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("uuid");
+
+/***/ }),
+
+/***/ 124:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("winston");
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+// This entry needs to be wrapped in an IIFE because it needs to be in strict mode.
+(() => {
+"use strict";
+
+
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+(__webpack_require__(818).config)();
+var helmet = __webpack_require__(525);
+var mongoose = __webpack_require__(37);
+var express = __webpack_require__(252);
+var healthcheck = __webpack_require__(239);
+var gracefulShutdown = __webpack_require__(617);
+var rateLimit = __webpack_require__(763);
+var cors = __webpack_require__(577);
+var cookieParser = __webpack_require__(898);
+var passport = __webpack_require__(278);
+var app = express();
+var errorHandler = __webpack_require__(946);
+var userRoute = __webpack_require__(611);
+var assetRoute = __webpack_require__(576);
+var dbUrl = process.env.DATABASE_URL;
+var maxPoolSize = process.env.MAX_POOL_SIZE;
+var maxIdleTimeMS = process.env.MAX_Idle_Time_MS;
+var connectionTimeoutMS = process.env.CONECTION_TIMEOUT_MS;
+
+// helment
+// https://blog.logrocket.com/using-helmet-node-js-secure-application/
+app.use(helmet());
+app.use(function (req, res, next) {
+  // Enable XSS protection
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  next();
+});
+
+// Define a rate limiter
+var limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  // 15 minutes
+  max: 1000,
+  // limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again later"
+});
+
+// Apply the rate limiter to all requests
+app.use(limiter);
+
+// List of allowed origins
+// const allowedOrigins = [
+//   process.env.FRONTEND_URL, // Frontend URL from environment variables
+//   "http://localhost:3000", // Additional allowed origin
+// ];
+
+// // CORS options
+// const corsOptions = {
+//   origin: (origin, callback) => {
+//     // Allow requests with no origin (like mobile apps or Postman)
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error("Not allowed by CORS"));
+//     }
+//   },
+//   credentials: true, // Allow cookies and authentication headers
+// };
+
+// // Use CORS middleware
+// app.use(cors(corsOptions));
+
+// Dynamic CORS configuration to allow all origins with credentials
+var corsOptions = {
+  origin: function origin(_origin, callback) {
+    // Allow requests with any origin
+    callback(null, true);
+  },
+  credentials: true,
+  // Enables cookies and authentication headers
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  // Allowed HTTP methods
+  allowedHeaders: ["Content-Type", "Authorization"] // Allowed headers
+};
+
+// Apply the CORS middleware
+app.use(cors(corsOptions));
+
+// Handle preflight requests globally
+app.options("*", cors(corsOptions));
+
+// Initialize passport middleware
+app.use(passport.initialize());
+app.use(cookieParser());
+
+// middleware
+app.use(express.json());
+app.use(express.urlencoded({
+  extended: false
+}));
+var PORT = process.env.PORT || 3000;
+
+// Health check route
+app.use("/health", healthcheck());
+
+// route
+app.use("/v1/api/user", userRoute);
+app.use("/v1/api/asset", assetRoute);
+app.get("/", function (req, res) {
+  return res.send("App is working (1)!");
+});
+
+// Error handling middleware should be the last middleware
+app.use(errorHandler);
+
+// Handling graceful shutdown middleware
+app.use(gracefulShutdown(app));
+
+// Start the server
+var server = app.listen(PORT, function () {
+  console.log("Server is running on port ".concat(PORT));
+});
+
+// Event listener for server close event (to debug if the server is actually closing)
+server.on("close", function () {
+  console.log("Server has closed all connections.");
+});
+
+// Connect to MongoDB
+mongoose.connect(dbUrl, {
+  maxPoolSize: maxPoolSize,
+  maxIdleTimeMS: maxIdleTimeMS,
+  connectTimeoutMS: connectionTimeoutMS
+}).then(function () {
+  console.log("Connected to database!");
+})["catch"](function (error) {
+  console.log(error);
+  console.log("Connection failed!");
+});
+
+// Graceful shutdown logic
+var gracefulExit = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          console.log("Graceful shutdown initiated.");
+
+          // Stop accepting new requests
+          server.close(function (err) {
+            if (err) {
+              console.error("Error closing server:", err);
+              process.exit(1); // Exit with error if server couldn't close
+            }
+            console.log("HTTP server closed, now closing MongoDB connection.");
+            mongoose.disconnect();
+          });
+
+          // Add a timeout to forcefully exit if shutdown takes too long
+          setTimeout(function () {
+            console.log("Forcing shutdown after timeout.");
+            process.exit(1);
+          }, 10000); // 10 seconds timeout for forced shutdown
+        case 3:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  }));
+  return function gracefulExit() {
+    return _ref.apply(this, arguments);
+  };
+}();
+
+// Handle SIGTERM for PM2 or Docker shutdown
+process.on("SIGTERM", gracefulExit);
+
+// Handle SIGINT for Ctrl+C shutdown (local development)
+process.on("SIGINT", gracefulExit);
+})();
+
+/******/ })()
+;
+//# sourceMappingURL=app.js.map

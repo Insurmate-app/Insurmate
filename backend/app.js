@@ -42,26 +42,43 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // List of allowed origins
-const allowedOrigins = [
-  process.env.FRONTEND_URL, // Frontend URL from environment variables
-  "http://localhost:3000", // Additional allowed origin
-];
+// const allowedOrigins = [
+//   process.env.FRONTEND_URL, // Frontend URL from environment variables
+//   "http://localhost:3000", // Additional allowed origin
+// ];
 
-// CORS options
+// // CORS options
+// const corsOptions = {
+//   origin: (origin, callback) => {
+//     // Allow requests with no origin (like mobile apps or Postman)
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error("Not allowed by CORS"));
+//     }
+//   },
+//   credentials: true, // Allow cookies and authentication headers
+// };
+
+// // Use CORS middleware
+// app.use(cors(corsOptions));
+
+// Dynamic CORS configuration to allow all origins with credentials
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or Postman)
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
+    // Allow requests with any origin
+    callback(null, true);
   },
-  credentials: true, // Allow cookies and authentication headers
+  credentials: true, // Enables cookies and authentication headers
+  methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
+  allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
 };
 
-// Use CORS middleware
+// Apply the CORS middleware
 app.use(cors(corsOptions));
+
+// Handle preflight requests globally
+app.options("*", cors(corsOptions));
 
 // Initialize passport middleware
 app.use(passport.initialize());
@@ -81,7 +98,7 @@ app.use("/health", healthcheck());
 app.use("/v1/api/user", userRoute);
 app.use("/v1/api/asset", assetRoute);
 
-app.get("/", (req, res) => res.send("App is working!"));
+app.get("/", (req, res) => res.send("App is working (1)!"));
 
 // Error handling middleware should be the last middleware
 app.use(errorHandler);

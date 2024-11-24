@@ -33,10 +33,12 @@ const loginUser = async (req, res, next) => {
     const token = jwt.sign({ id: email }, JWT_SECRET, {
       expiresIn: "15m", // 15 minutes
     });
+
     // Set the token as a cookie (HttpOnly for security)
     res.cookie("token", token, {
       httpOnly: true, // Makes the cookie inaccessible to JavaScript on the client-side
-      secure: process.env.NODE_ENV === "production", // Ensure HTTPS in production
+      secure: true, //process.env.NODE_ENV === "production", // Secure only in production
+      sameSite: "None",
       maxAge: 900000, // 15 minutes in milliseconds
     });
 
@@ -70,6 +72,7 @@ const regenerateOtp = async (req, res, next) => {
 
 const logoutUser = (req, res, next) => {
   try {
+    console.log("Cookies:", req.cookies.token);
     // Clear the cookie by setting the token cookie's maxAge to
     res.clearCookie("token", passport.authenticate("jwt", { session: false }), {
       httpOnly: true, // Ensure cookie is only accessible by the server

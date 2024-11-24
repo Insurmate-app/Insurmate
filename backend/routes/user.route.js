@@ -3,6 +3,8 @@ const router = express.Router();
 const passport = require("passport");
 require("../security/passport"); // Import Passport JWT configuration
 
+const verifyToken = require("../middlewares/authMiddleware");
+
 const validate = require("../middlewares/requestValidator");
 const { check } = require("express-validator");
 const userController = require("../controllers/user.controller");
@@ -160,6 +162,7 @@ router.post(
 router.post(
   "/logout",
   passport.authenticate("jwt", { session: false }),
+  // verifyToken,
   userController.logoutUser
 );
 
