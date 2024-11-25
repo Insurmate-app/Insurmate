@@ -1,13 +1,14 @@
 const assetService = require("../services/asset.service");
 const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
+const extractToken = require("../util/tokenExtractor");
 
 const createAsset = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const token = extractToken(req);
 
-    let payload;
     if (token) {
+      let payload;
       payload = jwt.verify(token, process.env.JWT_SECRET);
 
       payload = jwt.decode(token);
@@ -25,7 +26,7 @@ const createAsset = async (req, res, next) => {
 
 const updateAsset = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const token = extractToken(req);
 
     if (token) {
       let payload;
@@ -45,7 +46,11 @@ const updateAsset = async (req, res, next) => {
 const getAllAssets = async (req, res, next) => {
   try {
     // Retrieve the token from cookies
-    const token = req.cookies.token;
+    //const token = req.headers.cookie;
+
+    // Usage
+    const token = extractToken(req);
+    console.log("Extracted Token:", token);
 
     if (token) {
       let payload;
@@ -65,7 +70,7 @@ const getAllAssets = async (req, res, next) => {
 const getAssetById = async (req, res, next) => {
   try {
     // Retrieve the token from cookies
-    const token = req.cookies.token;
+    const token = extractToken(req);
 
     if (token) {
       // Use jwt.verify if you need to validate the token
@@ -86,7 +91,7 @@ const getAssetById = async (req, res, next) => {
 const getAssetHistory = async (req, res, next) => {
   try {
     // Retrieve the token from cookies
-    const token = req.cookies.token;
+    const token = extractToken(req);
 
     if (token) {
       // Use jwt.verify if you need to validate the token
@@ -107,7 +112,7 @@ const getAssetHistory = async (req, res, next) => {
 const deleteAsset = async (req, res, next) => {
   try {
     // Retrieve the token from cookies
-    const token = req.cookies.token;
+    const token = extractToken(req);
 
     if (token) {
       let payload;
@@ -126,7 +131,7 @@ const deleteAsset = async (req, res, next) => {
 
 const transferAsset = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const token = extractToken(req);
 
     if (token) {
       let payload;

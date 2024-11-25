@@ -62,9 +62,11 @@ const LoginForm = () => {
       // Get the token from the response and set it as a cookie
       const token = response.data.token;
 
-      document.cookie = `token=${token}; path=/; max-age=${15 * 60}; secure=${
-        window.location.protocol === "https:"
-      }; samesite=strict;`;
+      localStorage.setItem("token", token);
+
+      // document.cookie = `token=${token}; path=/; max-age=${15 * 60}; secure=${
+      //   window.location.protocol === "https:"
+      // }; samesite=strict;`;
 
       // Redirect to dashboard (or handle success further)
       window.location.href = "/dashboard";

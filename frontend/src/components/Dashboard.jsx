@@ -17,10 +17,18 @@ const Dash = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("Token not found in localStorage");
+        }
+
         const response = await axios.get(
           `${import.meta.env.VITE_API_BASE_URL}/asset/get-all`,
           {
-            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${token}`, // Ensure 'Bearer' prefix
+              "Content-Type": "application/json",
+            },
           },
         );
 
@@ -32,7 +40,7 @@ const Dash = () => {
 
         setData(transformedData); // Update state with transformed data
       } catch (error) {
-        window.location.href = "/login";
+        //window.location.href = "/login";
         console.error("Error fetching data:", error);
       }
     };
