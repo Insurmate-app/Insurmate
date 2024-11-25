@@ -59,6 +59,10 @@ const updateAsset = async (email, data) => {
 
     data.data.owner = asset.data.owner;
 
+    const user = await userService.findUserByEmail(email);
+
+    const org = whichOrg(user.role);
+
     const result = await submitTransaction(
       userId,
       org,
@@ -86,14 +90,14 @@ const updateAsset = async (email, data) => {
 const getAllAssets = async (email) => {
   try {
     const user = await userService.findUserByEmail(email);
-    
+
     const role = user.role;
-    
+
     // if (role !== "admin") {
     //   throw new CustomError("Regular user cannot retrieve all assets", 403);
     // }
-    const org = role === "admin" ? org2 : org1;
-    
+    const org = whichOrg(role);
+
     const result = await evaluateTransaction(
       userId,
       org,
@@ -180,7 +184,9 @@ const getAssetHistory = async (email, assetId) => {
   try {
     getAssetById(email, assetId);
 
-    const org = user.isAdmin ? org2 : org1;
+    const user = await userService.findUserByEmail(email);
+
+    const org = whichOrg(user.role);
 
     const result = await evaluateTransaction(
       userId,
@@ -210,6 +216,10 @@ const deleteAsset = async (email, assetId) => {
   try {
     getAssetById(email, assetId);
 
+    const user = await userService.findUserByEmail(email);
+
+    const org = whichOrg(user.role);
+
     await submitTransaction(
       userId,
       org,
@@ -236,6 +246,10 @@ const deleteAsset = async (email, assetId) => {
 // Transfer an Asset to a New Owner
 async function transferAsset(email, assetId, newOwner) {
   try {
+    const user = await userService.findUserByEmail(email);
+
+    const org = whichOrg(user.role);
+
     const result = await submitTransaction(
       userId,
       org,
