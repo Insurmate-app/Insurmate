@@ -67,14 +67,20 @@ const AddPolicyModal = ({ showModal, setShowModal, onAddPolicy }) => {
       setIsSubmitting(false);
       return;
     }
-
-    console.log("Payload being sent:", { data: formValues });
-
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Token not found in localStorage");
+      }
+
       const response = await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/asset/create`,
-        { data: formValues }, // Correct payload structure
-        { withCredentials: true },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Ensure 'Bearer' prefix
+            "Content-Type": "application/json",
+          },
+        },
       );
       onAddPolicy(response.data); // Pass the new policy back to the parent
       setShowModal(false); // Close modal
