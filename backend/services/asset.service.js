@@ -86,15 +86,14 @@ const updateAsset = async (email, data) => {
 const getAllAssets = async (email) => {
   try {
     const user = await userService.findUserByEmail(email);
-
+    
     const role = user.role;
-
+    
     // if (role !== "admin") {
     //   throw new CustomError("Regular user cannot retrieve all assets", 403);
     // }
-
     const org = role === "admin" ? org2 : org1;
-
+    
     const result = await evaluateTransaction(
       userId,
       org,
@@ -103,12 +102,10 @@ const getAllAssets = async (email) => {
       "GetAllAssets"
     );
     let assets = JSON.parse(result);
-
     // TODO:Map the owner field to the user's full name
     // assets = await Promise.all(
     //   assets.map(async (asset) => {
     //     const ownerUser = await userService.findUserById(asset.owner); // Retrieve user by owner
-
     //     console.log(ownerUser);
     //     return {
     //       ...asset,
@@ -118,7 +115,6 @@ const getAllAssets = async (email) => {
     //     };
     //   })
     // );
-
     return assets;
   } catch (error) {
     // Handle specific error codes
