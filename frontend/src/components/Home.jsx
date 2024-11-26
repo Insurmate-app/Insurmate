@@ -52,7 +52,7 @@ const Home = () => {
             Experience a revolutionary way to exchange mortgage policies with
             unparalleled security and transparency.
           </p>
-          <a href="/learn-more">
+          <a href="/about">
             <span className="btn btn-dark btn-lg mt-3 shadow-sm">
               Learn More
             </span>

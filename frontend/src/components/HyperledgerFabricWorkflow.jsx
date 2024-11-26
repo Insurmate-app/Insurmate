@@ -161,8 +161,8 @@ const HyperledgerFabricWorkflow = () => {
         stroke="black"
         strokeWidth="2"
       />
-      <text x="870" y="275" textAnchor="middle" fill="black" fontSize="12">
-        Approve Policy
+      <text x="875" y="260" textAnchor="middle" fill="black" fontSize="12">
+        Approve
       </text>
 
       {/* Ledger Box */}
@@ -183,7 +183,7 @@ const HyperledgerFabricWorkflow = () => {
         fontSize="16"
         fontWeight="bold"
       >
-        Ledger
+        Policy
       </text>
 
       {/* Annotation */}
