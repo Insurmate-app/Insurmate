@@ -19,11 +19,11 @@ const Home = () => {
                 Technology
               </a>
             </li>
-            <li className="nav-item">
+            {/* <li className="nav-item">
               <a className="nav-link text-dark" href="#team">
                 Team
               </a>
-            </li>
+            </li> */}
             <li className="nav-item">
               <a className="nav-link text-dark" href="/login">
                 Login
@@ -31,8 +31,8 @@ const Home = () => {
             </li>
             <li className="nav-item">
               <a
-                className="nav-link btn btn-dark text-white px-3"
-                href="#contact"
+                className="nav-link text-dark"
+                href="/contact"
               >
                 Contact Us
               </a>
