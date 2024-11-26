@@ -186,7 +186,7 @@ const AddPolicyModal = ({ showModal, setShowModal, onAddPolicy }) => {
               </div>
               <button
                 type="submit"
-                className="btn btn-primary"
+                className="btn btn-dark"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Adding..." : "Add Policy"}
