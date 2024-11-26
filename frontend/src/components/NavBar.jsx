@@ -37,7 +37,12 @@ const Navbar = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
       <div className="container-fluid d-flex justify-content-between align-items-center">
-        <a href="/" className="navbar-brand">
+        <a href="/" className="navbar-brand d-flex align-items-center">
+          <img
+            src="/insurmate_logo.png"
+            alt="Logo"
+            style={{ height: "30px", marginRight: "10px" }}
+          />
           Insurmate
         </a>
         <button className="btn btn-secondary" onClick={handleLogout}>
