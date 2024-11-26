@@ -48,11 +48,6 @@ const Dash = () => {
     fetchData();
   }, []);
 
-  // Debug to check the data state
-  useEffect(() => {
-    console.log("Data state updated:", data);
-  }, [data]);
-
   // Handle adding a new policy
   const handleAddPolicy = (newPolicy) => {
     setData((prev) => [...prev, { ...newPolicy, id: prev.length + 1 }]);
@@ -102,11 +97,11 @@ const Dash = () => {
       <div className="mb-3">
         <button
           onClick={() => setShowModal(true)}
-          className="btn btn-success me-2"
+          className="btn btn-muted me-2"
         >
           Add Policy
         </button>
-        <button onClick={handleExportCSV} className="btn btn-secondary">
+        <button onClick={handleExportCSV} className="btn btn-muted me-2">
           Export to CSV
         </button>
       </div>

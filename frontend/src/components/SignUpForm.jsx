@@ -204,7 +204,7 @@ const SignUpForm = () => {
             />
             <label className="form-check-label">
               I agree to the{" "}
-              <a href="#" className="text-decoration-none">
+              <a href="/tos" className="text-decoration-none" target="_blank">
                 Terms of Service
               </a>
             </label>
@@ -216,8 +216,7 @@ const SignUpForm = () => {
           >
             {isSpinnerVisible && (
               <span
-                className="spinner-border spinner-border-sm"
-                role="status"
+                className="text-decoration-none"
               ></span>
             )}{" "}
             Sign Up

@@ -1,37 +1,62 @@
-<div class="container-fluid vh-100 d-flex flex-column align-items-center bg-light">
-    <header class="d-flex justify-content-between align-items-center w-100 p-3">
-      <div class="logo">
-        <h1 class="h5">Insurmate</h1>
+<div class="container-fluid vh-100 d-flex flex-column align-items-center bg-white">
+  <header class="d-flex justify-content-between align-items-center w-100 p-3 bg-light shadow-sm">
+    <div class="logo">
+      <h1 class="h5 text-dark">Insurmate</h1>
+    </div>
+    <nav>
+      <ul class="nav">
+        <li class="nav-item">
+          <a class="nav-link text-dark" href="#features">Technology</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-dark" href="#team">Team</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-dark" href="/login">Login</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link btn btn-dark text-white px-3" href="#contact">Contact Us</a>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="d-flex flex-column align-items-center flex-grow-1 w-100">
+    <section id="hero" class="text-center my-5 px-3">
+      <h3 class="display-4 fw-bold text-dark">Secure Your Mortgage Policy with Confidence</h3>
+      <p class="lead text-secondary">Experience a revolutionary way to exchange mortgage policies with unparalleled security and transparency.</p>
+      <button class="btn btn-dark btn-lg mt-3 shadow-sm">Learn More</button>
+    </section>
+
+    <section id="features" class="text-center my-5 px-3">
+      <h2 class="mb-4 text-dark">Why Choose Insurmate?</h2>
+      <div class="row justify-content-center">
+        <div class="col-md-4 mb-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <h5 class="card-title fw-bold text-dark">Secure Communication</h5>
+              <p class="card-text text-secondary">Emails are insecure for exchanging insurance policies. Our platform ensures confidentiality.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <h5 class="card-title fw-bold text-dark">Blockchain Integration</h5>
+              <p class="card-text text-secondary">A private blockchain ensures secure policy exchanges via peer-to-peer (P2P) networks.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <h5 class="card-title fw-bold text-dark">Transparency</h5>
+              <p class="card-text text-secondary">Hyperledger Fabric enhances security and transparency throughout the process.</p>
+            </div>
+          </div>
+        </div>
       </div>
-      <nav>
-        <ul class="nav">
-          <li class="nav-item">
-            <a class="nav-link" href="#">
-              Product
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">
-              Team
-            </a>
-          </li>
-          <li class="nav-item">
-            <!-- Use a standard <a> tag for navigation -->
-            <a class="nav-link" href="/login">
-              Login
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link btn btn-outline-primary" href="#">
-              Contact us
-            </a>
-          </li>
-        </ul>
-      </nav>
-    </header>
-  
-    <main class="d-flex flex-column justify-content-center align-items-center flex-grow-1">
-      <h2 class="display-5 text-center mb-5">Something about product</h2>
-    </main>
-  </div>
-  
+    </section>
+  </main>
+</div>
+
