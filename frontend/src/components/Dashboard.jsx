@@ -8,6 +8,8 @@ import Papa from "papaparse";
 // Import Modal Component
 import AddPolicyModal from "./AddPolicy";
 
+const baseURL = `${import.meta.env.VITE_API_BASE_URL}/asset`;
+
 const Dash = () => {
   const [data, setData] = useState([]); // State to hold fetched data
   const [globalFilter, setGlobalFilter] = useState(""); // Search filter state
@@ -22,15 +24,12 @@ const Dash = () => {
           throw new Error("Token not found in localStorage");
         }
 
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/asset/get-all`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`, // Ensure 'Bearer' prefix
-              "Content-Type": "application/json",
-            },
+        const response = await axios.get(`${baseURL}/get-all`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
-        );
+        });
 
         // Transform the data to flatten the structure
         const transformedData = response.data.map((item) => ({
@@ -40,7 +39,6 @@ const Dash = () => {
 
         setData(transformedData); // Update state with transformed data
       } catch (error) {
-        //window.location.href = "/login";
         console.error("Error fetching data:", error);
       }
     };
@@ -69,6 +67,57 @@ const Dash = () => {
       { field: "email", headerName: "Email", flex: 1 },
       { field: "owner", headerName: "Owner", flex: 1 },
       { field: "policyNumber", headerName: "Policy Number", flex: 1 },
+      {
+        field: "actions",
+        headerName: "Actions",
+        flex: 1,
+        sortable: false,
+        renderCell: (params) => {
+          const handleDelete = async (id) => {
+            try {
+              const token = localStorage.getItem("token");
+              if (!token) {
+                throw new Error("Token not found in localStorage");
+              }
+
+              //Call delete endpoint with Axios
+              await axios.delete(`${baseURL}/delete/${id}`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+
+              // Update the data state after successful deletion
+              setData((prev) => prev.filter((item) => item.id !== id));
+              alert("Asset deleted successfully");
+            } catch (error) {
+              console.error("Error deleting asset:", error);
+              alert("Failed to delete asset. Please try again.");
+            }
+          };
+
+          return (
+            <>
+              <button
+                className="btn btn-link text-info"
+                title="View"
+                onClick={() =>
+                  alert(`View details of ${params.row?.name || ""}`)
+                }
+              >
+                <i className="bi bi-eye-fill"></i>
+              </button>
+              <button
+                className="btn btn-link text-danger"
+                title="Delete Asset"
+                onClick={() => handleDelete(params.row.id)}
+              >
+                <i className="bi bi-trash-fill"></i>
+              </button>
+            </>
+          );
+        },
+      },
     ],
     [],
   );
@@ -115,7 +164,6 @@ const Dash = () => {
         className="form-control mb-3"
       />
 
-      {/* DataGrid */}
       <div style={{ height: 400, width: "100%" }}>
         <DataGrid
           rows={filteredData} // Use filtered data
@@ -123,6 +171,8 @@ const Dash = () => {
           pageSize={5}
           rowsPerPageOptions={[5, 10, 20]}
           getRowId={(row) => row.id} // Ensure the `id` field is used for uniqueness
+          checkboxSelection // Adds checkboxes for row selection
+          onSelectionModelChange={(ids) => setSelectedRows(ids)} // Updates selected rows
         />
       </div>
 
