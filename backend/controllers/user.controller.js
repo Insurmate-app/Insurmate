@@ -38,7 +38,7 @@ const loginUser = async (req, res, next) => {
     res.cookie("token", token, {
       httpOnly: true, // Makes the cookie inaccessible to JavaScript on the client-side
       secure: true, //process.env.NODE_ENV === "production", // Secure only in production
-      sameSite: "None",
+      sameSite: "Strict",
       maxAge: 900000, // 15 minutes in milliseconds
     });
 
