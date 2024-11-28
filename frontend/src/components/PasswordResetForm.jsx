@@ -1,26 +1,22 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 
 import axios from "axios";
 import * as Yup from "yup";
 
-import usePasswordReset from "../hooks/passwordReset/usePasswordReset";
 import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
 import Modal from "./Modal";
 
 const PasswordResetForm = () => {
-  const {
-    email,
-    setEmail,
-    newPassword,
-    setNewPassword,
-    showPassword,
-    togglePasswordVisibility,
-    setIsButtonDisabled,
-    isButtonDisabled,
-  } = usePasswordReset();
+  const [email, setEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
+
+  const [errors, setErrors] = useState({});
 
   const schema = Yup.object().shape({
     email: Yup.string()
@@ -44,16 +40,26 @@ const PasswordResetForm = () => {
     password: newPassword,
   };
 
-  useEffect(() => {
-    setIsButtonDisabled(email === "" || newPassword === "");
-  }, [email, newPassword]);
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+
+    if (id === "email") setEmail(value);
+    if (id === "password") setNewPassword(value);
+
+    // Dynamically enable/disable the button
+    setIsButtonDisabled(email.trim() === "" || newPassword.trim() === "");
+  };
+
+  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     activateSpinner();
     setIsButtonDisabled(true);
+
     try {
-      await schema.validate(data);
+      await schema.validate(data, { abortEarly: false });
+      setErrors({});
 
       await axios.put(
         `${import.meta.env.VITE_API_BASE_URL}/user/reset-password`,
@@ -63,15 +69,25 @@ const PasswordResetForm = () => {
       window.location.href = `/activate?email=${encodeURIComponent(email)}`;
     } catch (err) {
       deactivateSpinner();
+      setIsButtonDisabled(false);
+
+      // If Yup validation fails
       if (err.name === "ValidationError") {
-        showModal(err.errors.join("\n"));
-      } else if (err.response) {
-        showModal(err.response.data.message);
+        const validationErrors = {};
+        err.inner.forEach((error) => {
+          validationErrors[error.path] = error.message;
+        });
+        setErrors(validationErrors);
+      }
+      // If axios request fails
+      else if (err.response) {
+        showModal(err.response.data.message); // Show server error
       } else {
         showModal("An unexpected error occurred");
       }
     }
   };
+
   return (
     <div className="container-fluid d-flex justify-content-center align-items-center vh-100 bg-light">
       <div
@@ -87,13 +103,14 @@ const PasswordResetForm = () => {
             <input
               required
               type="email"
-              className="form-control"
+              className={`form-control ${errors.email ? "is-invalid" : ""}`}
               id="email"
               placeholder="user@email.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleInputChange}
               style={{ borderRadius: "8px" }}
             />
+            {errors.email && <div className="text-danger">{errors.email}</div>}
           </div>
           <div className="mb-3">
             <label htmlFor="password" className="form-label">
@@ -103,10 +120,10 @@ const PasswordResetForm = () => {
               <input
                 required
                 type={showPassword ? "text" : "password"}
+                className={`form-control ${errors.password ? "is-invalid" : ""}`}
                 id="password"
-                className="form-control"
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={handleInputChange}
                 style={{ borderRadius: "8px" }}
               />
               <span
@@ -120,6 +137,9 @@ const PasswordResetForm = () => {
                 ></i>
               </span>
             </div>
+            {errors.password && (
+              <div className="text-danger">{errors.password}</div>
+            )}
           </div>
           <button
             type="submit"

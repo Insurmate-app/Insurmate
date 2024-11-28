@@ -1,58 +1,30 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 
 import axios from "axios";
 import * as Yup from "yup";
 
-import useSignUpForm from "../hooks/signup/useSignUpForm";
 import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
 import Modal from "./Modal";
 
-// InputField Component
-const InputField = ({
-  label,
-  type,
-  placeholder,
-  value,
-  onChange,
-  error,
-  required = false,
-}) => (
-  <div className="mb-3">
-    <label className="form-label">{label}</label>
-    <input
-      type={type}
-      className="form-control border-0 border-bottom rounded-0"
-      placeholder={placeholder}
-      value={value}
-      onChange={onChange}
-      required={required}
-    />
-    {error && <small className="text-danger">{error}</small>}
-  </div>
-);
-
 const SignUpForm = () => {
-  const {
-    email,
-    setEmail,
-    password,
-    setPassword,
-    companyName,
-    setCompanyName,
-    address,
-    setAddress,
-    showPassword,
-    togglePasswordVisibility,
-    isTermsAccepted,
-    setIsTermsAccepted,
-    isButtonDisabled,
-    setIsButtonDisabled,
-  } = useSignUpForm();
+  const [formValues, setFormValues] = useState({
+    email: "",
+    password: "",
+    companyName: "",
+    addressLine1: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    isTermsAccepted: false,
+  });
+  const [errors, setErrors] = useState({});
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
 
-  // Validation schema
   const validationSchema = Yup.object().shape({
     email: Yup.string()
       .email("Enter a valid email")
@@ -66,56 +38,58 @@ const SignUpForm = () => {
       .min(8, "At least 8 characters")
       .max(28, "No more than 28 characters")
       .required("Company name is required"),
-    address: Yup.object().shape({
-      addressLine1: Yup.string().required("Address line 1 is required"),
-      addressLine2: Yup.string(),
-      city: Yup.string().required("City is required"),
-      state: Yup.string().required("State is required"),
-      zipCode: Yup.string()
-        .matches(/^\d{5}$/, "Zip code must be 5 digits")
-        .required("Zip code is required"),
-    }),
+    addressLine1: Yup.string().required("Address line 1 is required"),
+    city: Yup.string().required("City is required"),
+    state: Yup.string().required("State is required"),
+    zipCode: Yup.string()
+      .matches(/^\d{5}$/, "Zip code must be 5 digits")
+      .required("Zip code is required"),
     isTermsAccepted: Yup.boolean().oneOf([true], "You must accept the terms"),
   });
 
-  // Form data
-  const formData = { email, password, companyName, address, isTermsAccepted };
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const newValue = type === "checkbox" ? checked : value;
+    setFormValues((prev) => {
+      const updatedValues = { ...prev, [name]: newValue };
 
-  // Validate and check if the form is complete
-  const checkFormCompletion = () =>
-    setIsButtonDisabled(!Object.values(formData).every((field) => field));
+      // Check form completion for button state
+      const isFormComplete = Object.entries(updatedValues).every(
+        ([key, val]) => (key === "isTermsAccepted" ? val : val.trim() !== ""),
+      );
+      setIsButtonDisabled(!isFormComplete);
 
-  useEffect(
-    () => checkFormCompletion(),
-    [email, password, companyName, address, isTermsAccepted],
-  );
+      return updatedValues;
+    });
+  };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     activateSpinner();
 
     try {
-      await validationSchema.validate(formData, { abortEarly: false });
-
-      // API call
+      await validationSchema.validate(formValues, { abortEarly: false });
+      setErrors({});
       await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/user/create`,
-        formData,
+        formValues,
       );
-
-      window.location.href = `/activate?email=${encodeURIComponent(email)}`;
+      window.location.href = `/activate?email=${encodeURIComponent(
+        formValues.email,
+      )}`;
     } catch (err) {
       deactivateSpinner();
       if (err.name === "ValidationError") {
-        showModal(err.errors.join("\n"));
+        const validationErrors = {};
+        err.inner.forEach((error) => {
+          validationErrors[error.path] = error.message;
+        });
+        setErrors(validationErrors);
       } else if (err.response) {
         showModal(err.response.data.message || "Error from server");
       } else {
         showModal("An unexpected error occurred");
       }
-    } finally {
-      setIsButtonDisabled(false);
     }
   };
 
@@ -126,27 +100,41 @@ const SignUpForm = () => {
         style={{ maxWidth: "450px" }}
       >
         <form onSubmit={handleSubmit}>
-          <InputField
-            label="Email"
-            type="email"
-            placeholder="user@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <div className="mb-3">
+            <label className="form-label">Email</label>
+            <input
+              type="email"
+              name="email"
+              className={`form-control border-0 border-bottom rounded-0 ${
+                errors.email ? "is-invalid" : ""
+              }`}
+              placeholder="user@example.com"
+              value={formValues.email}
+              onChange={handleInputChange}
+              required
+            />
+            {errors.email && (
+              <small className="text-danger">{errors.email}</small>
+            )}
+          </div>
+
           <div className="mb-3">
             <label className="form-label">Password</label>
             <div className="input-group">
               <input
                 type={showPassword ? "text" : "password"}
-                className="form-control border-0 border-bottom rounded-0"
+                name="password"
+                className={`form-control border-0 border-bottom rounded-0 ${
+                  errors.password ? "is-invalid" : ""
+                }`}
                 placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formValues.password}
+                onChange={handleInputChange}
+                required
               />
               <span
                 className="input-group-text bg-transparent border-0"
-                onClick={togglePasswordVisibility}
+                onClick={() => setShowPassword((prev) => !prev)}
                 role="button"
               >
                 <i
@@ -154,53 +142,108 @@ const SignUpForm = () => {
                 ></i>
               </span>
             </div>
+            {errors.password && (
+              <small className="text-danger">{errors.password}</small>
+            )}
           </div>
-          <InputField
-            label="Company Name"
-            type="text"
-            placeholder="ABC Corporation"
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
-            required
-          />
-          <InputField
-            label="Address Line 1"
-            type="text"
-            placeholder="123 Main St"
-            value={address.addressLine1}
-            onChange={(e) =>
-              setAddress({ ...address, addressLine1: e.target.value })
-            }
-          />
-          <InputField
-            label="City"
-            type="text"
-            placeholder="City"
-            value={address.city}
-            onChange={(e) => setAddress({ ...address, city: e.target.value })}
-          />
-          <InputField
-            label="State"
-            type="text"
-            placeholder="State"
-            value={address.state}
-            onChange={(e) => setAddress({ ...address, state: e.target.value })}
-          />
-          <InputField
-            label="Zip Code"
-            type="text"
-            placeholder="12345"
-            value={address.zipCode}
-            onChange={(e) =>
-              setAddress({ ...address, zipCode: e.target.value })
-            }
-          />
+
+          <div className="mb-3">
+            <label className="form-label">Company Name</label>
+            <input
+              type="text"
+              name="companyName"
+              className={`form-control border-0 border-bottom rounded-0 ${
+                errors.companyName ? "is-invalid" : ""
+              }`}
+              placeholder="ABC Corporation"
+              value={formValues.companyName}
+              onChange={handleInputChange}
+              required
+            />
+            {errors.companyName && (
+              <small className="text-danger">{errors.companyName}</small>
+            )}
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Address Line 1</label>
+            <input
+              type="text"
+              name="addressLine1"
+              className={`form-control border-0 border-bottom rounded-0 ${
+                errors.addressLine1 ? "is-invalid" : ""
+              }`}
+              placeholder="123 Main St"
+              value={formValues.addressLine1}
+              onChange={handleInputChange}
+              required
+            />
+            {errors.addressLine1 && (
+              <small className="text-danger">{errors.addressLine1}</small>
+            )}
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">City</label>
+            <input
+              type="text"
+              name="city"
+              className={`form-control border-0 border-bottom rounded-0 ${
+                errors.city ? "is-invalid" : ""
+              }`}
+              placeholder="City"
+              value={formValues.city}
+              onChange={handleInputChange}
+              required
+            />
+            {errors.city && (
+              <small className="text-danger">{errors.city}</small>
+            )}
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">State</label>
+            <input
+              type="text"
+              name="state"
+              className={`form-control border-0 border-bottom rounded-0 ${
+                errors.state ? "is-invalid" : ""
+              }`}
+              placeholder="State"
+              value={formValues.state}
+              onChange={handleInputChange}
+              required
+            />
+            {errors.state && (
+              <small className="text-danger">{errors.state}</small>
+            )}
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Zip Code</label>
+            <input
+              type="text"
+              name="zipCode"
+              className={`form-control border-0 border-bottom rounded-0 ${
+                errors.zipCode ? "is-invalid" : ""
+              }`}
+              placeholder="12345"
+              value={formValues.zipCode}
+              onChange={handleInputChange}
+              required
+            />
+            {errors.zipCode && (
+              <small className="text-danger">{errors.zipCode}</small>
+            )}
+          </div>
+
           <div className="form-check mb-3">
             <input
               type="checkbox"
+              name="isTermsAccepted"
               className="form-check-input"
-              checked={isTermsAccepted}
-              onChange={(e) => setIsTermsAccepted(e.target.checked)}
+              checked={formValues.isTermsAccepted}
+              onChange={handleInputChange}
             />
             <label className="form-check-label">
               I agree to the{" "}
@@ -209,16 +252,15 @@ const SignUpForm = () => {
               </a>
             </label>
           </div>
+
           <button
             type="submit"
             className="btn btn-primary w-100"
             disabled={isButtonDisabled}
           >
             {isSpinnerVisible && (
-              <span
-                className="text-decoration-none"
-              ></span>
-            )}{" "}
+              <span className="spinner-border spinner-border-sm me-2"></span>
+            )}
             Sign Up
           </button>
         </form>

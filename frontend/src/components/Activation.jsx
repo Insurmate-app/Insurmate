@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 import axios from "axios";
 
 const ActivateAccount = () => {
-  const [email, setEmail] = useState(""); // Added missing email state
-  const [otp, setOtp] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [timer, setTimer] = useState(300); // 5 minutes in seconds
-  const [isOtpExpired, setIsOtpExpired] = useState(false);
-
+  const [email, setEmail] = useState(""); // State for email
+  const [otp, setOtp] = useState(""); // State for OTP input
+  const [isLoading, setIsLoading] = useState(false); // State for loading spinner
+  const [message, setMessage] = useState(""); // State for messages
+  const [timer, setTimer] = useState(300); // Timer state in seconds (5 minutes)
+  const [isOtpExpired, setIsOtpExpired] = useState(false); // OTP expiration state
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
   // Function to format time in MM:SS format
@@ -19,29 +18,42 @@ const ActivateAccount = () => {
     return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
   };
 
-  // Extract email from the query parameters
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const emailFromQuery = params.get("email");
-    if (emailFromQuery) {
-      setEmail(decodeURIComponent(emailFromQuery));
-    } else {
-      setMessage("No email provided. Please return to the reset page.");
+  // Initialize email from query parameters
+  const initializeEmail = () => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const emailFromQuery = params.get("email");
+      if (emailFromQuery) {
+        setEmail(decodeURIComponent(emailFromQuery));
+      } else {
+        setMessage("No email provided. Please return to the reset page.");
+      }
     }
-  }, []);
+  };
 
-  // Countdown Timer Logic
-  useEffect(() => {
-    if (timer > 0 && !isOtpExpired) {
-      const countdown = setInterval(() => {
-        setTimer((prev) => prev - 1);
-      }, 1000);
-      return () => clearInterval(countdown);
-    } else if (timer === 0) {
-      setIsOtpExpired(true);
-      setMessage("OTP has expired. Please request a new one.");
-    }
-  }, [timer, isOtpExpired]);
+  // Function to start the timer
+  const startTimer = () => {
+    const interval = setInterval(() => {
+      setTimer((prev) => {
+        if (prev > 1) {
+          return prev - 1;
+        } else {
+          clearInterval(interval);
+          setIsOtpExpired(true);
+          setMessage("OTP has expired. Please request a new one.");
+          return 0;
+        }
+      });
+    }, 1000);
+  };
+
+  // Manually initialize email and timer on component load
+  if (!email) {
+    initializeEmail();
+  }
+  if (!isOtpExpired && timer === 300) {
+    startTimer();
+  }
 
   // Function to generate or regenerate OTP
   const generateOtp = async () => {
@@ -56,6 +68,7 @@ const ActivateAccount = () => {
       setTimer(300); // Reset timer to 5 minutes
       setIsOtpExpired(false);
       setMessage("A new OTP has been sent to your email.");
+      startTimer(); // Restart the timer
     } catch (err) {
       console.error(err);
       setMessage("Failed to generate a new OTP. Please try again later.");

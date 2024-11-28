@@ -4,7 +4,6 @@ import axios from "axios";
 
 const Navbar = () => {
   const handleLogout = async () => {
-    console.log("Logout initiated");
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -27,7 +26,6 @@ const Navbar = () => {
       localStorage.removeItem("token");
 
       // Redirect
-      console.log("Redirecting to login...");
       window.location.href = "/login";
     } catch (error) {
       console.error("Error during logout:", error);

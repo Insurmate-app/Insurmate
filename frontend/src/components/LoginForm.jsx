@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 import axios from "axios";
 import * as Yup from "yup";
@@ -12,6 +12,7 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [errors, setErrors] = useState({});
 
   const schema = Yup.object().shape({
     email: Yup.string()
@@ -30,25 +31,28 @@ const LoginForm = () => {
       .required("Password is required"),
   });
 
-  const data = {
-    email: email,
-    password: password,
-  };
-
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
 
-  useEffect(() => {
-    setIsButtonDisabled(email.trim() === "" || password.trim() === "");
-  }, [email, password]);
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
 
-  // Toggle password visibility
+    if (id === "email") setEmail(value);
+    if (id === "password") setPassword(value);
+
+    // Dynamically validate and enable/disable button
+    setIsButtonDisabled(email.trim() === "" || password.trim() === "");
+  };
+
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     activateSpinner();
     setIsButtonDisabled(true);
+
+    const data = { email, password };
+
     try {
       // Validate the data using Yup
       await schema.validate(data, { abortEarly: false });
@@ -59,16 +63,11 @@ const LoginForm = () => {
         data,
       );
 
-      // Get the token from the response and set it as a cookie
+      // Get the token from the response and store it in localStorage
       const token = response.data.token;
-
       localStorage.setItem("token", token);
 
-      // document.cookie = `token=${token}; path=/; max-age=${15 * 60}; secure=${
-      //   window.location.protocol === "https:"
-      // }; samesite=strict;`;
-
-      // Redirect to dashboard (or handle success further)
+      // Redirect to dashboard
       window.location.href = "/dashboard";
     } catch (err) {
       deactivateSpinner();
@@ -76,7 +75,11 @@ const LoginForm = () => {
 
       // If Yup validation fails
       if (err.name === "ValidationError") {
-        showModal(err.errors.join("\n")); // Show validation errors
+        const validationErrors = {};
+        err.inner.forEach((error) => {
+          validationErrors[error.path] = error.message;
+        });
+        setErrors(validationErrors);
       }
       // If axios request fails
       else if (err.response) {
@@ -101,13 +104,15 @@ const LoginForm = () => {
             </label>
             <input
               type="email"
-              className="form-control"
               id="email"
+              className="form-control"
               placeholder="Enter email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleInputChange}
               style={{ borderRadius: "8px" }}
+              required
             />
+            {errors.email && <div className="text-danger">{errors.email}</div>}
           </div>
           <div className="mb-3">
             <label htmlFor="password" className="form-label">
@@ -120,8 +125,9 @@ const LoginForm = () => {
                 className="form-control"
                 placeholder="Enter password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={handleInputChange}
                 style={{ borderRadius: "8px" }}
+                required
               />
               <span
                 className="input-group-text toggle-password"
@@ -132,6 +138,9 @@ const LoginForm = () => {
                   className={showPassword ? "bi bi-eye-slash" : "bi bi-eye"}
                 ></i>
               </span>
+              {errors.password && (
+                <div className="text-danger">{errors.password}</div>
+              )}
             </div>
           </div>
           <button
