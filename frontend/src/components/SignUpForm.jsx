@@ -13,6 +13,7 @@ const SignUpForm = () => {
     password: "",
     companyName: "",
     addressLine1: "",
+    addressLine2: "",
     city: "",
     state: "",
     zipCode: "",
@@ -25,6 +26,7 @@ const SignUpForm = () => {
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
 
+  // Validation schema
   const validationSchema = Yup.object().shape({
     email: Yup.string()
       .email("Enter a valid email")
@@ -39,6 +41,7 @@ const SignUpForm = () => {
       .max(28, "No more than 28 characters")
       .required("Company name is required"),
     addressLine1: Yup.string().required("Address line 1 is required"),
+    addressLine2: Yup.string(),
     city: Yup.string().required("City is required"),
     state: Yup.string().required("State is required"),
     zipCode: Yup.string()
@@ -50,14 +53,16 @@ const SignUpForm = () => {
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
+
     setFormValues((prev) => {
       const updatedValues = { ...prev, [name]: newValue };
+      console.log("Updated Form Values:", updatedValues); // Debugging form updates
 
-      // Check form completion for button state
-      const isFormComplete = Object.entries(updatedValues).every(
-        ([key, val]) => (key === "isTermsAccepted" ? val : val.trim() !== ""),
-      );
-      setIsButtonDisabled(!isFormComplete);
+      // Validate the form
+      validationSchema
+        .isValid(updatedValues)
+        .then((isValid) => setIsButtonDisabled(!isValid))
+        .catch((err) => console.log("Validation Error:", err)); // Log validation errors
 
       return updatedValues;
     });
@@ -68,17 +73,39 @@ const SignUpForm = () => {
     activateSpinner();
 
     try {
+      console.log("Validating formValues:", formValues); // Debugging validation
       await validationSchema.validate(formValues, { abortEarly: false });
-      setErrors({});
+      setErrors({}); // Clear previous errors
+
+      // Construct API payload
+      const payload = {
+        email: formValues.email,
+        password: formValues.password,
+        companyName: formValues.companyName,
+        address: {
+          addressLine1: formValues.addressLine1,
+          addressLine2: formValues.addressLine2,
+          city: formValues.city,
+          state: formValues.state,
+          zipCode: formValues.zipCode,
+        },
+      };
+
+      console.log("Payload to send:", payload); // Debugging payload structure
+
+      // Send request to the server
       await axios.post(
         `${import.meta.env.VITE_API_BASE_URL}/user/create`,
-        formValues,
+        payload,
       );
+
+      // Redirect after successful submission
       window.location.href = `/activate?email=${encodeURIComponent(
         formValues.email,
       )}`;
     } catch (err) {
       deactivateSpinner();
+      console.log("Error during submission:", err); // Debugging submission errors
       if (err.name === "ValidationError") {
         const validationErrors = {};
         err.inner.forEach((error) => {
@@ -86,6 +113,7 @@ const SignUpForm = () => {
         });
         setErrors(validationErrors);
       } else if (err.response) {
+        console.log("Server Response Error:", err.response.data); // Debug server response
         showModal(err.response.data.message || "Error from server");
       } else {
         showModal("An unexpected error occurred");
@@ -180,6 +208,23 @@ const SignUpForm = () => {
             />
             {errors.addressLine1 && (
               <small className="text-danger">{errors.addressLine1}</small>
+            )}
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Address Line 2</label>
+            <input
+              type="text"
+              name="addressLine2"
+              className={`form-control border-0 border-bottom rounded-0 ${
+                errors.addressLine2 ? "is-invalid" : ""
+              }`}
+              placeholder="Apt 1"
+              value={formValues.addressLine2}
+              onChange={handleInputChange}
+            />
+            {errors.addressLine2 && (
+              <small className="text-danger">{errors.addressLine2}</small>
             )}
           </div>
 
