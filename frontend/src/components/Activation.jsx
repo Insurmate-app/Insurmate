@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import axios from "axios";
 
@@ -11,51 +11,40 @@ const ActivateAccount = () => {
   const [isOtpExpired, setIsOtpExpired] = useState(false); // OTP expiration state
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-  // Function to format time in MM:SS format
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
   };
 
-  // Initialize email from query parameters
-  const initializeEmail = () => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const emailFromQuery = params.get("email");
-      if (emailFromQuery) {
-        setEmail(decodeURIComponent(emailFromQuery));
-      } else {
-        setMessage("No email provided. Please return to the reset page.");
-      }
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const emailFromQuery = params.get("email");
+    if (emailFromQuery) {
+      setEmail(decodeURIComponent(emailFromQuery));
+    } else {
+      setMessage("No email provided. Please return to the reset page.");
     }
-  };
+  }, []);
 
-  // Function to start the timer
-  const startTimer = () => {
-    const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev > 1) {
-          return prev - 1;
-        } else {
-          clearInterval(interval);
-          setIsOtpExpired(true);
-          setMessage("OTP has expired. Please request a new one.");
-          return 0;
-        }
-      });
-    }, 1000);
-  };
+  useEffect(() => {
+    if (!isOtpExpired && timer > 0) {
+      const interval = setInterval(() => {
+        setTimer((prev) => {
+          if (prev > 1) {
+            return prev - 1;
+          } else {
+            clearInterval(interval);
+            setIsOtpExpired(true);
+            setMessage("OTP has expired. Please request a new one.");
+            return 0;
+          }
+        });
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [timer, isOtpExpired]);
 
-  // Manually initialize email and timer on component load
-  if (!email) {
-    initializeEmail();
-  }
-  if (!isOtpExpired && timer === 300) {
-    startTimer();
-  }
-
-  // Function to generate or regenerate OTP
   const generateOtp = async () => {
     if (!email) {
       setMessage("Email is missing. Cannot generate OTP.");
@@ -68,14 +57,12 @@ const ActivateAccount = () => {
       setTimer(300); // Reset timer to 5 minutes
       setIsOtpExpired(false);
       setMessage("A new OTP has been sent to your email.");
-      startTimer(); // Restart the timer
     } catch (err) {
       console.error(err);
       setMessage("Failed to generate a new OTP. Please try again later.");
     }
   };
 
-  // Handle account activation with OTP
   const handleActivate = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -98,13 +85,20 @@ const ActivateAccount = () => {
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light p-3">
+    <div className="d-flex justify-content-center align-items-center min-vh-100 bg-white p-3">
       <div
-        className="card p-4 shadow-sm rounded-3 w-100"
-        style={{ maxWidth: "450px" }}
+        className="card p-4 shadow rounded w-100"
+        style={{
+          maxWidth: "450px",
+          backgroundColor: "#f9f9f9",
+          color: "#333",
+          border: "1px solid #ddd",
+        }}
       >
         <form onSubmit={handleActivate}>
-          <h4 className="mb-3 text-center">Activate Your Account</h4>
+          <h4 className="mb-3 text-center" style={{ color: "#333" }}>
+            Activate Your Account
+          </h4>
 
           {email && (
             <div className="mb-3">
@@ -115,7 +109,7 @@ const ActivateAccount = () => {
           )}
 
           <div className="mb-3">
-            <label className="form-label">OTP</label>
+            <label className="form-label fw-bold">OTP</label>
             <input
               type="text"
               className="form-control"
@@ -124,6 +118,11 @@ const ActivateAccount = () => {
               placeholder="Enter OTP"
               required
               disabled={isOtpExpired}
+              style={{
+                backgroundColor: "#fff",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+              }}
             />
             <small className="text-muted">
               OTP is valid for: {formatTime(timer)}
@@ -132,7 +131,14 @@ const ActivateAccount = () => {
 
           <button
             type="submit"
-            className="btn btn-primary w-100"
+            className="btn w-100"
+            style={{
+              backgroundColor: isOtpExpired ? "#ccc" : "#333",
+              color: "#fff",
+              borderRadius: "8px",
+              fontWeight: "bold",
+              cursor: isOtpExpired || isLoading ? "not-allowed" : "pointer",
+            }}
             disabled={isLoading || isOtpExpired}
           >
             {isLoading ? "Activating..." : "Activate Account"}
@@ -140,14 +146,31 @@ const ActivateAccount = () => {
 
           <button
             type="button"
-            className="btn btn-secondary w-100 mt-2"
+            className="btn btn-outline-dark w-100 mt-2"
             onClick={generateOtp}
-            disabled={isOtpExpired}
+            style={{
+              borderRadius: "8px",
+              borderColor: "#333",
+              color: "#333",
+              fontWeight: "bold",
+              backgroundColor: "#f9f9f9",
+            }}
           >
             Regenerate OTP
           </button>
 
-          {message && <div className="mt-3 alert alert-info">{message}</div>}
+          {message && (
+            <div
+              className="mt-3 alert text-center"
+              style={{
+                backgroundColor: "#f5f5f5",
+                border: "1px solid #ddd",
+                color: "#555",
+              }}
+            >
+              {message}
+            </div>
+          )}
         </form>
       </div>
     </div>

@@ -1,4 +1,6 @@
 const Home = () => {
+  const currentYear = new Date().getFullYear();
+
   return (
     <div className="container-fluid vh-100 d-flex flex-column align-items-center bg-white">
       {/* Header */}
@@ -19,21 +21,13 @@ const Home = () => {
                 Technology
               </a>
             </li>
-            {/* <li className="nav-item">
-              <a className="nav-link text-dark" href="#team">
-                Team
-              </a>
-            </li> */}
             <li className="nav-item">
               <a className="nav-link text-dark" href="/login">
                 Login
               </a>
             </li>
             <li className="nav-item">
-              <a
-                className="nav-link text-dark"
-                href="/contact"
-              >
+              <a className="nav-link text-dark" href="/contact">
                 Contact Us
               </a>
             </li>
@@ -58,6 +52,7 @@ const Home = () => {
             </span>
           </a>
         </section>
+
         {/* Features Section */}
         <section id="features" className="text-center my-5 px-3">
           <h2 className="mb-4 text-dark">Why Choose Insurmate?</h2>
@@ -102,6 +97,47 @@ const Home = () => {
           </div>
         </section>
       </main>
+
+      {/* Footer */}
+      <footer className="bg-light w-100 py-3 mt-auto border-top">
+        <div className="container d-flex justify-content-between align-items-center">
+          {/* Left Section: Copyright */}
+          <small className="text-muted">
+            &copy; {currentYear} Insurmate. All rights reserved.
+          </small>
+
+          {/* Right Section: Navigation Links */}
+          <ul className="nav">
+            <li className="nav-item">
+              <a
+                href="/"
+                className="nav-link text-secondary d-flex align-items-center"
+              >
+                <i className="bi bi-journal-text me-1"></i>
+                <small className="text-muted">Blog</small>
+              </a>
+            </li>
+            <li className="nav-item">
+              <a
+                href="/"
+                className="nav-link text-secondary d-flex align-items-center"
+              >
+                <i className="bi bi-book me-1"></i>
+                <small className="text-muted">Docs</small>
+              </a>
+            </li>
+            <li className="nav-item">
+              <a
+                href="/"
+                className="nav-link text-secondary d-flex align-items-center"
+              >
+                <i className="bi bi-github me-1"></i>
+                <small className="text-muted">Github</small>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </footer>
     </div>
   );
 };

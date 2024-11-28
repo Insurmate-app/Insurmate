@@ -124,12 +124,21 @@ const SignUpForm = () => {
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light p-3">
       <div
-        className="card p-4 shadow-sm rounded-3 w-100"
-        style={{ maxWidth: "450px" }}
+        className="card p-4 shadow rounded w-100"
+        style={{
+          maxWidth: "450px",
+          backgroundColor: "#f9f9f9",
+          border: "1px solid #ddd",
+        }}
       >
+        <h2 className="text-center mb-4" style={{ color: "#333" }}>
+          Create Your Account
+        </h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label className="form-label">Email</label>
+            <label className="form-label fw-bold">
+              Email <span style={{ color: "red" }}>*</span>{" "}
+            </label>
             <input
               type="email"
               name="email"
@@ -147,7 +156,9 @@ const SignUpForm = () => {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">Password</label>
+            <label className="form-label fw-bold">
+              Password <span style={{ color: "red" }}>*</span>{" "}
+            </label>
             <div className="input-group">
               <input
                 type={showPassword ? "text" : "password"}
@@ -176,7 +187,9 @@ const SignUpForm = () => {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">Company Name</label>
+            <label className="form-label fw-bold">
+              Company Name <span style={{ color: "red" }}>*</span>{" "}
+            </label>
             <input
               type="text"
               name="companyName"
@@ -194,7 +207,9 @@ const SignUpForm = () => {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">Address Line 1</label>
+            <label className="form-label fw-bold">
+              Address Line 1 <span style={{ color: "red" }}>*</span>{" "}
+            </label>
             <input
               type="text"
               name="addressLine1"
@@ -212,7 +227,7 @@ const SignUpForm = () => {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">Address Line 2</label>
+            <label className="form-label fw-bold">Address Line 2</label>
             <input
               type="text"
               name="addressLine2"
@@ -229,7 +244,9 @@ const SignUpForm = () => {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">City</label>
+            <label className="form-label fw-bold">
+              City <span style={{ color: "red" }}>*</span>
+            </label>
             <input
               type="text"
               name="city"
@@ -247,7 +264,9 @@ const SignUpForm = () => {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">State</label>
+            <label className="form-label fw-bold">
+              State <span style={{ color: "red" }}>*</span>
+            </label>
             <input
               type="text"
               name="state"
@@ -265,7 +284,9 @@ const SignUpForm = () => {
           </div>
 
           <div className="mb-3">
-            <label className="form-label">Zip Code</label>
+            <label className="form-label fw-bold">
+              Zip Code <span style={{ color: "red" }}>*</span>
+            </label>
             <input
               type="text"
               name="zipCode"
@@ -292,26 +313,52 @@ const SignUpForm = () => {
             />
             <label className="form-check-label">
               I agree to the{" "}
-              <a href="/tos" className="text-decoration-none" target="_blank">
+              <a
+                href="/tos"
+                target="_blank"
+                style={{
+                  color: "#333",
+                  fontWeight: "bold",
+                  textDecoration: "none",
+                }}
+              >
                 Terms of Service
               </a>
             </label>
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
-            className="btn btn-primary w-100"
+            className="btn w-100"
             disabled={isButtonDisabled}
+            style={{
+              backgroundColor: isButtonDisabled ? "#ccc" : "#333",
+              color: "#fff",
+              borderRadius: "8px",
+              fontWeight: "bold",
+              cursor: isButtonDisabled ? "not-allowed" : "pointer",
+            }}
           >
             {isSpinnerVisible && (
-              <span className="spinner-border spinner-border-sm me-2"></span>
+              <span
+                className="spinner-border spinner-border-sm text-light me-2"
+                role="status"
+              ></span>
             )}
             Sign Up
           </button>
         </form>
-        <p className="text-center mt-3">
+        <p className="text-center mt-4">
           Already have an account?{" "}
-          <a href="/login" className="text-decoration-none">
+          <a
+            href="/login"
+            style={{
+              color: "#333",
+              fontWeight: "bold",
+              textDecoration: "none",
+            }}
+          >
             Login
           </a>
         </p>

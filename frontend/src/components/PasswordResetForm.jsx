@@ -46,7 +46,6 @@ const PasswordResetForm = () => {
     if (id === "email") setEmail(value);
     if (id === "password") setNewPassword(value);
 
-    // Dynamically enable/disable the button
     setIsButtonDisabled(email.trim() === "" || newPassword.trim() === "");
   };
 
@@ -71,17 +70,14 @@ const PasswordResetForm = () => {
       deactivateSpinner();
       setIsButtonDisabled(false);
 
-      // If Yup validation fails
       if (err.name === "ValidationError") {
         const validationErrors = {};
         err.inner.forEach((error) => {
           validationErrors[error.path] = error.message;
         });
         setErrors(validationErrors);
-      }
-      // If axios request fails
-      else if (err.response) {
-        showModal(err.response.data.message); // Show server error
+      } else if (err.response) {
+        showModal(err.response.data.message || "Reset password failed.");
       } else {
         showModal("An unexpected error occurred");
       }
@@ -89,78 +85,107 @@ const PasswordResetForm = () => {
   };
 
   return (
-    <div className="container-fluid d-flex justify-content-center align-items-center vh-100 bg-light">
+    <div className="container-fluid d-flex justify-content-center align-items-center min-vh-100 bg-white">
       <div
-        className="signup-container card shadow p-4 rounded"
-        style={{ maxWidth: "400px", width: "100%" }}
+        className="card p-4 shadow rounded w-100"
+        style={{
+          maxWidth: "450px",
+          backgroundColor: "#f9f9f9",
+          border: "1px solid #ddd",
+        }}
       >
-        <h2 className="text-center mb-4">Reset Password</h2>
+        <h2 className="text-center mb-4" style={{ color: "#333" }}>
+          Reset Your Password
+        </h2>
         <form onSubmit={handleSubmit} noValidate>
+          {/* Email Input */}
           <div className="mb-3">
-            <label htmlFor="email" className="form-label">
-              Email
+            <label htmlFor="email" className="form-label fw-bold">
+              Email Address
             </label>
             <input
-              required
               type="email"
-              className={`form-control ${errors.email ? "is-invalid" : ""}`}
               id="email"
-              placeholder="user@email.com"
+              className={`form-control ${errors.email ? "is-invalid" : ""}`}
+              placeholder="user@example.com"
               value={email}
               onChange={handleInputChange}
-              style={{ borderRadius: "8px" }}
+              style={{
+                backgroundColor: "#fff",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+              }}
+              required
             />
-            {errors.email && <div className="text-danger">{errors.email}</div>}
+            {errors.email && (
+              <small className="text-danger">{errors.email}</small>
+            )}
           </div>
+
+          {/* New Password Input */}
           <div className="mb-3">
-            <label htmlFor="password" className="form-label">
+            <label htmlFor="password" className="form-label fw-bold">
               New Password
             </label>
             <div className="input-group">
               <input
-                required
                 type={showPassword ? "text" : "password"}
-                className={`form-control ${errors.password ? "is-invalid" : ""}`}
                 id="password"
+                className={`form-control ${errors.password ? "is-invalid" : ""}`}
+                placeholder="Enter a new password"
                 value={newPassword}
                 onChange={handleInputChange}
-                style={{ borderRadius: "8px" }}
+                style={{
+                  backgroundColor: "#fff",
+                  border: "1px solid #ddd",
+                  borderRadius: "8px",
+                }}
+                required
               />
               <span
-                className="input-group-text toggle-password"
-                role="button"
+                className="input-group-text bg-transparent border-0"
                 onClick={togglePasswordVisibility}
-                style={{ cursor: "pointer", borderRadius: "8px" }}
+                style={{
+                  cursor: "pointer",
+                  color: "#333",
+                  borderRadius: "8px",
+                }}
+                role="button"
               >
                 <i
-                  className={showPassword ? "bi bi-eye-slash" : "bi bi-eye"}
+                  className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
                 ></i>
               </span>
             </div>
             {errors.password && (
-              <div className="text-danger">{errors.password}</div>
+              <small className="text-danger">{errors.password}</small>
             )}
           </div>
+
+          {/* Submit Button */}
           <button
             type="submit"
-            className="btn btn-primary w-100"
-            disabled={isButtonDisabled}
+            className="btn w-100 mt-3"
             style={{
-              backgroundColor: isButtonDisabled ? "#ccc" : "#6c63ff",
+              backgroundColor: isButtonDisabled ? "#ccc" : "#333",
+              color: "#fff",
               borderRadius: "8px",
               cursor: isButtonDisabled ? "not-allowed" : "pointer",
+              fontWeight: "bold",
             }}
+            disabled={isButtonDisabled}
           >
             {isSpinnerVisible && (
               <span
-                className="spinner-border spinner-border-sm text-light"
+                className="spinner-border spinner-border-sm text-light me-2"
                 role="status"
               ></span>
             )}
             Reset Password
           </button>
         </form>
-        {/* Modal for any error or success messages */}
+
+        {/* Modal for Errors */}
         <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
       </div>
     </div>

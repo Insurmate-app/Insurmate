@@ -11,18 +11,16 @@ import AddPolicyModal from "./AddPolicy";
 const baseURL = `${import.meta.env.VITE_API_BASE_URL}/asset`;
 
 const Dash = () => {
-  const [data, setData] = useState([]); // State to hold fetched data
-  const [globalFilter, setGlobalFilter] = useState(""); // Search filter state
-  const [showModal, setShowModal] = useState(false); // Modal visibility state
+  const [data, setData] = useState([]);
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
   // Fetch data from API
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("Token not found in localStorage");
-        }
+        if (!token) throw new Error("Token not found in localStorage");
 
         const response = await axios.get(`${baseURL}/get-all`, {
           headers: {
@@ -37,7 +35,7 @@ const Dash = () => {
           ...item.data, // Spread the fields inside the `data` object to the top level
         }));
 
-        setData(transformedData); // Update state with transformed data
+        setData(transformedData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -48,8 +46,11 @@ const Dash = () => {
 
   // Handle adding a new policy
   const handleAddPolicy = (newPolicy) => {
-    setData((prev) => [...prev, { ...newPolicy, id: prev.length + 1 }]);
     setShowModal(false);
+
+    ///refresh the page
+    // TODO: find a better way. consider using websocket
+    window.location.reload();
   };
 
   // Handle CSV export
@@ -66,6 +67,27 @@ const Dash = () => {
       { field: "lastName", headerName: "Last Name", flex: 1 },
       { field: "email", headerName: "Email", flex: 1 },
       { field: "owner", headerName: "Owner", flex: 1 },
+      {
+        field: "status",
+        headerName: "Status",
+        flex: 1,
+        renderCell: (params) => {
+          const status = params.row.status;
+          return (
+            <span
+              className={`badge ${
+                status === "Active"
+                  ? "bg-success"
+                  : status === "Pending"
+                    ? "bg-warning text-dark"
+                    : "bg-secondary"
+              }`}
+            >
+              {params.row.status}
+            </span>
+          );
+        },
+      },
       { field: "policyNumber", headerName: "Policy Number", flex: 1 },
       {
         field: "actions",
@@ -74,25 +96,26 @@ const Dash = () => {
         sortable: false,
         renderCell: (params) => {
           const handleDelete = async (id) => {
+            const confirmDelete = window.confirm(
+              "Are you sure you want to delete this policy?",
+            );
+            if (!confirmDelete) return; // Exit if the user cancels
+
             try {
               const token = localStorage.getItem("token");
-              if (!token) {
-                throw new Error("Token not found in localStorage");
-              }
+              if (!token) throw new Error("Token not found in localStorage");
 
-              //Call delete endpoint with Axios
               await axios.delete(`${baseURL}/delete/${id}`, {
                 headers: {
                   Authorization: `Bearer ${token}`,
                 },
               });
 
-              // Update the data state after successful deletion
               setData((prev) => prev.filter((item) => item.id !== id));
-              alert("Asset deleted successfully");
+              alert("Policy deleted successfully.");
             } catch (error) {
-              console.error("Error deleting asset:", error);
-              alert("Failed to delete asset. Please try again.");
+              console.error("Error deleting policy:", error);
+              alert("Failed to delete policy. Please try again.");
             }
           };
 
@@ -109,7 +132,7 @@ const Dash = () => {
               </button>
               <button
                 className="btn btn-link text-danger"
-                title="Delete Asset"
+                title="Delete Policy"
                 onClick={() => handleDelete(params.row.id)}
               >
                 <i className="bi bi-trash-fill"></i>
@@ -124,55 +147,60 @@ const Dash = () => {
 
   // Filter data based on global search
   const filteredData = useMemo(() => {
-    const result =
-      Array.isArray(data) && data.length
-        ? data.filter((row) =>
-            Object.values(row || {}).some(
-              (value) =>
-                value &&
-                value
-                  .toString()
-                  .toLowerCase()
-                  .includes(globalFilter.toLowerCase()),
-            ),
-          )
-        : [];
-    return result;
+    return data.filter((row) =>
+      Object.values(row || {}).some((value) =>
+        value?.toString().toLowerCase().includes(globalFilter.toLowerCase()),
+      ),
+    );
   }, [data, globalFilter]);
 
   return (
     <div className="container my-4">
-      <h2 className="text-primary mb-3">Policy Dashboard</h2>
-      <div className="mb-3">
-        <button
-          onClick={() => setShowModal(true)}
-          className="btn btn-muted me-2"
-        >
-          Add Policy
-        </button>
-        <button onClick={handleExportCSV} className="btn btn-muted me-2">
-          Export to CSV
-        </button>
+      <h2 className="text-dark mb-3">Policy Dashboard</h2>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <div className="d-flex gap-3">
+          <button
+            onClick={() => setShowModal(true)}
+            className="btn btn-outline-primary d-flex align-items-center"
+            style={{ borderRadius: "8px" }}
+          >
+            <i
+              className="bi bi-plus-lg me-2"
+              style={{ color: "#0d6efd", fontSize: "1.2rem" }}
+            ></i>
+            Add Policy
+          </button>
+          <button
+            onClick={handleExportCSV}
+            className="btn btn-outline-success d-flex align-items-center"
+            style={{ borderRadius: "8px" }}
+          >
+            <i
+              className="bi bi-download me-2"
+              style={{ color: "#198754", fontSize: "1.2rem" }}
+            ></i>
+            Export to CSV
+          </button>
+        </div>
+        {/* Global Search */}
+        <input
+          type="text"
+          value={globalFilter || ""}
+          onChange={(e) => setGlobalFilter(e.target.value)}
+          placeholder="Search all columns..."
+          className="form-control w-25"
+          style={{ borderRadius: "8px" }}
+        />
       </div>
-
-      {/* Global Search */}
-      <input
-        type="text"
-        value={globalFilter || ""}
-        onChange={(e) => setGlobalFilter(e.target.value)}
-        placeholder="Search all columns..."
-        className="form-control mb-3"
-      />
 
       <div style={{ height: 400, width: "100%" }}>
         <DataGrid
-          rows={filteredData} // Use filtered data
-          columns={columns} // Define columns
+          rows={filteredData}
+          columns={columns}
           pageSize={5}
           rowsPerPageOptions={[5, 10, 20]}
-          getRowId={(row) => row.id} // Ensure the `id` field is used for uniqueness
-          checkboxSelection // Adds checkboxes for row selection
-          onSelectionModelChange={(ids) => setSelectedRows(ids)} // Updates selected rows
+          getRowId={(row) => row.id}
+          checkboxSelection
         />
       </div>
 
