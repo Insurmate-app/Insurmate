@@ -24,9 +24,9 @@ const createAsset = async (email, data) => {
 
     data.data.owner = user._id;
 
-    const org = whichOrg(user.role);
+    data.data.status = "Pending";
 
-    data.status = "pending";
+    const org = whichOrg(user.role);
 
     const result = await submitTransaction(
       userId,
@@ -55,11 +55,15 @@ const createAsset = async (email, data) => {
 // Update an Asset
 const updateAsset = async (email, data) => {
   try {
-    const asset = getAssetById(email, data.id);
+    const asset = await getAssetById(email, data.id);
 
-    data.data.owner = asset.data.owner;
+    data.data.owner = asset?.data?.owner;
 
     const user = await userService.findUserByEmail(email);
+
+    if (!data.data.status?.trim()) {
+      data.data.status = asset?.data?.status;
+    }
 
     const org = whichOrg(user.role);
 
@@ -214,7 +218,7 @@ const getAssetHistory = async (email, assetId) => {
 // Delete an Asset
 const deleteAsset = async (email, assetId) => {
   try {
-    getAssetById(email, assetId);
+    await getAssetById(email, assetId);
 
     const user = await userService.findUserByEmail(email);
 
