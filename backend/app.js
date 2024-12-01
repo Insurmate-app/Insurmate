@@ -69,9 +69,6 @@ const corsOptions = {
     // Allow requests with any origin
     callback(null, true);
   },
-  credentials: true, // Enables cookies and authentication headers
-  methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
-  allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
 };
 
 // Apply the CORS middleware

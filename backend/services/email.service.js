@@ -7,7 +7,6 @@ const logger = require("../logger");
 const sender = process.env.EMAIL;
 const password = process.env.PASSWORD;
 
-// Configure Nodemailer transport using custom SMTP settings
 const transporter = nodemailer.createTransport({
   host: "mail.wecare-insurance.com", // SMTP host
   port: 587, // Port (587 for TLS, 465 for SSL)
@@ -17,17 +16,15 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Function to send email
 const sendEmail = async ({ to, subject, text }) => {
   const mailOptions = {
     from: sender,
-    to: to, // Recipient email
-    subject: subject, // Email subject
-    text: text, // Email content (you can also add 'html' if needed)
+    to: to,
+    subject: subject,
+    text: text,
   };
 
   try {
-    // Send the email
     const info = await transporter.sendMail(mailOptions);
     return info;
   } catch (error) {

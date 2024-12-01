@@ -15,12 +15,10 @@ const sendVerificationEmail = async (email, otp) => {
 
 const createUser = async (userData) => {
   try {
-    // Without this, the client will have capabilities to change failed login attempts and active account status
     userData.failedLoginAttempts = 0;
     userData.activeAccount = false;
     userData.role = "user";
 
-    // hashes the password the user sent before the User is created
     const hashedPassword = await passwordService.hashPassword(
       userData.password
     );
@@ -28,7 +26,6 @@ const createUser = async (userData) => {
 
     const user = await User.create(userData);
 
-    //create an OTP
     const otpToken = await passwordService.generateOtp(user.email);
 
     if (user) {
@@ -47,7 +44,6 @@ const createUser = async (userData) => {
 
     return userDto;
   } catch (error) {
-    // Check if the error is a MongoDB duplicate key error
     if (error.code === 11000) {
       // Extract the duplicated field (e.g., email, username)
       const duplicateField = Object.keys(error.keyValue)[0];
@@ -71,7 +67,6 @@ const resetPassword = async (email, newPassword) => {
       throw CustomError("User not found.", 404);
     }
 
-    //hash the newPassword
     newPassword = await passwordService.hashPassword(newPassword);
 
     const updatedUser = await User.findByIdAndUpdate(
@@ -81,28 +76,23 @@ const resetPassword = async (email, newPassword) => {
     );
 
     if (!updatedUser) {
-      throw CustomError("User not found.", 404); // Ensure proper error status for user not found
+      throw CustomError("User not found.", 404);
     }
-    //create an OTP
+
     const otpToken = await passwordService.generateOtp(user.email);
 
     if (updatedUser) {
       await sendVerificationEmail(updatedUser.email, otpToken);
     }
   } catch (error) {
-    // Handle specific error codes
     if (error.statusCode >= 400 && error.statusCode < 500) {
-      // Handle expected errors (400-series)
-      throw error; // Re-throw the error to preserve the correct status code
+      throw error;
     } else {
-      // Handle 500-series or unexpected errors
       log.error(error.message);
-      // You can log the full error details or take specific actions
-      throw CustomError("Unable to reset password.", 500); // Convert to 500 and re-throw
+      throw CustomError("Unable to reset password.", 500);
     }
   }
 };
-
 
 const findUserById = async (id) => {
   const user = await User.findOne({ id });
@@ -120,9 +110,6 @@ const findUserByEmail = async (email) => {
   return user;
 };
 
-/**
- * If the failed login attempt > 5, set activeAccount to false
- */
 const loginUser = async (email, password) => {
   try {
     const user = await findUserByEmail(email);
@@ -147,7 +134,6 @@ const loginUser = async (email, password) => {
       );
     }
 
-    // Check if password is correct by comparing it to hashed password
     const match = await passwordService.checkPassword(password, user.password);
     if (!match) {
       user.failedLoginAttempts += 1;
@@ -161,15 +147,11 @@ const loginUser = async (email, password) => {
     user.activeAccount = true;
     await user.save();
   } catch (error) {
-    // Handle specific error codes
     if (error.statusCode >= 400 && error.statusCode < 500) {
-      // Handle expected errors (400-series)
-      throw error; // Re-throw the error to preserve the correct status code
+      throw error;
     } else {
-      // Handle 500-series or unexpected errors
       log.error(error.message);
-      // You can log the full error details or take specific actions
-      throw CustomError("Unable to login.", 500); // Convert to 500 and re-throw
+      throw CustomError("Unable to login.", 500);
     }
   }
 };
@@ -197,12 +179,9 @@ const regenerateOtp = async (email) => {
     await sendVerificationEmail(user.email, otpToken);
   } catch (error) {
     if (error.statusCode >= 400 && error.statusCode < 500) {
-      // Handle expected errors (400-series)
-      throw error; // Re-throw the error to preserve the correct status code
+      throw error;
     } else {
-      // Handle 500-series or unexpected errors
       log.error(error.message);
-      // You can log the full error details or take specific actions
     }
   }
 };
@@ -226,13 +205,10 @@ const verifyUser = async (email, otpToken) => {
     await user.save();
   } catch (error) {
     if (error.statusCode >= 400 && error.statusCode < 500) {
-      // Handle expected errors (400-series)
-      throw error; // Re-throw the error to preserve the correct status code
+      throw error;
     } else {
-      // Handle 500-series or unexpected errors
       log.error(error.message);
-      // You can log the full error details or take specific actions
-      throw CustomError("Unable to verify.", 500); // Convert to 500 and re-throw
+      throw CustomError("Unable to verify.", 500);
     }
   }
 };
@@ -244,5 +220,5 @@ module.exports = {
   loginUser,
   verifyUser,
   regenerateOtp,
-  findUserById
+  findUserById,
 };

@@ -39,20 +39,15 @@ const createAsset = async (email, data) => {
 
     return JSON.parse(result);
   } catch (error) {
-    // Handle specific error codes
     if (error.statusCode >= 400 && error.statusCode < 500) {
-      // Handle expected errors (400-series)
-      throw error; // Re-throw the error to preserve the correct status code
+      throw error;
     } else {
-      // Handle 500-series or unexpected errors
       log.error(error.message);
-      // You can log the full error details or take specific actions
-      throw CustomError("Error creating asset", 500); // Convert to 500 and re-throw
+      throw CustomError("Error creating asset", 500);
     }
   }
 };
 
-// Update an Asset
 const updateAsset = async (email, data) => {
   try {
     const asset = await getAssetById(email, data.id);
@@ -77,15 +72,11 @@ const updateAsset = async (email, data) => {
     );
     return JSON.parse(result);
   } catch (error) {
-    // Handle specific error codes
     if (error.statusCode >= 400 && error.statusCode < 500) {
-      // Handle expected errors (400-series)
-      throw error; // Re-throw the error to preserve the correct status code
+      throw error;
     } else {
-      // Handle 500-series or unexpected errors
       log.error(error.message);
-      // You can log the full error details or take specific actions
-      throw CustomError("Error updating asset", 500); // Convert to 500 and re-throw
+      throw CustomError("Error updating asset", 500);
     }
   }
 };
@@ -125,20 +116,15 @@ const getAllAssets = async (email) => {
     // );
     return assets;
   } catch (error) {
-    // Handle specific error codes
     if (error.statusCode >= 400 && error.statusCode < 500) {
-      // Handle expected errors (400-series)
-      throw error; // Re-throw the error to preserve the correct status code
+      throw error;
     } else {
-      // Handle 500-series or unexpected errors
       log.error(error.message);
-      // You can log the full error details or take specific actions
-      throw CustomError("Error retrieving assets", 500); // Convert to 500 and re-throw
+      throw CustomError("Error retrieving assets", 500);
     }
   }
 };
 
-// Retrieve an Asset by ID
 const getAssetById = async (email, assetId) => {
   try {
     const user = await userService.findUserByEmail(email);
@@ -170,20 +156,15 @@ const getAssetById = async (email, assetId) => {
   } catch (error) {
     if (error.message && error.message.toLowerCase().includes("does not exist"))
       throw CustomError(`Asset not found${assetId ? `: ${assetId}` : ""}`, 404);
-    // Handle specific error codes
     if (error.statusCode >= 400 && error.statusCode < 500) {
-      // Handle expected errors (400-series)
-      throw error; // Re-throw the error to preserve the correct status code
+      throw error;
     } else {
-      // Handle 500-series or unexpected errors
       log.error(error.message);
-      // You can log the full error details or take specific actions
-      throw CustomError("Error retrieving asset", 500); // Convert to 500 and re-throw
+      throw CustomError("Error retrieving asset", 500);
     }
   }
 };
 
-// Get Asset History
 const getAssetHistory = async (email, assetId) => {
   try {
     getAssetById(email, assetId);
@@ -202,20 +183,15 @@ const getAssetHistory = async (email, assetId) => {
     );
     return JSON.parse(result);
   } catch (error) {
-    // Handle specific error codes
     if (error.statusCode >= 400 && error.statusCode < 500) {
-      // Handle expected errors (400-series)
-      throw error; // Re-throw the error to preserve the correct status code
+      throw error;
     } else {
-      // Handle 500-series or unexpected errors
       log.error(error.message);
-      // You can log the full error details or take specific actions
-      throw CustomError("Error getting asset history", 500); // Convert to 500 and re-throw
+      throw CustomError("Error getting asset history", 500);
     }
   }
 };
 
-// Delete an Asset
 const deleteAsset = async (email, assetId) => {
   try {
     await getAssetById(email, assetId);
@@ -234,20 +210,15 @@ const deleteAsset = async (email, assetId) => {
     );
     return { message: `Asset with ID ${assetId} has been deleted.` };
   } catch (error) {
-    // Handle specific error codes
     if (error.statusCode >= 400 && error.statusCode < 500) {
-      // Handle expected errors (400-series)
-      throw error; // Re-throw the error to preserve the correct status code
+      throw error;
     } else {
-      // Handle 500-series or unexpected errors
       log.error(error.message);
-      // You can log the full error details or take specific actions
-      throw CustomError("Error deleting asset", 500); // Convert to 500 and re-throw
+      throw CustomError("Error deleting asset", 500);
     }
   }
 };
 
-// Transfer an Asset to a New Owner
 async function transferAsset(email, assetId, newOwner) {
   try {
     const user = await userService.findUserByEmail(email);
@@ -265,15 +236,11 @@ async function transferAsset(email, assetId, newOwner) {
     );
     return { assetId, newOwner, oldOwner: result };
   } catch (error) {
-    // Handle specific error codes
     if (error.statusCode >= 400 && error.statusCode < 500) {
-      // Handle expected errors (400-series)
-      throw error; // Re-throw the error to preserve the correct status code
+      throw error;
     } else {
-      // Handle 500-series or unexpected errors
       log.error(error.message);
-      // You can log the full error details or take specific actions
-      throw CustomError("Error transferring asset", 500); // Convert to 500 and re-throw
+      throw CustomError("Error transferring asset", 500);
     }
   }
 }
