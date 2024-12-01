@@ -87,6 +87,35 @@ jq --version
 
 ---
 
+### Installing Node.js and npm
+
+#### 1. Update Package Index
+
+In the terminal, start by updating the package index:
+
+```bash
+sudo apt-get update
+```
+
+#### 2. Install Node.js and npm
+
+Ubuntu's repository includes a Node.js package that also installs npm. Run the following command to install them:
+
+```bash
+sudo apt-get install -y nodejs npm
+```
+
+#### 3. Verify the Installation
+
+Check that Node.js and npm were installed successfully by checking their versions:
+
+```bash
+node -v
+npm -v
+```
+
+---
+
 ## Step 1: Install Fabric Samples, Binaries, and Docker Images
 
 Run the following:

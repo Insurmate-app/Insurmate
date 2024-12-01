@@ -1,8 +1,13 @@
-### Interns 
-- Brain Tran, Henry Nguyen, Jonah Nathan, Matthew Fuentes James 
+### Interns
+
+- Brain Tran, Henry Nguyen, Jonah Nathan, Matthew Fuentes James
+
 ### Senior Software Engineer
+
 - Dr. Cristian Mateos ( [Website](https://users.exa.unicen.edu.ar/~cmateos/) )
+
 ### Product Owner
+
 - Toe Arkar ( [GitHub](https://github.com/Toe12) )
 
 ![mortgage_policy_exchange_workdlow.png](mortgage_policy_exchange_workdlow.png)
@@ -95,40 +100,3 @@ graph TD
     NodeJS --> GitHub
     React --> GitHub
 ```
-
-### Blockchain
-
-- **Tech:** [Hyperledger Fabric](https://docs.google.com/presentation/d/1SrBRrJa8lHw4Rct_hfm9C1ss2U1PXXnyWtEB_lxk8_Y/edit?usp=sharing)
-
-### Full-Stack
-
-- **Frontend:** React
-- **Backend:** Express JS
-
-### API Testing
-
-- **Tech** Postman
-
-### Database
-
-- **Tech** MongoDb
-
-### Containerization
-
-- **Tech:** Docker
-
-### Version Control
-
-- **Tech:** Github
-
-### Text Processing
-
-- **Tech:** Amazon Textract
-
-### Cloud Storage
-
-- **Tech:** Cloud storage with S3
-
-### Unit & integration Testing
-
-- **Tech:** Jest/Mocha and Testcontainers (<b>subject to change)
