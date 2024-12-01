@@ -128,7 +128,8 @@ const Home = () => {
             </li>
             <li className="nav-item">
               <a
-                href="/"
+                href="https://github.com/We-Care-Insurance"
+                target="_blank"
                 className="nav-link text-secondary d-flex align-items-center"
               >
                 <i className="bi bi-github me-1"></i>

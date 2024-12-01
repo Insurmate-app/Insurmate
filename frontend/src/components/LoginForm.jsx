@@ -93,6 +93,20 @@ const LoginForm = () => {
           border: "1px solid #ddd",
         }}
       >
+        {/* Circular Icon */}
+        <div className="text-center mb-3">
+          <img
+            src="/insurmate_logo.png"
+            alt="Icon"
+            style={{
+              width: "70px",
+              height: "70px",
+              borderRadius: "50%",
+              backgroundColor: "#fff",
+              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+            }}
+          />
+        </div>
         <h2 className="text-center mb-4" style={{ color: "#333" }}>
           Welcome Back
         </h2>
@@ -109,11 +123,11 @@ const LoginForm = () => {
               placeholder="user@example.com"
               value={email}
               onChange={handleInputChange}
-              // style={{
-              //   backgroundColor: "#fff",
-              //   border: "1px solid #ddd",
-              //   borderRadius: "8px",
-              // }}
+              style={{
+                backgroundColor: "#fff",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+              }}
               required
             />
             {errors.email && (
