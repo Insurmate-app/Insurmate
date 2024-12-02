@@ -5,7 +5,12 @@ import * as yup from "yup";
 
 const baseURL = `${import.meta.env.VITE_API_BASE_URL}/asset`;
 
-const PolicyViewUpdate = ({ id }) => {
+const PolicyViewUpdate = () => {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  if (!id) throw new Error("No ID provided.");
+
   const [formValues, setFormValues] = useState({
     assetId: "",
     firstName: "",

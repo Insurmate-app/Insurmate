@@ -128,7 +128,7 @@ const Dash = () => {
                 className="btn btn-link text-info"
                 title="View"
                 onClick={() => {
-                  window.location.href = `/policy/${params.row.id}`;
+                  window.location.href = `/policy?id=${encodeURIComponent(params.row.id)}`;
                 }}
                 disabled={isDeleting}
               >
