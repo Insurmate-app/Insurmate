@@ -5,7 +5,6 @@ import axios from "axios";
 import fileSaver from "file-saver";
 import Papa from "papaparse";
 
-// Import Modal Component
 import AddPolicyModal from "./AddPolicy";
 
 const baseURL = `${import.meta.env.VITE_API_BASE_URL}/asset`;
@@ -14,8 +13,9 @@ const Dash = () => {
   const [data, setData] = useState([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
 
-  // Fetch data from API
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -29,15 +29,16 @@ const Dash = () => {
           },
         });
 
-        // Transform the data to flatten the structure
         const transformedData = response.data.map((item) => ({
-          id: item.id, // Keep the id
-          ...item.data, // Spread the fields inside the `data` object to the top level
+          id: item.id,
+          ...item.data,
         }));
 
         setData(transformedData);
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -48,19 +49,43 @@ const Dash = () => {
   const handleAddPolicy = (newPolicy) => {
     setShowModal(false);
 
-    ///refresh the page
     // TODO: find a better way. consider using websocket
     window.location.reload();
   };
-
-  // Handle CSV export
   const handleExportCSV = () => {
-    const csv = Papa.unparse(data); // Convert data to CSV
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" }); // Create CSV Blob
-    fileSaver.saveAs(blob, "policies.csv"); // Trigger download
+    const csv = Papa.unparse(data);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    fileSaver.saveAs(blob, "policies.csv");
   };
 
-  // Define DataGrid columns
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this policy?",
+    );
+    if (!confirmDelete) return;
+
+    setDeletingId(id);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("Token not found in localStorage");
+
+      await axios.delete(`${baseURL}/delete/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setData((prevData) => prevData.filter((item) => item.id !== id));
+      alert("Policy deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting policy:", error);
+      alert("Failed to delete policy. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const columns = useMemo(
     () => [
       { field: "firstName", headerName: "First Name", flex: 1 },
@@ -95,38 +120,17 @@ const Dash = () => {
         flex: 1,
         sortable: false,
         renderCell: (params) => {
-          const handleDelete = async (id) => {
-            const confirmDelete = window.confirm(
-              "Are you sure you want to delete this policy?",
-            );
-            if (!confirmDelete) return; // Exit if the user cancels
-
-            try {
-              const token = localStorage.getItem("token");
-              if (!token) throw new Error("Token not found in localStorage");
-
-              await axios.delete(`${baseURL}/delete/${id}`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              });
-
-              setData((prev) => prev.filter((item) => item.id !== id));
-              alert("Policy deleted successfully.");
-            } catch (error) {
-              console.error("Error deleting policy:", error);
-              alert("Failed to delete policy. Please try again.");
-            }
-          };
+          const isDeleting = deletingId === params.row.id;
 
           return (
             <>
               <button
                 className="btn btn-link text-info"
                 title="View"
-                onClick={() =>
-                  alert(`View details of ${params.row?.name || ""}`)
-                }
+                onClick={() => {
+                  window.location.href = `/policy/${params.row.id}`;
+                }}
+                disabled={isDeleting}
               >
                 <i className="bi bi-eye-fill"></i>
               </button>
@@ -134,18 +138,25 @@ const Dash = () => {
                 className="btn btn-link text-danger"
                 title="Delete Policy"
                 onClick={() => handleDelete(params.row.id)}
+                disabled={isDeleting}
               >
-                <i className="bi bi-trash-fill"></i>
+                {isDeleting ? (
+                  <span
+                    className="spinner-border spinner-border-sm text-danger"
+                    role="status"
+                  ></span>
+                ) : (
+                  <i className="bi bi-trash-fill"></i>
+                )}
               </button>
             </>
           );
         },
       },
     ],
-    [],
+    [deletingId],
   );
 
-  // Filter data based on global search
   const filteredData = useMemo(() => {
     return data.filter((row) =>
       Object.values(row || {}).some((value) =>
@@ -153,6 +164,17 @@ const Dash = () => {
       ),
     );
   }, [data, globalFilter]);
+
+  if (isLoading) {
+    return (
+      <div className="text-center mt-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p>Loading policy details...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container my-4">
@@ -182,7 +204,6 @@ const Dash = () => {
             Export to CSV
           </button>
         </div>
-        {/* Global Search */}
         <input
           type="text"
           value={globalFilter || ""}
@@ -192,7 +213,6 @@ const Dash = () => {
           style={{ borderRadius: "8px" }}
         />
       </div>
-
       <div style={{ height: 400, width: "100%" }}>
         <DataGrid
           rows={filteredData}
@@ -203,8 +223,6 @@ const Dash = () => {
           checkboxSelection
         />
       </div>
-
-      {/* Add Policy Modal */}
       <AddPolicyModal
         showModal={showModal}
         setShowModal={setShowModal}
