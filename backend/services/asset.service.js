@@ -167,7 +167,7 @@ const getAssetById = async (email, assetId) => {
 
 const getAssetHistory = async (email, assetId) => {
   try {
-    getAssetById(email, assetId);
+    await getAssetById(email, assetId);
 
     const user = await userService.findUserByEmail(email);
 
