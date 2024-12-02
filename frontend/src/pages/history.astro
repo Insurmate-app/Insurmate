@@ -1,0 +1,10 @@
+---
+import NavBar from "../components/NavBar.jsx";
+import MainLayout from "../layouts/MainLayout.astro";
+import AssetHistory from "../components/AssetHistory.jsx";
+---
+
+<MainLayout title="View/Update Policy" description="View and update a policy.">
+  <NavBar client:load />
+  <AssetHistory client:only />
+</MainLayout>

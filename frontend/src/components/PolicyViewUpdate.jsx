@@ -9,7 +9,9 @@ const PolicyViewUpdate = () => {
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
 
-  if (!id) throw new Error("No ID provided.");
+  if (!id){
+    window.location.href = "/dashboard";
+  }
 
   const [formValues, setFormValues] = useState({
     assetId: "",

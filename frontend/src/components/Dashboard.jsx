@@ -135,6 +135,15 @@ const Dash = () => {
                 <i className="bi bi-eye-fill"></i>
               </button>
               <button
+                className="btn btn-link text-info"
+                title="History"
+                onClick={() => {
+                  window.location.href = `/history?id=${encodeURIComponent(params.row.id)}`;
+                }}
+              >
+                <i className="bi bi-clock-history"></i>
+              </button>
+              <button
                 className="btn btn-link text-danger"
                 title="Delete Policy"
                 onClick={() => handleDelete(params.row.id)}
