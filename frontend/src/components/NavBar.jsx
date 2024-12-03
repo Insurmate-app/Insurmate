@@ -43,7 +43,13 @@ const Navbar = () => {
           />
           Insurmate
         </a>
-        <button className="btn btn-secondary" onClick={handleLogout}>
+        <button
+          className="btn btn-light"
+          style={{
+            backgroundColor: "#d98880",
+          }}
+          onClick={handleLogout}
+        >
           Logout
         </button>
       </div>

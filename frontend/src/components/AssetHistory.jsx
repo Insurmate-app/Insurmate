@@ -66,7 +66,10 @@ const AssetHistory = () => {
       <div className="d-flex justify-content-between">
         <button
           type="button"
-          className="btn btn-secondary"
+          className="btn btn-light"
+          style={{
+            backgroundColor: "#95a5a6",
+          }}
           onClick={() => (window.location.href = "/dashboard")}
         >
           Back

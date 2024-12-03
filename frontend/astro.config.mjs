@@ -9,5 +9,4 @@ export default defineConfig({
   vite: {
     envPrefix: "VITE_",
   },
-  output: "server", 
 });

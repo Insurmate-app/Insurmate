@@ -3,13 +3,16 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import * as yup from "yup";
 
+import useModal from "../hooks/useModal";
+import Modal from "./Modal";
+
 const baseURL = `${import.meta.env.VITE_API_BASE_URL}/asset`;
 
 const PolicyViewUpdate = () => {
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
 
-  if (!id){
+  if (!id) {
     window.location.href = "/dashboard";
   }
 
@@ -20,11 +23,13 @@ const PolicyViewUpdate = () => {
     email: "",
     policyNumber: "",
     owner: "",
-    status: "Pending", // Default status
+    status: "Pending",
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { isVisible, message, showModal, hideModal } = useModal();
 
   const validationSchema = yup.object().shape({
     firstName: yup.string().required("First Name is required"),
@@ -72,7 +77,8 @@ const PolicyViewUpdate = () => {
         });
       } catch (error) {
         console.error("Error fetching policy data:", error);
-        alert("Failed to load policy details. Please try again.");
+        showModal("Failed to load policy details. Please try again.");
+        window.location.href = "/dashboard";
       } finally {
         setIsLoading(false);
       }
@@ -137,8 +143,7 @@ const PolicyViewUpdate = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      alert("Policy updated successfully!");
+      showModal("Policy updated successfully!");
     } catch (error) {
       console.error("Error updating policy:", error);
       setErrors({ submit: "Failed to update the policy. Please try again." });
@@ -276,14 +281,20 @@ const PolicyViewUpdate = () => {
           <div className="d-flex justify-content-between">
             <button
               type="button"
-              className="btn btn-secondary"
+              className="btn btn-light"
+              style={{
+                backgroundColor: "#95a5a6",
+              }}
               onClick={handleBack}
             >
               Back
             </button>
             <button
               type="submit"
-              className="btn btn-primary"
+              className="btn btn-light"
+              style={{
+                backgroundColor: "#f8c471",
+              }}
               disabled={isSubmitting}
             >
               {isSubmitting ? "Updating..." : "Update Policy"}
@@ -291,6 +302,7 @@ const PolicyViewUpdate = () => {
           </div>
         </form>
       </div>
+      <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
     </div>
   );
 };
