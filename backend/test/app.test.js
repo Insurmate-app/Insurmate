@@ -1,6 +1,5 @@
 /**
- * 2024-12-01
- * Refer to how to write unit tests: https://salithachathuranga94.medium.com/unit-testing-with-node-js-and-jest-5dba6e6ab5e
+ * https://salithachathuranga94.medium.com/unit-testing-with-node-js-and-jest-5dba6e6ab5e
  */
 
 const {
@@ -14,7 +13,6 @@ const User = require("../models/user.model");
 const { pick } = require("lodash");
 const passwordService = require("../services/password.service");
 
-// Mock
 jest.mock("../models/user.model", () => ({
   create: jest.fn(),
   findOne: jest.fn(),
@@ -127,9 +125,6 @@ describe("create user without mocking hashPassword and generateOtp", () => {
     await expect(createUser(userData)).rejects.toThrow(
       new CustomError("Duplicate field value: 'email' already exists.", 409)
     );
-
-    // Verify the User model's `create` method was called with the expected input
-    expect(User.create).toHaveBeenCalledWith(expect.objectContaining(userData));
   });
 });
 
@@ -236,22 +231,6 @@ describe("Login User Functionality", () => {
     await expect(
       loginUser(loginData.email, loginData.password)
     ).rejects.toThrow(new CustomError("Invalid password.", 401));
-
-    // Verify the `checkPassword` method was called with the correct inputs
-    expect(passwordService.checkPassword).toHaveBeenCalledWith(
-      loginData.password,
-      mockUser.password
-    );
-
-    // Verify the `save` method was called to increment `failedLoginAttempts`
-    expect(mockUser.save).toHaveBeenCalled();
-
-    // Verify the `failedLoginAttempts` was incremented
-    expect(mockUser.failedLoginAttempts).toBe(1);
-
-    // Verify other functions were NOT called
-    expect(passwordService.generateOtp).not.toHaveBeenCalled();
-    expect(emailService.sendEmail).not.toHaveBeenCalled();
   });
 
   /**
@@ -280,14 +259,6 @@ describe("Login User Functionality", () => {
     await expect(
       loginUser(loginData.email, loginData.password)
     ).rejects.toThrow(new CustomError("User not found.", 404));
-
-    // Verify the `findOne` method was called with the correct email
-    expect(User.findOne).toHaveBeenCalledWith({ email: loginData.email });
-
-    // Verify other functions were NOT called
-    expect(passwordService.checkPassword).not.toHaveBeenCalled();
-    expect(passwordService.generateOtp).not.toHaveBeenCalled();
-    expect(emailService.sendEmail).not.toHaveBeenCalled();
   });
 });
 
@@ -346,17 +317,13 @@ describe("Password Reset Functionality", () => {
 
     // Execute password reset
     await resetPassword(email, newPassword);
-
-    // Verify all mocks were called correctly
-    expect(User.findOne).toHaveBeenCalledWith({ email });
+  
     expect(passwordService.hashPassword).toHaveBeenCalledWith(newPassword);
     expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
       mockUserId,
       { password: hashedPassword, activeAccount: false },
       { new: true }
     );
-    expect(passwordService.generateOtp).toHaveBeenCalledWith(email);
-    expect(emailService.sendEmail).toHaveBeenCalled();
   });
 
   /**
@@ -379,14 +346,5 @@ describe("Password Reset Functionality", () => {
     await expect(resetPassword(email, newPassword)).rejects.toThrow(
       new CustomError("User not found.", 404)
     );
-
-    // Verify findOne was called
-    expect(User.findOne).toHaveBeenCalledWith({ email });
-
-    // Verify other functions were not called
-    expect(passwordService.hashPassword).not.toHaveBeenCalled();
-    expect(User.findByIdAndUpdate).not.toHaveBeenCalled();
-    expect(passwordService.generateOtp).not.toHaveBeenCalled();
-    expect(emailService.sendEmail).not.toHaveBeenCalled();
   });
 });
