@@ -13,41 +13,7 @@
 ![mortgage_policy_exchange_workdlow.png](mortgage_policy_exchange_workdlow.png)
 
 ```mermaid
-graph TD
-
-    %% Add title
-    Title["Mortgage Process with Blockchain Integration"]:::titleStyle
-
-    %% Define custom CSS styles
-    classDef nodeStyle fill:#f9f9f9,stroke:#333,stroke-width:2px,font-size:14px;
-    classDef processStyle fill:#e0e0e0,stroke:#5A5A5A,stroke-width:2px,font-size:14px;
-    classDef subgraphStyle fill:#f1f3f5,stroke:#007ACC,stroke-width:2px,font-size:14px;
-
-    A[Homebuyer] -->|Submits Loan Application| B(Bank)
-    B -->|Approves Loan| C[Homebuyer Proceeds with Purchase]
-    C -->|Requires Mortgage Insurance| D[Homeowner]
-    D -->|Submits Insurance Request| E[Insurance Provider/ Insurance Broker]
-    E -->|Uploads Mortgage Policy | F[Blockchain Network]
-    F -->|Secures Policy Transactions| G[Access Control System]
-
-    G -->|Manages Authentication| D
-    G -->|Manages Authorization| B
-    G -->|Manages User Profiles| E
-
-    subgraph Policy Exchange on Blockchain
-        F -->|Facilitates Policy Transfer| B
-        F -->|Facilitates Policy Transfer| D
-        F -->|Facilitates Policy Transfer| E
-    end
-
-    %% Apply styles
-    class A,B,C,D,E,F,G nodeStyle;
-    class F,G processStyle;
-    class Policy_Exchange_on_Blockchain subgraphStyle;
-```
-
-```mermaid
- graph TB;
+graph TB;
 
     subgraph Blockchain Network
         direction TB
@@ -62,7 +28,9 @@ graph TD
         direction TB
         NodeJS[Node.js Server]
         React[React UI]
+        MongoDB[MongoDB]
         NodeJS <-->|HTTP| React
+        NodeJS -->|Authenticates via JWT| MongoDB
     end
 
     subgraph Object Storage
@@ -72,7 +40,7 @@ graph TD
 
     subgraph Text Extraction
         direction TB
-        Textract[Amazon Textract]
+        Textract[Amazon Textract / LLM Solutions]
     end
 
     subgraph Cloud Infrastructure
