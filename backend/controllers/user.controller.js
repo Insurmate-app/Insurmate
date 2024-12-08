@@ -17,8 +17,8 @@ const createUser = async (req, res, next) => {
 const resetPassword = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    await userService.resetPassword(email, password);
-    res.status(200).json("Password reset successful.");
+    const result = await userService.resetPassword(email, password);
+    res.status(200).json(result);
   } catch (error) {
     next(error);
   }
