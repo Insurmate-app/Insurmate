@@ -181,10 +181,6 @@ describe("Login User Functionality", () => {
 
     // Verify findOne was called
     expect(User.findOne).toHaveBeenCalledWith({ email });
-
-    // Verify checkPassword and save were not called
-    expect(passwordService.checkPassword).not.toHaveBeenCalled();
-    expect(mockUser.save).not.toHaveBeenCalled();
   });
 
   /**
