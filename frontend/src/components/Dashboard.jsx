@@ -37,6 +37,7 @@ const Dash = () => {
         setData(transformedData);
       } catch (error) {
         console.error("Error fetching data:", error);
+        window.location.href = "/login";
       } finally {
         setIsLoading(false);
       }
