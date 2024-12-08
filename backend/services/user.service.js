@@ -84,6 +84,8 @@ const resetPassword = async (email, newPassword) => {
     if (updatedUser) {
       await sendVerificationEmail(updatedUser.email, otpToken);
     }
+
+    return "Password reset successfully.";
   } catch (error) {
     if (error.statusCode >= 400 && error.statusCode < 500) {
       throw error;
