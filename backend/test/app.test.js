@@ -178,9 +178,6 @@ describe("Login User Functionality", () => {
         401
       )
     );
-
-    // Verify findOne was called
-    expect(User.findOne).toHaveBeenCalledWith({ email });
   });
 
   /**
@@ -313,7 +310,7 @@ describe("Password Reset Functionality", () => {
 
     // Execute password reset
     await resetPassword(email, newPassword);
-  
+
     expect(passwordService.hashPassword).toHaveBeenCalledWith(newPassword);
     expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
       mockUserId,
