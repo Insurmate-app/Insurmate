@@ -1,17 +1,15 @@
 const express = require("express");
 const { body } = require("express-validator");
+require("../security/passport");
+
 const router = express.Router();
 const passport = require("passport");
-require("../security/passport");
 
 const assetController = require("../controllers/asset.controller");
 const validate = require("../middlewares/requestValidator");
 
-const verifyToken = require("../middlewares/authMiddleware");
-
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-// Route to create an asset
 router.post(
   "/create",
   passport.authenticate("jwt", { session: false }),

@@ -13,42 +13,58 @@ var _require = __webpack_require__(903),
   uuidv4 = _require.v4;
 var jwt = __webpack_require__(829);
 var extractToken = __webpack_require__(642);
+var _require2 = __webpack_require__(111),
+  broadcastData = _require2.broadcastData;
 var createAsset = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(req, res, next) {
-    var token, payload, data, id, result;
+    var token, payload, data, id, payloadId, result, allAssets;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
         case 0:
           _context.prev = 0;
           token = extractToken(req);
-          if (!token) {
-            _context.next = 11;
+          if (token) {
+            _context.next = 5;
             break;
           }
-          payload = jwt.verify(token, process.env.JWT_SECRET);
+          res.status(401).json({
+            error: "Unauthorized"
+          });
+          return _context.abrupt("return");
+        case 5:
+          jwt.verify(token, process.env.JWT_SECRET);
           payload = jwt.decode(token);
           data = req.body.data;
-          id = uuidv4(); // Generate a UUID
-          _context.next = 9;
-          return assetService.createAsset(payload.id, {
+          id = uuidv4();
+          payloadId = payload.id;
+          _context.next = 12;
+          return assetService.createAsset(payloadId, {
             id: id,
             data: data
           });
-        case 9:
+        case 12:
           result = _context.sent;
+          _context.next = 15;
+          return assetService.getAllAssets(payloadId);
+        case 15:
+          allAssets = _context.sent;
+          // Broadcast the updated asset list to WebSocket clients
+          broadcastData({
+            type: "ASSET_LIST_UPDATE",
+            data: allAssets
+          });
           res.status(201).json(result);
-        case 11:
-          _context.next = 16;
+          _context.next = 23;
           break;
-        case 13:
-          _context.prev = 13;
+        case 20:
+          _context.prev = 20;
           _context.t0 = _context["catch"](0);
           next(_context.t0);
-        case 16:
+        case 23:
         case "end":
           return _context.stop();
       }
-    }, _callee, null, [[0, 13]]);
+    }, _callee, null, [[0, 20]]);
   }));
   return function createAsset(_x, _x2, _x3) {
     return _ref.apply(this, arguments);
@@ -62,33 +78,37 @@ var updateAsset = /*#__PURE__*/function () {
         case 0:
           _context2.prev = 0;
           token = extractToken(req);
-          if (!token) {
-            _context2.next = 10;
+          if (token) {
+            _context2.next = 5;
             break;
           }
-          payload = jwt.verify(token, process.env.JWT_SECRET);
+          res.status(401).json({
+            error: "Unauthorized"
+          });
+          return _context2.abrupt("return");
+        case 5:
+          jwt.verify(token, process.env.JWT_SECRET);
           payload = jwt.decode(token);
           _req$body = req.body, id = _req$body.id, data = _req$body.data;
-          _context2.next = 8;
+          _context2.next = 10;
           return assetService.updateAsset(payload.id, {
             id: id,
             data: data
           });
-        case 8:
+        case 10:
           result = _context2.sent;
           res.status(200).json(result);
-        case 10:
-          _context2.next = 15;
+          _context2.next = 17;
           break;
-        case 12:
-          _context2.prev = 12;
+        case 14:
+          _context2.prev = 14;
           _context2.t0 = _context2["catch"](0);
           next(_context2.t0);
-        case 15:
+        case 17:
         case "end":
           return _context2.stop();
       }
-    }, _callee2, null, [[0, 12]]);
+    }, _callee2, null, [[0, 14]]);
   }));
   return function updateAsset(_x4, _x5, _x6) {
     return _ref2.apply(this, arguments);
@@ -101,36 +121,36 @@ var getAllAssets = /*#__PURE__*/function () {
       while (1) switch (_context3.prev = _context3.next) {
         case 0:
           _context3.prev = 0;
-          // Retrieve the token from cookies
-          //const token = req.headers.cookie;
-          // Usage
           token = extractToken(req);
-          console.log("Extracted Token:", token);
-          if (!token) {
-            _context3.next = 10;
+          if (token) {
+            _context3.next = 5;
             break;
           }
-          payload = jwt.verify(token, process.env.JWT_SECRET);
+          res.status(401).json({
+            error: "Unauthorized"
+          });
+          return _context3.abrupt("return");
+        case 5:
+          jwt.verify(token, process.env.JWT_SECRET);
 
           // If you only want the payload without verifying, use jwt.decode
           payload = jwt.decode(token);
-          _context3.next = 8;
+          _context3.next = 9;
           return assetService.getAllAssets(payload.id);
-        case 8:
+        case 9:
           assets = _context3.sent;
           res.status(200).json(assets);
-        case 10:
-          _context3.next = 15;
+          _context3.next = 16;
           break;
-        case 12:
-          _context3.prev = 12;
+        case 13:
+          _context3.prev = 13;
           _context3.t0 = _context3["catch"](0);
           next(_context3.t0);
-        case 15:
+        case 16:
         case "end":
           return _context3.stop();
       }
-    }, _callee3, null, [[0, 12]]);
+    }, _callee3, null, [[0, 13]]);
   }));
   return function getAllAssets(_x7, _x8, _x9) {
     return _ref3.apply(this, arguments);
@@ -145,32 +165,35 @@ var getAssetById = /*#__PURE__*/function () {
           _context4.prev = 0;
           // Retrieve the token from cookies
           token = extractToken(req);
-          if (!token) {
-            _context4.next = 10;
+          if (token) {
+            _context4.next = 5;
             break;
           }
+          res.status(401).json({
+            error: "Unauthorized"
+          });
+          return _context4.abrupt("return");
+        case 5:
           // Use jwt.verify if you need to validate the token
-
-          payload = jwt.verify(token, process.env.JWT_SECRET);
+          jwt.verify(token, process.env.JWT_SECRET);
           payload = jwt.decode(token);
           assetId = req.params.id;
-          _context4.next = 8;
+          _context4.next = 10;
           return assetService.getAssetById(payload.id, assetId);
-        case 8:
+        case 10:
           asset = _context4.sent;
           res.status(200).json(asset);
-        case 10:
-          _context4.next = 15;
+          _context4.next = 17;
           break;
-        case 12:
-          _context4.prev = 12;
+        case 14:
+          _context4.prev = 14;
           _context4.t0 = _context4["catch"](0);
           next(_context4.t0);
-        case 15:
+        case 17:
         case "end":
           return _context4.stop();
       }
-    }, _callee4, null, [[0, 12]]);
+    }, _callee4, null, [[0, 14]]);
   }));
   return function getAssetById(_x10, _x11, _x12) {
     return _ref4.apply(this, arguments);
@@ -185,32 +208,34 @@ var getAssetHistory = /*#__PURE__*/function () {
           _context5.prev = 0;
           // Retrieve the token from cookies
           token = extractToken(req);
-          if (!token) {
-            _context5.next = 10;
+          if (token) {
+            _context5.next = 5;
             break;
           }
-          // Use jwt.verify if you need to validate the token
-
-          payload = jwt.verify(token, process.env.JWT_SECRET);
+          res.status(401).json({
+            error: "Unauthorized"
+          });
+          return _context5.abrupt("return");
+        case 5:
+          jwt.verify(token, process.env.JWT_SECRET);
           payload = jwt.decode(token);
           assetId = req.params.id;
-          _context5.next = 8;
+          _context5.next = 10;
           return assetService.getAssetHistory(payload.id, assetId);
-        case 8:
+        case 10:
           history = _context5.sent;
           res.status(200).json(history);
-        case 10:
-          _context5.next = 15;
+          _context5.next = 17;
           break;
-        case 12:
-          _context5.prev = 12;
+        case 14:
+          _context5.prev = 14;
           _context5.t0 = _context5["catch"](0);
           next(_context5.t0);
-        case 15:
+        case 17:
         case "end":
           return _context5.stop();
       }
-    }, _callee5, null, [[0, 12]]);
+    }, _callee5, null, [[0, 14]]);
   }));
   return function getAssetHistory(_x13, _x14, _x15) {
     return _ref5.apply(this, arguments);
@@ -225,30 +250,34 @@ var deleteAsset = /*#__PURE__*/function () {
           _context6.prev = 0;
           // Retrieve the token from cookies
           token = extractToken(req);
-          if (!token) {
-            _context6.next = 10;
+          if (token) {
+            _context6.next = 5;
             break;
           }
-          payload = jwt.verify(token, process.env.JWT_SECRET);
+          res.status(401).json({
+            error: "Unauthorized"
+          });
+          return _context6.abrupt("return");
+        case 5:
+          jwt.verify(token, process.env.JWT_SECRET);
           payload = jwt.decode(token);
           assetId = req.params.id;
-          _context6.next = 8;
+          _context6.next = 10;
           return assetService.deleteAsset(payload.id, assetId);
-        case 8:
+        case 10:
           result = _context6.sent;
           res.status(200).json(result);
-        case 10:
-          _context6.next = 15;
+          _context6.next = 17;
           break;
-        case 12:
-          _context6.prev = 12;
+        case 14:
+          _context6.prev = 14;
           _context6.t0 = _context6["catch"](0);
           next(_context6.t0);
-        case 15:
+        case 17:
         case "end":
           return _context6.stop();
       }
-    }, _callee6, null, [[0, 12]]);
+    }, _callee6, null, [[0, 14]]);
   }));
   return function deleteAsset(_x16, _x17, _x18) {
     return _ref6.apply(this, arguments);
@@ -262,32 +291,36 @@ var transferAsset = /*#__PURE__*/function () {
         case 0:
           _context7.prev = 0;
           token = extractToken(req);
-          if (!token) {
-            _context7.next = 10;
+          if (token) {
+            _context7.next = 5;
             break;
           }
-          payload = jwt.verify(token, process.env.JWT_SECRET);
+          res.status(401).json({
+            error: "Unauthorized"
+          });
+          return _context7.abrupt("return");
+        case 5:
+          jwt.verify(token, process.env.JWT_SECRET);
 
           // If you only want the payload without verifying, use jwt.decode
           payload = jwt.decode(token);
           _req$body2 = req.body, assetId = _req$body2.assetId, newOwner = _req$body2.newOwner;
-          _context7.next = 8;
+          _context7.next = 10;
           return assetService.transferAsset(payload.id, assetId, newOwner);
-        case 8:
+        case 10:
           result = _context7.sent;
           res.status(200).json(result);
-        case 10:
-          _context7.next = 15;
+          _context7.next = 17;
           break;
-        case 12:
-          _context7.prev = 12;
+        case 14:
+          _context7.prev = 14;
           _context7.t0 = _context7["catch"](0);
           next(_context7.t0);
-        case 15:
+        case 17:
         case "end":
           return _context7.stop();
       }
-    }, _callee7, null, [[0, 12]]);
+    }, _callee7, null, [[0, 14]]);
   }));
   return function transferAsset(_x19, _x20, _x21) {
     return _ref7.apply(this, arguments);
@@ -349,7 +382,7 @@ var createUser = /*#__PURE__*/function () {
 }();
 var resetPassword = /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2(req, res, next) {
-    var _req$body, email, password;
+    var _req$body, email, password, result;
     return _regeneratorRuntime().wrap(function _callee2$(_context2) {
       while (1) switch (_context2.prev = _context2.next) {
         case 0:
@@ -358,18 +391,19 @@ var resetPassword = /*#__PURE__*/function () {
           _context2.next = 4;
           return userService.resetPassword(email, password);
         case 4:
-          res.status(200).json("Password reset successful.");
-          _context2.next = 10;
+          result = _context2.sent;
+          res.status(200).json(result);
+          _context2.next = 11;
           break;
-        case 7:
-          _context2.prev = 7;
+        case 8:
+          _context2.prev = 8;
           _context2.t0 = _context2["catch"](0);
           next(_context2.t0);
-        case 10:
+        case 11:
         case "end":
           return _context2.stop();
       }
-    }, _callee2, null, [[0, 7]]);
+    }, _callee2, null, [[0, 8]]);
   }));
   return function resetPassword(_x4, _x5, _x6) {
     return _ref2.apply(this, arguments);
@@ -398,7 +432,7 @@ var loginUser = /*#__PURE__*/function () {
             // Makes the cookie inaccessible to JavaScript on the client-side
             secure: true,
             //process.env.NODE_ENV === "production", // Secure only in production
-            sameSite: "None",
+            sameSite: "Strict",
             maxAge: 900000 // 15 minutes in milliseconds
           });
           res.status(200).json({
@@ -555,30 +589,6 @@ module.exports = logger;
 
 /***/ }),
 
-/***/ 994:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-var jwt = __webpack_require__(829);
-var JWT_SECRET = process.env.JWT_SECRET;
-function verifyToken(req, res, next) {
-  var token = req.header("Authorization");
-  if (!token) return res.status(401).json({
-    error: "Access denied"
-  });
-  try {
-    var decoded = jwt.verify(token, JWT_SECRET);
-    req.id = decoded.id;
-    next();
-  } catch (error) {
-    res.status(401).json({
-      error: "Invalid token"
-    });
-  }
-}
-module.exports = verifyToken;
-
-/***/ }),
-
 /***/ 946:
 /***/ ((module) => {
 
@@ -698,15 +708,12 @@ module.exports = mongoose.model("User", userSchema);
 var express = __webpack_require__(252);
 var _require = __webpack_require__(975),
   body = _require.body;
+__webpack_require__(537);
 var router = express.Router();
 var passport = __webpack_require__(278);
-__webpack_require__(537);
 var assetController = __webpack_require__(790);
 var validate = __webpack_require__(465);
-var verifyToken = __webpack_require__(994);
 var emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-// Route to create an asset
 router.post("/create", passport.authenticate("jwt", {
   session: false
 }), [body("data.firstName").notEmpty().withMessage("First name is required").isString().withMessage("First name must be a string").isLength({
@@ -770,7 +777,6 @@ var router = express.Router();
 var passport = __webpack_require__(278);
 __webpack_require__(537); // Import Passport JWT configuration
 
-var verifyToken = __webpack_require__(994);
 var validate = __webpack_require__(465);
 var _require = __webpack_require__(975),
   check = _require.check;
@@ -833,60 +839,14 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
 function _regeneratorRuntime() { "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */ _regeneratorRuntime = function _regeneratorRuntime() { return e; }; var t, e = {}, r = Object.prototype, n = r.hasOwnProperty, o = Object.defineProperty || function (t, e, r) { t[e] = r.value; }, i = "function" == typeof Symbol ? Symbol : {}, a = i.iterator || "@@iterator", c = i.asyncIterator || "@@asyncIterator", u = i.toStringTag || "@@toStringTag"; function define(t, e, r) { return Object.defineProperty(t, e, { value: r, enumerable: !0, configurable: !0, writable: !0 }), t[e]; } try { define({}, ""); } catch (t) { define = function define(t, e, r) { return t[e] = r; }; } function wrap(t, e, r, n) { var i = e && e.prototype instanceof Generator ? e : Generator, a = Object.create(i.prototype), c = new Context(n || []); return o(a, "_invoke", { value: makeInvokeMethod(t, r, c) }), a; } function tryCatch(t, e, r) { try { return { type: "normal", arg: t.call(e, r) }; } catch (t) { return { type: "throw", arg: t }; } } e.wrap = wrap; var h = "suspendedStart", l = "suspendedYield", f = "executing", s = "completed", y = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} var p = {}; define(p, a, function () { return this; }); var d = Object.getPrototypeOf, v = d && d(d(values([]))); v && v !== r && n.call(v, a) && (p = v); var g = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(p); function defineIteratorMethods(t) { ["next", "throw", "return"].forEach(function (e) { define(t, e, function (t) { return this._invoke(e, t); }); }); } function AsyncIterator(t, e) { function invoke(r, o, i, a) { var c = tryCatch(t[r], t, o); if ("throw" !== c.type) { var u = c.arg, h = u.value; return h && "object" == _typeof(h) && n.call(h, "__await") ? e.resolve(h.__await).then(function (t) { invoke("next", t, i, a); }, function (t) { invoke("throw", t, i, a); }) : e.resolve(h).then(function (t) { u.value = t, i(u); }, function (t) { return invoke("throw", t, i, a); }); } a(c.arg); } var r; o(this, "_invoke", { value: function value(t, n) { function callInvokeWithMethodAndArg() { return new e(function (e, r) { invoke(t, n, e, r); }); } return r = r ? r.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg(); } }); } function makeInvokeMethod(e, r, n) { var o = h; return function (i, a) { if (o === f) throw Error("Generator is already running"); if (o === s) { if ("throw" === i) throw a; return { value: t, done: !0 }; } for (n.method = i, n.arg = a;;) { var c = n.delegate; if (c) { var u = maybeInvokeDelegate(c, n); if (u) { if (u === y) continue; return u; } } if ("next" === n.method) n.sent = n._sent = n.arg;else if ("throw" === n.method) { if (o === h) throw o = s, n.arg; n.dispatchException(n.arg); } else "return" === n.method && n.abrupt("return", n.arg); o = f; var p = tryCatch(e, r, n); if ("normal" === p.type) { if (o = n.done ? s : l, p.arg === y) continue; return { value: p.arg, done: n.done }; } "throw" === p.type && (o = s, n.method = "throw", n.arg = p.arg); } }; } function maybeInvokeDelegate(e, r) { var n = r.method, o = e.iterator[n]; if (o === t) return r.delegate = null, "throw" === n && e.iterator["return"] && (r.method = "return", r.arg = t, maybeInvokeDelegate(e, r), "throw" === r.method) || "return" !== n && (r.method = "throw", r.arg = new TypeError("The iterator does not provide a '" + n + "' method")), y; var i = tryCatch(o, e.iterator, r.arg); if ("throw" === i.type) return r.method = "throw", r.arg = i.arg, r.delegate = null, y; var a = i.arg; return a ? a.done ? (r[e.resultName] = a.value, r.next = e.nextLoc, "return" !== r.method && (r.method = "next", r.arg = t), r.delegate = null, y) : a : (r.method = "throw", r.arg = new TypeError("iterator result is not an object"), r.delegate = null, y); } function pushTryEntry(t) { var e = { tryLoc: t[0] }; 1 in t && (e.catchLoc = t[1]), 2 in t && (e.finallyLoc = t[2], e.afterLoc = t[3]), this.tryEntries.push(e); } function resetTryEntry(t) { var e = t.completion || {}; e.type = "normal", delete e.arg, t.completion = e; } function Context(t) { this.tryEntries = [{ tryLoc: "root" }], t.forEach(pushTryEntry, this), this.reset(!0); } function values(e) { if (e || "" === e) { var r = e[a]; if (r) return r.call(e); if ("function" == typeof e.next) return e; if (!isNaN(e.length)) { var o = -1, i = function next() { for (; ++o < e.length;) if (n.call(e, o)) return next.value = e[o], next.done = !1, next; return next.value = t, next.done = !0, next; }; return i.next = i; } } throw new TypeError(_typeof(e) + " is not iterable"); } return GeneratorFunction.prototype = GeneratorFunctionPrototype, o(g, "constructor", { value: GeneratorFunctionPrototype, configurable: !0 }), o(GeneratorFunctionPrototype, "constructor", { value: GeneratorFunction, configurable: !0 }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, u, "GeneratorFunction"), e.isGeneratorFunction = function (t) { var e = "function" == typeof t && t.constructor; return !!e && (e === GeneratorFunction || "GeneratorFunction" === (e.displayName || e.name)); }, e.mark = function (t) { return Object.setPrototypeOf ? Object.setPrototypeOf(t, GeneratorFunctionPrototype) : (t.__proto__ = GeneratorFunctionPrototype, define(t, u, "GeneratorFunction")), t.prototype = Object.create(g), t; }, e.awrap = function (t) { return { __await: t }; }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, c, function () { return this; }), e.AsyncIterator = AsyncIterator, e.async = function (t, r, n, o, i) { void 0 === i && (i = Promise); var a = new AsyncIterator(wrap(t, r, n, o), i); return e.isGeneratorFunction(r) ? a : a.next().then(function (t) { return t.done ? t.value : a.next(); }); }, defineIteratorMethods(g), define(g, u, "Generator"), define(g, a, function () { return this; }), define(g, "toString", function () { return "[object Generator]"; }), e.keys = function (t) { var e = Object(t), r = []; for (var n in e) r.push(n); return r.reverse(), function next() { for (; r.length;) { var t = r.pop(); if (t in e) return next.value = t, next.done = !1, next; } return next.done = !0, next; }; }, e.values = values, Context.prototype = { constructor: Context, reset: function reset(e) { if (this.prev = 0, this.next = 0, this.sent = this._sent = t, this.done = !1, this.delegate = null, this.method = "next", this.arg = t, this.tryEntries.forEach(resetTryEntry), !e) for (var r in this) "t" === r.charAt(0) && n.call(this, r) && !isNaN(+r.slice(1)) && (this[r] = t); }, stop: function stop() { this.done = !0; var t = this.tryEntries[0].completion; if ("throw" === t.type) throw t.arg; return this.rval; }, dispatchException: function dispatchException(e) { if (this.done) throw e; var r = this; function handle(n, o) { return a.type = "throw", a.arg = e, r.next = n, o && (r.method = "next", r.arg = t), !!o; } for (var o = this.tryEntries.length - 1; o >= 0; --o) { var i = this.tryEntries[o], a = i.completion; if ("root" === i.tryLoc) return handle("end"); if (i.tryLoc <= this.prev) { var c = n.call(i, "catchLoc"), u = n.call(i, "finallyLoc"); if (c && u) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } else if (c) { if (this.prev < i.catchLoc) return handle(i.catchLoc, !0); } else { if (!u) throw Error("try statement without catch or finally"); if (this.prev < i.finallyLoc) return handle(i.finallyLoc); } } } }, abrupt: function abrupt(t, e) { for (var r = this.tryEntries.length - 1; r >= 0; --r) { var o = this.tryEntries[r]; if (o.tryLoc <= this.prev && n.call(o, "finallyLoc") && this.prev < o.finallyLoc) { var i = o; break; } } i && ("break" === t || "continue" === t) && i.tryLoc <= e && e <= i.finallyLoc && (i = null); var a = i ? i.completion : {}; return a.type = t, a.arg = e, i ? (this.method = "next", this.next = i.finallyLoc, y) : this.complete(a); }, complete: function complete(t, e) { if ("throw" === t.type) throw t.arg; return "break" === t.type || "continue" === t.type ? this.next = t.arg : "return" === t.type ? (this.rval = this.arg = t.arg, this.method = "return", this.next = "end") : "normal" === t.type && e && (this.next = e), y; }, finish: function finish(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.finallyLoc === t) return this.complete(r.completion, r.afterLoc), resetTryEntry(r), y; } }, "catch": function _catch(t) { for (var e = this.tryEntries.length - 1; e >= 0; --e) { var r = this.tryEntries[e]; if (r.tryLoc === t) { var n = r.completion; if ("throw" === n.type) { var o = n.arg; resetTryEntry(r); } return o; } } throw Error("illegal catch attempt"); }, delegateYield: function delegateYield(e, r, n) { return this.delegate = { iterator: values(e), resultName: r, nextLoc: n }, "next" === this.method && (this.arg = t), y; } }, e; }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
 function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
-// Environment Setup
-
-// The code requires the `path` module and uses it to resolve the path to a `.env` file, which contains environment variables.
-// The `dotenv` module is used to load the environment variables from the `.env` file.
-
-// Passport Setup
-
-// The code requires the `passport` module and sets up a JWT (JSON Web Token) strategy using the `passport-jwt` module.
-// The `ExtractJwt` module is used to extract the JWT token from the request.
-
-// Token Extraction
-
-// A custom function `cookieExtractor` is defined to extract the JWT token from the request cookies.
-
-// Passport Options
-
-// An options object `opts` is created to configure the passport JWT strategy.
-// The `jwtFromRequest` option is set to use the `cookieExtractor` function to extract the JWT token from the request cookies.
-// The `secretOrKey` option is set to the value of the `JWT_SECRET` environment variable.
-
-// Passport Strategy
-
-// The passport JWT strategy is created using the `opts` object.
-// The strategy uses an async function to verify the JWT token and find a user by email using the `userService` module.
-// If a user is found, the strategy returns the user object. If not, it returns `false`.
-// If an error occurs, the strategy returns the error.
-
-// Export
-
-// The configured passport instance is exported as a module.
-
-var path = __webpack_require__(3);
-(__webpack_require__(818).config)({
-  path: path.resolve(__dirname, "../.env")
-}); // Explicitly set the path to .env
-
 var passport = __webpack_require__(278);
 var passportJWT = __webpack_require__(714);
 var JwtStrategy = passportJWT.Strategy;
 var ExtractJwt = passportJWT.ExtractJwt;
 var userService = __webpack_require__(211);
-
-// Function to extract token from cookies
-var cookieExtractor = function cookieExtractor(req) {
-  var token = null;
-  if (req && req.cookies) {
-    token = req.cookies.token; // 'token' is the name of the cookie set in the login route
-  }
-  return token;
-};
 var opts = {
-  //jwtFromRequest: ExtractJwt.fromExtractors([cookieExtractor]),
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: process.env.JWT_SECRET // Ensure this is correctly set
+  secretOrKey: process.env.JWT_SECRET
 };
 passport.use(new JwtStrategy(opts, /*#__PURE__*/function () {
   var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(jwt_payload, done) {
@@ -954,7 +914,7 @@ function whichOrg(role) {
 // Create an Asset
 var createAsset = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(email, data) {
-    var _user, _org, result;
+    var user, org, result;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
         case 0:
@@ -962,12 +922,12 @@ var createAsset = /*#__PURE__*/function () {
           _context.next = 3;
           return userService.findUserByEmail(email);
         case 3:
-          _user = _context.sent;
-          data.data.owner = _user._id;
-          _org = whichOrg(_user.role);
-          data.status = "pending";
+          user = _context.sent;
+          data.data.owner = user._id;
+          data.data.status = "Pending";
+          org = whichOrg(user.role);
           _context.next = 9;
-          return submitTransaction(userId, _org, channel, chaincodeName, "CreateAsset", JSON.stringify(data));
+          return submitTransaction(userId, org, channel, chaincodeName, "CreateAsset", JSON.stringify(data));
         case 9:
           result = _context.sent;
           return _context.abrupt("return", JSON.parse(result));
@@ -980,9 +940,7 @@ var createAsset = /*#__PURE__*/function () {
           }
           throw _context.t0;
         case 19:
-          // Handle 500-series or unexpected errors
           log.error(_context.t0.message);
-          // You can log the full error details or take specific actions
           throw CustomError("Error creating asset", 500);
         case 21:
         case "end":
@@ -994,40 +952,47 @@ var createAsset = /*#__PURE__*/function () {
     return _ref.apply(this, arguments);
   };
 }();
-
-// Update an Asset
 var updateAsset = /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee2(email, data) {
-    var asset, result;
+    var _asset$data, _data$data$status, asset, user, _asset$data2, org, result;
     return _regeneratorRuntime().wrap(function _callee2$(_context2) {
       while (1) switch (_context2.prev = _context2.next) {
         case 0:
           _context2.prev = 0;
-          asset = getAssetById(email, data.id);
-          data.data.owner = asset.data.owner;
-          _context2.next = 5;
+          _context2.next = 3;
+          return getAssetById(email, data.id);
+        case 3:
+          asset = _context2.sent;
+          data.data.owner = asset === null || asset === void 0 || (_asset$data = asset.data) === null || _asset$data === void 0 ? void 0 : _asset$data.owner;
+          _context2.next = 7;
+          return userService.findUserByEmail(email);
+        case 7:
+          user = _context2.sent;
+          if (!((_data$data$status = data.data.status) !== null && _data$data$status !== void 0 && _data$data$status.trim())) {
+            data.data.status = asset === null || asset === void 0 || (_asset$data2 = asset.data) === null || _asset$data2 === void 0 ? void 0 : _asset$data2.status;
+          }
+          org = whichOrg(user.role);
+          _context2.next = 12;
           return submitTransaction(userId, org, channel, chaincodeName, "UpdateAsset", JSON.stringify(data));
-        case 5:
+        case 12:
           result = _context2.sent;
           return _context2.abrupt("return", JSON.parse(result));
-        case 9:
-          _context2.prev = 9;
+        case 16:
+          _context2.prev = 16;
           _context2.t0 = _context2["catch"](0);
           if (!(_context2.t0.statusCode >= 400 && _context2.t0.statusCode < 500)) {
-            _context2.next = 15;
+            _context2.next = 22;
             break;
           }
           throw _context2.t0;
-        case 15:
-          // Handle 500-series or unexpected errors
+        case 22:
           log.error(_context2.t0.message);
-          // You can log the full error details or take specific actions
           throw CustomError("Error updating asset", 500);
-        case 17:
+        case 24:
         case "end":
           return _context2.stop();
       }
-    }, _callee2, null, [[0, 9]]);
+    }, _callee2, null, [[0, 16]]);
   }));
   return function updateAsset(_x3, _x4) {
     return _ref2.apply(this, arguments);
@@ -1037,7 +1002,7 @@ var updateAsset = /*#__PURE__*/function () {
 // Retrieve All Assets
 var getAllAssets = /*#__PURE__*/function () {
   var _ref3 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee3(email) {
-    var _user2, role, _org2, result, assets;
+    var user, role, org, result, assets;
     return _regeneratorRuntime().wrap(function _callee3$(_context3) {
       while (1) switch (_context3.prev = _context3.next) {
         case 0:
@@ -1045,13 +1010,13 @@ var getAllAssets = /*#__PURE__*/function () {
           _context3.next = 3;
           return userService.findUserByEmail(email);
         case 3:
-          _user2 = _context3.sent;
-          role = _user2.role; // if (role !== "admin") {
+          user = _context3.sent;
+          role = user.role; // if (role !== "admin") {
           //   throw new CustomError("Regular user cannot retrieve all assets", 403);
           // }
-          _org2 = role === "admin" ? org2 : org1;
+          org = whichOrg(role);
           _context3.next = 8;
-          return evaluateTransaction(userId, _org2, channel, chaincodeName, "GetAllAssets");
+          return evaluateTransaction(userId, org, channel, chaincodeName, "GetAllAssets");
         case 8:
           result = _context3.sent;
           assets = JSON.parse(result); // TODO:Map the owner field to the user's full name
@@ -1077,9 +1042,7 @@ var getAllAssets = /*#__PURE__*/function () {
           }
           throw _context3.t0;
         case 19:
-          // Handle 500-series or unexpected errors
           log.error(_context3.t0.message);
-          // You can log the full error details or take specific actions
           throw CustomError("Error retrieving assets", 500);
         case 21:
         case "end":
@@ -1091,11 +1054,9 @@ var getAllAssets = /*#__PURE__*/function () {
     return _ref3.apply(this, arguments);
   };
 }();
-
-// Retrieve an Asset by ID
 var getAssetById = /*#__PURE__*/function () {
   var _ref4 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee4(email, assetId) {
-    var _user3, _org3, result, resultJSON;
+    var user, org, result, resultJSON;
     return _regeneratorRuntime().wrap(function _callee4$(_context4) {
       while (1) switch (_context4.prev = _context4.next) {
         case 0:
@@ -1103,14 +1064,14 @@ var getAssetById = /*#__PURE__*/function () {
           _context4.next = 3;
           return userService.findUserByEmail(email);
         case 3:
-          _user3 = _context4.sent;
-          _org3 = whichOrg(_user3.role);
+          user = _context4.sent;
+          org = whichOrg(user.role);
           _context4.next = 7;
-          return evaluateTransaction(userId, _org3, channel, chaincodeName, "ReadAsset", assetId);
+          return evaluateTransaction(userId, org, channel, chaincodeName, "ReadAsset", assetId);
         case 7:
           result = _context4.sent;
           resultJSON = JSON.parse(result);
-          if (!(_user3.role !== "admin" && resultJSON.data.owner.toString() !== _user3._id.toString())) {
+          if (!(user.role !== "admin" && resultJSON.data.owner.toString() !== user._id.toString())) {
             _context4.next = 11;
             break;
           }
@@ -1132,9 +1093,7 @@ var getAssetById = /*#__PURE__*/function () {
           }
           throw _context4.t0;
         case 22:
-          // Handle 500-series or unexpected errors
           log.error(_context4.t0.message);
-          // You can log the full error details or take specific actions
           throw CustomError("Error retrieving asset", 500);
         case 24:
         case "end":
@@ -1146,122 +1105,129 @@ var getAssetById = /*#__PURE__*/function () {
     return _ref4.apply(this, arguments);
   };
 }();
-
-// Get Asset History
 var getAssetHistory = /*#__PURE__*/function () {
   var _ref5 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee5(email, assetId) {
-    var _org4, result;
+    var user, org, result;
     return _regeneratorRuntime().wrap(function _callee5$(_context5) {
       while (1) switch (_context5.prev = _context5.next) {
         case 0:
           _context5.prev = 0;
-          getAssetById(email, assetId);
-          _org4 = user.isAdmin ? org2 : org1;
+          _context5.next = 3;
+          return getAssetById(email, assetId);
+        case 3:
           _context5.next = 5;
-          return evaluateTransaction(userId, _org4, channel, chaincodeName, "GetAssetHistory", assetId);
+          return userService.findUserByEmail(email);
         case 5:
+          user = _context5.sent;
+          org = whichOrg(user.role);
+          _context5.next = 9;
+          return evaluateTransaction(userId, org, channel, chaincodeName, "GetAssetHistory", assetId);
+        case 9:
           result = _context5.sent;
           return _context5.abrupt("return", JSON.parse(result));
-        case 9:
-          _context5.prev = 9;
+        case 13:
+          _context5.prev = 13;
           _context5.t0 = _context5["catch"](0);
           if (!(_context5.t0.statusCode >= 400 && _context5.t0.statusCode < 500)) {
-            _context5.next = 15;
+            _context5.next = 19;
             break;
           }
           throw _context5.t0;
-        case 15:
-          // Handle 500-series or unexpected errors
+        case 19:
           log.error(_context5.t0.message);
-          // You can log the full error details or take specific actions
           throw CustomError("Error getting asset history", 500);
-        case 17:
+        case 21:
         case "end":
           return _context5.stop();
       }
-    }, _callee5, null, [[0, 9]]);
+    }, _callee5, null, [[0, 13]]);
   }));
   return function getAssetHistory(_x8, _x9) {
     return _ref5.apply(this, arguments);
   };
 }();
-
-// Delete an Asset
 var deleteAsset = /*#__PURE__*/function () {
   var _ref6 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee6(email, assetId) {
+    var user, org;
     return _regeneratorRuntime().wrap(function _callee6$(_context6) {
       while (1) switch (_context6.prev = _context6.next) {
         case 0:
           _context6.prev = 0;
-          getAssetById(email, assetId);
-          _context6.next = 4;
+          _context6.next = 3;
+          return getAssetById(email, assetId);
+        case 3:
+          _context6.next = 5;
+          return userService.findUserByEmail(email);
+        case 5:
+          user = _context6.sent;
+          org = whichOrg(user.role);
+          _context6.next = 9;
           return submitTransaction(userId, org, channel, chaincodeName, "DeleteAsset", assetId);
-        case 4:
+        case 9:
           return _context6.abrupt("return", {
             message: "Asset with ID ".concat(assetId, " has been deleted.")
           });
-        case 7:
-          _context6.prev = 7;
+        case 12:
+          _context6.prev = 12;
           _context6.t0 = _context6["catch"](0);
           if (!(_context6.t0.statusCode >= 400 && _context6.t0.statusCode < 500)) {
-            _context6.next = 13;
+            _context6.next = 18;
             break;
           }
           throw _context6.t0;
-        case 13:
-          // Handle 500-series or unexpected errors
+        case 18:
           log.error(_context6.t0.message);
-          // You can log the full error details or take specific actions
           throw CustomError("Error deleting asset", 500);
-        case 15:
+        case 20:
         case "end":
           return _context6.stop();
       }
-    }, _callee6, null, [[0, 7]]);
+    }, _callee6, null, [[0, 12]]);
   }));
   return function deleteAsset(_x10, _x11) {
     return _ref6.apply(this, arguments);
   };
 }();
-
-// Transfer an Asset to a New Owner
 function transferAsset(_x12, _x13, _x14) {
   return _transferAsset.apply(this, arguments);
 }
 function _transferAsset() {
   _transferAsset = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee7(email, assetId, newOwner) {
-    var result;
+    var user, org, result;
     return _regeneratorRuntime().wrap(function _callee7$(_context7) {
       while (1) switch (_context7.prev = _context7.next) {
         case 0:
           _context7.prev = 0;
           _context7.next = 3;
-          return submitTransaction(userId, org, channel, chaincodeName, "TransferAsset", assetId, newOwner);
+          return userService.findUserByEmail(email);
         case 3:
+          user = _context7.sent;
+          org = whichOrg(user.role);
+          _context7.next = 7;
+          return submitTransaction(userId, org, channel, chaincodeName, "TransferAsset", assetId, newOwner);
+        case 7:
           result = _context7.sent;
           return _context7.abrupt("return", {
             assetId: assetId,
             newOwner: newOwner,
             oldOwner: result
           });
-        case 7:
-          _context7.prev = 7;
+        case 11:
+          _context7.prev = 11;
           _context7.t0 = _context7["catch"](0);
           if (!(_context7.t0.statusCode >= 400 && _context7.t0.statusCode < 500)) {
-            _context7.next = 13;
+            _context7.next = 17;
             break;
           }
           throw _context7.t0;
-        case 13:
-          // Handle 500-series or unexpected errors
+        case 17:
           log.error(_context7.t0.message);
-          // You can log the full error details or take specific actions
           throw CustomError("Error transferring asset", 500);
-        case 15:
+        case 19:
         case "end":
           return _context7.stop();
       }
-    }, _callee7, null, [[0, 7]]);
+    }, _callee7, null, [[0, 11]]);
   }));
   return _transferAsset.apply(this, arguments);
 }
@@ -1291,8 +1257,6 @@ var nodemailer = __webpack_require__(572);
 var logger = __webpack_require__(622);
 var sender = process.env.EMAIL;
 var password = process.env.PASSWORD;
-
-// Configure Nodemailer transport using custom SMTP settings
 var transporter = nodemailer.createTransport({
   host: "mail.wecare-insurance.com",
   // SMTP host
@@ -1303,8 +1267,6 @@ var transporter = nodemailer.createTransport({
     pass: password
   }
 });
-
-// Function to send email
 var sendEmail = /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee(_ref) {
     var to, subject, text, mailOptions, info;
@@ -1315,10 +1277,8 @@ var sendEmail = /*#__PURE__*/function () {
           mailOptions = {
             from: sender,
             to: to,
-            // Recipient email
             subject: subject,
-            // Email subject
-            text: text // Email content (you can also add 'html' if needed)
+            text: text
           };
           _context.prev = 2;
           _context.next = 5;
@@ -1561,12 +1521,9 @@ var createUser = /*#__PURE__*/function () {
       while (1) switch (_context2.prev = _context2.next) {
         case 0:
           _context2.prev = 0;
-          // Without this, the client will have capabilities to change failed login attempts and active account status
           userData.failedLoginAttempts = 0;
           userData.activeAccount = false;
           userData.role = "user";
-
-          // hashes the password the user sent before the User is created
           _context2.next = 6;
           return passwordService.hashPassword(userData.password);
         case 6:
@@ -1661,26 +1618,23 @@ var resetPassword = /*#__PURE__*/function () {
           _context3.next = 20;
           return sendVerificationEmail(updatedUser.email, otpToken);
         case 20:
-          _context3.next = 30;
-          break;
-        case 22:
-          _context3.prev = 22;
+          return _context3.abrupt("return", "Password reset successfully.");
+        case 23:
+          _context3.prev = 23;
           _context3.t0 = _context3["catch"](0);
           if (!(_context3.t0.statusCode >= 400 && _context3.t0.statusCode < 500)) {
-            _context3.next = 28;
+            _context3.next = 29;
             break;
           }
           throw _context3.t0;
-        case 28:
-          // Handle 500-series or unexpected errors
+        case 29:
           log.error(_context3.t0.message);
-          // You can log the full error details or take specific actions
           throw CustomError("Unable to reset password.", 500);
-        case 30:
+        case 31:
         case "end":
           return _context3.stop();
       }
-    }, _callee3, null, [[0, 22]]);
+    }, _callee3, null, [[0, 23]]);
   }));
   return function resetPassword(_x4, _x5) {
     return _ref3.apply(this, arguments);
@@ -1744,10 +1698,6 @@ var findUserByEmail = /*#__PURE__*/function () {
     return _ref5.apply(this, arguments);
   };
 }();
-
-/**
- * If the failed login attempt > 5, set activeAccount to false
- */
 var loginUser = /*#__PURE__*/function () {
   var _ref6 = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee6(email, password) {
     var user, match;
@@ -1808,9 +1758,7 @@ var loginUser = /*#__PURE__*/function () {
           }
           throw _context6.t0;
         case 30:
-          // Handle 500-series or unexpected errors
           log.error(_context6.t0.message);
-          // You can log the full error details or take specific actions
           throw CustomError("Unable to login.", 500);
         case 32:
         case "end":
@@ -1871,9 +1819,7 @@ var regenerateOtp = /*#__PURE__*/function () {
           }
           throw _context7.t0;
         case 24:
-          // Handle 500-series or unexpected errors
           log.error(_context7.t0.message);
-          // You can log the full error details or take specific actions
         case 25:
         case "end":
           return _context7.stop();
@@ -1921,9 +1867,7 @@ var verifyUser = /*#__PURE__*/function () {
           }
           throw _context8.t0;
         case 20:
-          // Handle 500-series or unexpected errors
           log.error(_context8.t0.message);
-          // You can log the full error details or take specific actions
           throw CustomError("Unable to verify.", 500);
         case 22:
         case "end":
@@ -1972,6 +1916,50 @@ function extractToken(req) {
   return null;
 }
 module.exports = extractToken;
+
+/***/ }),
+
+/***/ 111:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+var WebSocket = __webpack_require__(86);
+var wss;
+var initializeWebSocket = function initializeWebSocket(server) {
+  wss = new WebSocket.Server({
+    server: server
+  });
+  wss.on("connection", function (ws) {
+    console.log("New WebSocket connection established");
+
+    // Handle messages from the client
+    ws.on("message", function (message) {
+      console.log("Received from client:", message);
+    });
+
+    // Handle WebSocket disconnections
+    ws.on("close", function () {
+      console.log("WebSocket connection closed");
+    });
+  });
+  console.log("WebSocket server initialized");
+};
+
+// Helper function to broadcast messages
+var broadcastData = function broadcastData(data) {
+  if (wss) {
+    wss.clients.forEach(function (client) {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify(data));
+      }
+    });
+  } else {
+    console.error("WebSocket server not initialized");
+  }
+};
+module.exports = {
+  initializeWebSocket: initializeWebSocket,
+  broadcastData: broadcastData
+};
 
 /***/ }),
 
@@ -2063,6 +2051,14 @@ module.exports = require("helmet");
 
 /***/ }),
 
+/***/ 856:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("http");
+
+/***/ }),
+
 /***/ 829:
 /***/ ((module) => {
 
@@ -2127,14 +2123,6 @@ module.exports = require("passport-jwt");
 
 /***/ }),
 
-/***/ 3:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("path");
-
-/***/ }),
-
 /***/ 903:
 /***/ ((module) => {
 
@@ -2148,6 +2136,14 @@ module.exports = require("uuid");
 
 "use strict";
 module.exports = require("winston");
+
+/***/ }),
+
+/***/ 86:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("ws");
 
 /***/ })
 
@@ -2178,7 +2174,7 @@ module.exports = require("winston");
 /******/ 	}
 /******/ 	
 /************************************************************************/
-// This entry needs to be wrapped in an IIFE because it needs to be in strict mode.
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
 (() => {
 "use strict";
 
@@ -2191,6 +2187,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
 var helmet = __webpack_require__(525);
 var mongoose = __webpack_require__(37);
 var express = __webpack_require__(252);
+var http = __webpack_require__(856);
 var healthcheck = __webpack_require__(239);
 var gracefulShutdown = __webpack_require__(617);
 var rateLimit = __webpack_require__(763);
@@ -2198,34 +2195,47 @@ var cors = __webpack_require__(577);
 var cookieParser = __webpack_require__(898);
 var passport = __webpack_require__(278);
 var app = express();
+var server = http.createServer(app);
+var _require = __webpack_require__(111),
+  initializeWebSocket = _require.initializeWebSocket;
 var errorHandler = __webpack_require__(946);
 var userRoute = __webpack_require__(611);
 var assetRoute = __webpack_require__(576);
+
+// Initialize WebSocket server
+initializeWebSocket(server);
 var dbUrl = process.env.DATABASE_URL;
 var maxPoolSize = process.env.MAX_POOL_SIZE;
 var maxIdleTimeMS = process.env.MAX_Idle_Time_MS;
 var connectionTimeoutMS = process.env.CONECTION_TIMEOUT_MS;
 
-// helment
-// https://blog.logrocket.com/using-helmet-node-js-secure-application/
+// Helmet for security
 app.use(helmet());
+
+// Enable XSS protection
 app.use(function (req, res, next) {
-  // Enable XSS protection
   res.setHeader("X-XSS-Protection", "1; mode=block");
   next();
 });
 
-// Define a rate limiter
+// Rate limiter
 var limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   // 15 minutes
   max: 1000,
-  // limit each IP to 100 requests per windowMs
+  // Limit each IP
   message: "Too many requests from this IP, please try again later"
 });
-
-// Apply the rate limiter to all requests
 app.use(limiter);
+
+// CORS configuration
+var corsOptions = {
+  origin: function origin(_origin, callback) {
+    callback(null, true); // Allow all origins
+  }
+};
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // Handle preflight requests
 
 // List of allowed origins
 // const allowedOrigins = [
@@ -2249,30 +2259,11 @@ app.use(limiter);
 // // Use CORS middleware
 // app.use(cors(corsOptions));
 
-// Dynamic CORS configuration to allow all origins with credentials
-var corsOptions = {
-  origin: function origin(_origin, callback) {
-    // Allow requests with any origin
-    callback(null, true);
-  },
-  credentials: true,
-  // Enables cookies and authentication headers
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  // Allowed HTTP methods
-  allowedHeaders: ["Content-Type", "Authorization"] // Allowed headers
-};
-
-// Apply the CORS middleware
-app.use(cors(corsOptions));
-
-// Handle preflight requests globally
-app.options("*", cors(corsOptions));
-
-// Initialize passport middleware
+// Passport and cookies
 app.use(passport.initialize());
 app.use(cookieParser());
 
-// middleware
+// Body parsers
 app.use(express.json());
 app.use(express.urlencoded({
   extended: false
@@ -2282,27 +2273,22 @@ var PORT = process.env.PORT || 3000;
 // Health check route
 app.use("/health", healthcheck());
 
-// route
+// Routes
 app.use("/v1/api/user", userRoute);
 app.use("/v1/api/asset", assetRoute);
 app.get("/", function (req, res) {
   return res.send("App is working (1)!");
 });
 
-// Error handling middleware should be the last middleware
+// Error handler middleware
 app.use(errorHandler);
 
-// Handling graceful shutdown middleware
+// Graceful shutdown middleware
 app.use(gracefulShutdown(app));
 
 // Start the server
-var server = app.listen(PORT, function () {
+server.listen(PORT, function () {
   console.log("Server is running on port ".concat(PORT));
-});
-
-// Event listener for server close event (to debug if the server is actually closing)
-server.on("close", function () {
-  console.log("Server has closed all connections.");
 });
 
 // Connect to MongoDB
@@ -2313,8 +2299,7 @@ mongoose.connect(dbUrl, {
 }).then(function () {
   console.log("Connected to database!");
 })["catch"](function (error) {
-  console.log(error);
-  console.log("Connection failed!");
+  console.error("Database connection failed:", error);
 });
 
 // Graceful shutdown logic
@@ -2323,23 +2308,21 @@ var gracefulExit = /*#__PURE__*/function () {
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) switch (_context.prev = _context.next) {
         case 0:
-          console.log("Graceful shutdown initiated.");
+          console.log("Graceful shutdown initiated");
 
           // Stop accepting new requests
           server.close(function (err) {
             if (err) {
               console.error("Error closing server:", err);
-              process.exit(1); // Exit with error if server couldn't close
+              process.exit(1);
             }
-            console.log("HTTP server closed, now closing MongoDB connection.");
+            console.log("HTTP server closed, closing MongoDB connection");
             mongoose.disconnect();
           });
-
-          // Add a timeout to forcefully exit if shutdown takes too long
           setTimeout(function () {
-            console.log("Forcing shutdown after timeout.");
+            console.log("Forced shutdown after timeout");
             process.exit(1);
-          }, 10000); // 10 seconds timeout for forced shutdown
+          }, 10000); // 10 seconds timeout
         case 3:
         case "end":
           return _context.stop();
@@ -2350,11 +2333,7 @@ var gracefulExit = /*#__PURE__*/function () {
     return _ref.apply(this, arguments);
   };
 }();
-
-// Handle SIGTERM for PM2 or Docker shutdown
 process.on("SIGTERM", gracefulExit);
-
-// Handle SIGINT for Ctrl+C shutdown (local development)
 process.on("SIGINT", gracefulExit);
 })();
 

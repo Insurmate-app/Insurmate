@@ -2,6 +2,7 @@ const assetService = require("../services/asset.service");
 const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 const extractToken = require("../util/tokenExtractor");
+const { broadcastData } = require("../websocket");
 
 const createAsset = async (req, res, next) => {
   try {
@@ -16,8 +17,17 @@ const createAsset = async (req, res, next) => {
     const payload = jwt.decode(token);
 
     const { data } = req.body;
-    const id = uuidv4(); // Generate a UUID
-    const result = await assetService.createAsset(payload.id, { id, data });
+    const id = uuidv4();
+
+    const payloadId = payload.id;
+
+    const result = await assetService.createAsset(payloadId, { id, data });
+
+    // Fetch all assets to broadcast the updated list
+    const allAssets = await assetService.getAllAssets(payloadId);
+
+    // Broadcast the updated asset list to WebSocket clients
+    broadcastData({ type: "ASSET_LIST_UPDATE", data: allAssets });
 
     res.status(201).json(result);
   } catch (error) {
