@@ -44,15 +44,52 @@ const Dash = () => {
     };
 
     fetchData();
+
+    // WebSocket setup
+    const ws = new WebSocket(import.meta.env.VITE_WS_URL); // Replace with your WebSocket server URL
+
+    ws.onopen = () => {
+      console.log("WebSocket connection established");
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+
+        // Handle policy list update
+        if (message.type === "ASSET_LIST_UPDATE") {
+          console.log("Received asset list update:", message.data);
+          const transformedData = message.data.map((item) => ({
+            id: item.id,
+            ...item.data,
+          }));
+
+          setData(transformedData);
+        }
+      } catch (error) {
+        console.error("Error processing WebSocket message:", error);
+      }
+    };
+
+    ws.onclose = () => {
+      console.log("WebSocket connection closed");
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    // Cleanup WebSocket on component unmount
+    return () => {
+      ws.close();
+    };
   }, []);
 
-  // Handle adding a new policy
   const handleAddPolicy = (newPolicy) => {
     setShowModal(false);
-
-    // TODO: find a better way. consider using websocket
-    window.location.reload();
+    // No need to reload the page as WebSocket will update the data
   };
+
   const handleExportCSV = () => {
     const csv = Papa.unparse(data);
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });

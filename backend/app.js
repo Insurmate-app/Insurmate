@@ -4,42 +4,55 @@ require("dotenv").config();
 const helmet = require("helmet");
 const mongoose = require("mongoose");
 const express = require("express");
+const http = require("http");
 const healthcheck = require("express-healthcheck");
 const gracefulShutdown = require("express-graceful-shutdown");
 const rateLimit = require("express-rate-limit");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const passport = require("passport");
-const app = express();
 
+const app = express();
+const server = http.createServer(app);
+
+const { initializeWebSocket } = require("./websocket");
 const errorHandler = require("./middlewares/errorHandler.js");
 const userRoute = require("./routes/user.route.js");
 const assetRoute = require("./routes/asset.route.js");
+
+// Initialize WebSocket server
+initializeWebSocket(server);
 
 const dbUrl = process.env.DATABASE_URL;
 const maxPoolSize = process.env.MAX_POOL_SIZE;
 const maxIdleTimeMS = process.env.MAX_Idle_Time_MS;
 const connectionTimeoutMS = process.env.CONECTION_TIMEOUT_MS;
 
-// helment
-// https://blog.logrocket.com/using-helmet-node-js-secure-application/
+// Helmet for security
 app.use(helmet());
 
+// Enable XSS protection
 app.use((req, res, next) => {
-  // Enable XSS protection
   res.setHeader("X-XSS-Protection", "1; mode=block");
   next();
 });
 
-// Define a rate limiter
+// Rate limiter
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // limit each IP to 100 requests per windowMs
+  max: 1000, // Limit each IP
   message: "Too many requests from this IP, please try again later",
 });
-
-// Apply the rate limiter to all requests
 app.use(limiter);
+
+// CORS configuration
+const corsOptions = {
+  origin: (origin, callback) => {
+    callback(null, true); // Allow all origins
+  },
+};
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // Handle preflight requests
 
 // List of allowed origins
 // const allowedOrigins = [
@@ -63,26 +76,11 @@ app.use(limiter);
 // // Use CORS middleware
 // app.use(cors(corsOptions));
 
-// Dynamic CORS configuration to allow all origins with credentials
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow requests with any origin
-    callback(null, true);
-  },
-};
-
-// Apply the CORS middleware
-app.use(cors(corsOptions));
-
-// Handle preflight requests globally
-app.options("*", cors(corsOptions));
-
-// Initialize passport middleware
+// Passport and cookies
 app.use(passport.initialize());
-
 app.use(cookieParser());
 
-// middleware
+// Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -91,26 +89,21 @@ const PORT = process.env.PORT || 3000;
 // Health check route
 app.use("/health", healthcheck());
 
-// route
+// Routes
 app.use("/v1/api/user", userRoute);
 app.use("/v1/api/asset", assetRoute);
 
 app.get("/", (req, res) => res.send("App is working (1)!"));
 
-// Error handling middleware should be the last middleware
+// Error handler middleware
 app.use(errorHandler);
 
-// Handling graceful shutdown middleware
+// Graceful shutdown middleware
 app.use(gracefulShutdown(app));
 
 // Start the server
-const server = app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-});
-
-// Event listener for server close event (to debug if the server is actually closing)
-server.on("close", () => {
-  console.log("Server has closed all connections.");
 });
 
 // Connect to MongoDB
@@ -124,35 +117,30 @@ mongoose
     console.log("Connected to database!");
   })
   .catch((error) => {
-    console.log(error);
-    console.log("Connection failed!");
+    console.error("Database connection failed:", error);
   });
 
 // Graceful shutdown logic
 const gracefulExit = async () => {
-  console.log("Graceful shutdown initiated.");
+  console.log("Graceful shutdown initiated");
 
   // Stop accepting new requests
   server.close((err) => {
     if (err) {
       console.error("Error closing server:", err);
-      process.exit(1); // Exit with error if server couldn't close
+      process.exit(1);
     }
 
-    console.log("HTTP server closed, now closing MongoDB connection.");
+    console.log("HTTP server closed, closing MongoDB connection");
 
     mongoose.disconnect();
   });
 
-  // Add a timeout to forcefully exit if shutdown takes too long
   setTimeout(() => {
-    console.log("Forcing shutdown after timeout.");
+    console.log("Forced shutdown after timeout");
     process.exit(1);
-  }, 10000); // 10 seconds timeout for forced shutdown
+  }, 10000); // 10 seconds timeout
 };
 
-// Handle SIGTERM for PM2 or Docker shutdown
 process.on("SIGTERM", gracefulExit);
-
-// Handle SIGINT for Ctrl+C shutdown (local development)
 process.on("SIGINT", gracefulExit);
