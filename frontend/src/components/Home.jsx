@@ -17,13 +17,13 @@ const Home = () => {
         <nav>
           <ul className="nav">
             <li className="nav-item">
-              <a className="nav-link text-dark" href="/blockchain">
-                Technology
+              <a className="nav-link text-dark" href="/login">
+                Login
               </a>
             </li>
             <li className="nav-item">
-              <a className="nav-link text-dark" href="/login">
-                Login
+              <a className="nav-link text-dark" href="/collaboration">
+                Collaboration
               </a>
             </li>
             <li className="nav-item">
@@ -106,26 +106,19 @@ const Home = () => {
             &copy; {currentYear} Insurmate. All rights reserved.
           </small>
 
-          {/* Right Section: Navigation Links */}
           <ul className="nav">
             <li className="nav-item">
               <a
-                href="/"
+                href="https://www.linkedin.com/showcase/insurmate-app"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="nav-link text-secondary d-flex align-items-center"
               >
-                <i className="bi bi-journal-text me-1"></i>
-                <small className="text-muted">Blog</small>
+                <i className="bi bi-linkedin me-1"></i>
+                <small className="text-muted">LinkedIn</small>
               </a>
             </li>
-            <li className="nav-item">
-              <a
-                href="/"
-                className="nav-link text-secondary d-flex align-items-center"
-              >
-                <i className="bi bi-book me-1"></i>
-                <small className="text-muted">Docs</small>
-              </a>
-            </li>
+
             <li className="nav-item">
               <a
                 href="https://github.com/We-Care-Insurance"

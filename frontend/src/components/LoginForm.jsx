@@ -11,7 +11,7 @@ const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [errors, setErrors] = useState({});
 
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
@@ -40,7 +40,7 @@ const LoginForm = () => {
     if (id === "email") setEmail(value);
     if (id === "password") setPassword(value);
 
-    setIsButtonDisabled(email.trim() === "" || password.trim() === "");
+    //setIsButtonDisabled(email.trim() === "" || password.trim() === "");
   };
 
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);

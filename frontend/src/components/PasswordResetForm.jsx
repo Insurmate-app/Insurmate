@@ -11,7 +11,7 @@ const PasswordResetForm = () => {
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
@@ -46,7 +46,7 @@ const PasswordResetForm = () => {
     if (id === "email") setEmail(value);
     if (id === "password") setNewPassword(value);
 
-    setIsButtonDisabled(email.trim() === "" || newPassword.trim() === "");
+    //setIsButtonDisabled(email.trim() === "" || newPassword.trim() === "");
   };
 
   const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
