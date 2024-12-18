@@ -19,7 +19,7 @@
     "@mui/x-data-grid-pro": "^7.22.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "astro": "^4.16.13",
+    "astro": "^4.16.17",
     "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
