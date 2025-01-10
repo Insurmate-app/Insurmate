@@ -1,27 +1,11 @@
 import React from "react";
 
-import axios from "axios";
+import api from "./api";
 
 const Navbar = () => {
   const handleLogout = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("Token not found in localStorage");
-        return;
-      }
-
-      console.log("Sending logout request...");
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/user/logout`,
-        {}, // Empty body if required
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
+      await api.post(`/user/logout`);
       // Clear storage
       localStorage.removeItem("token");
 

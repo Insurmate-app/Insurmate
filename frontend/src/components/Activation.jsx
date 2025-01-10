@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import axios from "axios";
+import api from "./api";
 
 const ActivateAccount = () => {
   const [email, setEmail] = useState(""); // State for email
@@ -52,7 +52,7 @@ const ActivateAccount = () => {
     }
 
     try {
-      await axios.post(`${baseUrl}/user/regenerate-otp`, { email });
+      await api.post(`/user/regenerate-otp`, { email });
       setOtp(""); // Clear OTP input
       setTimer(300); // Reset timer to 5 minutes
       setIsOtpExpired(false);
@@ -74,7 +74,7 @@ const ActivateAccount = () => {
     }
 
     try {
-      await axios.post(`${baseUrl}/user/verify`, { email, otpToken: otp });
+      await api.post(`/user/verify`, { email, otpToken: otp });
       setMessage("Account activated successfully.");
     } catch (err) {
       console.error(err);

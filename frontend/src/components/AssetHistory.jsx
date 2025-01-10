@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import axios from "axios";
+import api from "./api";
 
 const AssetHistory = () => {
   const params = new URLSearchParams(window.location.search);
@@ -16,14 +16,8 @@ const AssetHistory = () => {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/asset/history/${assetId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
+        const response = await api.get(
+          `/asset/history/${assetId}`,
         );
 
         setHistory(response.data.history || []);

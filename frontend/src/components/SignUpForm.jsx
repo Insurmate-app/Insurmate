@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 
-import axios from "axios";
 import * as Yup from "yup";
 
 import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
 import Modal from "./Modal";
+import api from "./api";
 
 const SignUpForm = () => {
   const [formValues, setFormValues] = useState({
@@ -73,7 +73,6 @@ const SignUpForm = () => {
     activateSpinner();
 
     try {
-      console.log("Validating formValues:", formValues); // Debugging validation
       await validationSchema.validate(formValues, { abortEarly: false });
       setErrors({}); // Clear previous errors
 
@@ -91,13 +90,8 @@ const SignUpForm = () => {
         },
       };
 
-      console.log("Payload to send:", payload); // Debugging payload structure
-
       // Send request to the server
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/user/create`,
-        payload,
-      );
+      await api.post(`/user/create`, payload);
 
       // Redirect after successful submission
       window.location.href = `/activate?email=${encodeURIComponent(

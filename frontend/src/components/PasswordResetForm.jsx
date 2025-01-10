@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import axios from "axios";
+import api from "./api";
 import * as Yup from "yup";
 
 import useModal from "../hooks/useModal";
@@ -60,8 +60,8 @@ const PasswordResetForm = () => {
       await schema.validate(data, { abortEarly: false });
       setErrors({});
 
-      await axios.put(
-        `${import.meta.env.VITE_API_BASE_URL}/user/reset-password`,
+      await api.put(
+        `/user/reset-password`,
         data,
       );
 

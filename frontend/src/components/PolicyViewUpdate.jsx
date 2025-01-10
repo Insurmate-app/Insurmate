@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
 
-import axios from "axios";
 import * as yup from "yup";
 
 import useModal from "../hooks/useModal";
 import Modal from "./Modal";
-
-const baseURL = `${import.meta.env.VITE_API_BASE_URL}/asset`;
+import api from "./api";
 
 const PolicyViewUpdate = () => {
   const params = new URLSearchParams(window.location.search);
@@ -56,12 +54,7 @@ const PolicyViewUpdate = () => {
   useEffect(() => {
     const fetchPolicy = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(`${baseURL}/get/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await api.get(`/asset/get/${id}`);
 
         const policyData = response.data.data;
 
@@ -120,12 +113,6 @@ const PolicyViewUpdate = () => {
     }
 
     try {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        throw new Error("Token not found in localStorage");
-      }
-
       const updatePayload = {
         id: id,
         data: {
@@ -138,11 +125,7 @@ const PolicyViewUpdate = () => {
         },
       };
 
-      await axios.put(`${baseURL}/update`, updatePayload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await api.put(`/asset/update`, updatePayload);
       showModal("Policy updated successfully!");
     } catch (error) {
       console.error("Error updating policy:", error);

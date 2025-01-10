@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 
-import axios from "axios";
 import * as Yup from "yup";
 
 import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
 import Modal from "./Modal";
+import api from "./api";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -56,10 +56,7 @@ const LoginForm = () => {
       await schema.validate(data, { abortEarly: false });
       setErrors({});
 
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/user/login`,
-        data,
-      );
+      const response = await api.post(`/user/login`, data);
 
       const token = response.data.token;
       localStorage.setItem("token", token);

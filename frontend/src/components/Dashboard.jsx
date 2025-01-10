@@ -1,13 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 import { DataGrid } from "@mui/x-data-grid";
-import axios from "axios";
 import fileSaver from "file-saver";
 import Papa from "papaparse";
 
 import AddPolicyModal from "./AddPolicy";
-
-const baseURL = `${import.meta.env.VITE_API_BASE_URL}/asset`;
+import api from "./api";
 
 const Dash = () => {
   const [data, setData] = useState([]);
@@ -19,15 +17,7 @@ const Dash = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("Token not found in localStorage");
-
-        const response = await axios.get(`${baseURL}/get-all`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await api.get(`/asset/get-all`);
 
         const transformedData = response.data.map((item) => ({
           id: item.id,
@@ -105,14 +95,7 @@ const Dash = () => {
     setDeletingId(id);
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("Token not found in localStorage");
-
-      await axios.delete(`${baseURL}/delete/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await api.delete(`/asset/delete/${id}`);
 
       setData((prevData) => prevData.filter((item) => item.id !== id));
       alert("Policy deleted successfully.");
