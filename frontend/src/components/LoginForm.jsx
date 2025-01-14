@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 
+import { storeToken } from "../hooks/tokenManager";
+
 import * as Yup from "yup";
 
 import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
 import Modal from "./Modal";
-import api from "./api";
+import { useApi } from "./useApi";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -16,6 +18,8 @@ const LoginForm = () => {
 
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
+
+  const api = useApi();
 
   const schema = Yup.object().shape({
     email: Yup.string()
@@ -56,12 +60,11 @@ const LoginForm = () => {
       await schema.validate(data, { abortEarly: false });
       setErrors({});
 
-      const response = await api.post(`/user/login`, data);
+      api.post(`/user/login`, data).then((response) => {
+        storeToken(response.data.token);
 
-      const token = response.data.token;
-      localStorage.setItem("token", token);
-
-      window.location.href = "/dashboard";
+        window.location.href = "/dashboard";
+      });
     } catch (err) {
       deactivateSpinner();
       setIsButtonDisabled(false);

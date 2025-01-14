@@ -1,16 +1,16 @@
 import React from "react";
 
-import api from "./api";
+import { deleteToken } from "../hooks/tokenManager";
+import { useApi } from "./useApi";
 
 const Navbar = () => {
+  const api = useApi();
   const handleLogout = async () => {
     try {
-      await api.post(`/user/logout`);
-      // Clear storage
-      localStorage.removeItem("token");
-
-      // Redirect
-      window.location.href = "/login";
+      await api.post(`/user/logout`).then((response) => {
+        deleteToken();
+        window.location.href = "/login";
+      });
     } catch (error) {
       console.error("Error during logout:", error);
     }

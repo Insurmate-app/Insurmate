@@ -5,9 +5,10 @@ import * as Yup from "yup";
 import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
 import Modal from "./Modal";
-import api from "./api";
+import { useApi } from "./useApi";
 
 const SignUpForm = () => {
+  const api = useApi();
   const [formValues, setFormValues] = useState({
     email: "",
     password: "",

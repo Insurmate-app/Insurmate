@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 
-import api from "./api";
+import useApi from "./useApi";
 
 const AssetHistory = () => {
   const params = new URLSearchParams(window.location.search);
   const assetId = params.get("id");
+
+  const api = useApi();
 
   if (!assetId) {
     window.location.href = "/dashboard";
@@ -16,9 +18,7 @@ const AssetHistory = () => {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const response = await api.get(
-          `/asset/history/${assetId}`,
-        );
+        const response = await api.get(`/asset/history/${assetId}`);
 
         setHistory(response.data.history || []);
       } catch (err) {

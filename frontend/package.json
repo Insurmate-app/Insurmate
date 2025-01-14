@@ -31,10 +31,12 @@
     "papaparse": "^5.4.1",
     "pdfjs-dist": "^4.9.155",
     "react": "^18.3.1",
+    "react-cookie": "^7.2.2",
     "react-csv": "^2.2.2",
     "react-dom": "^18.3.1",
     "react-pdf": "^9.1.1",
     "react-textarea-autosize": "^8.5.6",
+    "universal-cookie": "^7.2.2",
     "yup": "^1.4.0"
   },
   "devDependencies": {

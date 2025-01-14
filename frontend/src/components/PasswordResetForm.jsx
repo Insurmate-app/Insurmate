@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 
-import api from "./api";
 import * as Yup from "yup";
 
 import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
 import Modal from "./Modal";
+import { useApi } from "./useApi";
 
 const PasswordResetForm = () => {
   const [email, setEmail] = useState("");
@@ -17,6 +17,8 @@ const PasswordResetForm = () => {
   const { isVisible, message, showModal, hideModal } = useModal();
 
   const [errors, setErrors] = useState({});
+
+  const api = useApi();
 
   const schema = Yup.object().shape({
     email: Yup.string()
@@ -60,10 +62,7 @@ const PasswordResetForm = () => {
       await schema.validate(data, { abortEarly: false });
       setErrors({});
 
-      await api.put(
-        `/user/reset-password`,
-        data,
-      );
+      await api.put(`/user/reset-password`, data);
 
       window.location.href = `/activate?email=${encodeURIComponent(email)}`;
     } catch (err) {

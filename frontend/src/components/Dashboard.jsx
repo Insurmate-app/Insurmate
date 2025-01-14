@@ -5,7 +5,7 @@ import fileSaver from "file-saver";
 import Papa from "papaparse";
 
 import AddPolicyModal from "./AddPolicy";
-import api from "./api";
+import { useApi } from "./useApi";
 
 const Dash = () => {
   const [data, setData] = useState([]);
@@ -14,12 +14,14 @@ const Dash = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
 
+  const api = useApi();
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await api.get(`/asset/get-all`);
 
-        const transformedData = response.data.map((item) => ({
+        const transformedData = await response.data.map((item) => ({
           id: item.id,
           ...item.data,
         }));
@@ -27,7 +29,7 @@ const Dash = () => {
         setData(transformedData);
       } catch (error) {
         console.error("Error fetching data:", error);
-        window.location.href = "/login";
+        //window.location.href = "/login";
       } finally {
         setIsLoading(false);
       }

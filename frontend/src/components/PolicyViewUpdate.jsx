@@ -4,7 +4,7 @@ import * as yup from "yup";
 
 import useModal from "../hooks/useModal";
 import Modal from "./Modal";
-import api from "./api";
+import { useApi } from "./useApi";
 
 const PolicyViewUpdate = () => {
   const params = new URLSearchParams(window.location.search);
@@ -13,6 +13,8 @@ const PolicyViewUpdate = () => {
   if (!id) {
     window.location.href = "/dashboard";
   }
+
+  const api = useApi();
 
   const [formValues, setFormValues] = useState({
     assetId: "",
