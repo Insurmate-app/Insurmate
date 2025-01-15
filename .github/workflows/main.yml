@@ -62,8 +62,8 @@ jobs:
           scp -r backend/dist $OCI_USER@$OCI_HOST:$OCI_PATH
 
       # Deploy to Vercel from the 'frontend' directory 
-      # - name: Deploy to Vercel
-      #   working-directory: frontend
-      #   run: |
-      #     npm install -g vercel@latest
-      #     vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --prod
+      - name: Deploy to Vercel
+        working-directory: frontend
+        run: |
+          npm install -g vercel@latest
+          vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --prod
