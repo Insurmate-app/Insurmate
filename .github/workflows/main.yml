@@ -41,7 +41,7 @@ jobs:
       # run: |
       # npm test
 
-      # Deploy to Vercel from the 'backend' directory (optional)
+      # Deploy to Vercel from the 'frontend' directory (optional)
       - name: Deploy to Vercel
         working-directory: frontend
         run: |
