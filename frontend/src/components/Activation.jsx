@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import api from "./api";
+import { useApi } from "./useApi";
 
 const ActivateAccount = () => {
   const [email, setEmail] = useState(""); // State for email
@@ -8,8 +8,9 @@ const ActivateAccount = () => {
   const [isLoading, setIsLoading] = useState(false); // State for loading spinner
   const [message, setMessage] = useState(""); // State for messages
   const [timer, setTimer] = useState(300); // Timer state in seconds (5 minutes)
-  const [isOtpExpired, setIsOtpExpired] = useState(false); // OTP expiration state
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  const [isOtpExpired, setIsOtpExpired] = useState(false); // OTP expiration state\
+
+  const api = useApi();
 
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);

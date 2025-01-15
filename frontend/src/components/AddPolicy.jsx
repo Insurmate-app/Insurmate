@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import axios from "axios";
+import { useApi } from "./useApi";
 import * as yup from "yup";
 
 const AddPolicyModal = ({ showModal, setShowModal, onAddPolicy }) => {
@@ -10,9 +10,10 @@ const AddPolicyModal = ({ showModal, setShowModal, onAddPolicy }) => {
     email: "",
     policyNumber: "",
   });
-
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const api = useApi();
 
   const validationSchema = yup.object().shape({
     firstName: yup.string().required("First Name is required"),
@@ -64,11 +65,6 @@ const AddPolicyModal = ({ showModal, setShowModal, onAddPolicy }) => {
     }
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("Token not found in localStorage");
-      }
-
       const payload = {
         data: {
           firstName: formValues.firstName,
@@ -78,14 +74,9 @@ const AddPolicyModal = ({ showModal, setShowModal, onAddPolicy }) => {
         },
       };
 
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/asset/create`,
+      const response = await api.post(
+        `/asset/create`,
         payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
       );
 
       onAddPolicy(response.data);

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import useApi from "./useApi";
+import { useApi } from "./useApi";
 
 const AssetHistory = () => {
   const params = new URLSearchParams(window.location.search);
