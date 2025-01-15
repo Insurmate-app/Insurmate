@@ -2,13 +2,14 @@ name: Node.js CI
 
 on:
   push:
-    branches: [main]
-  # pull_request:
-  #   branches: [main]
+    branches:
+      - main
+      - test_env
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/test_env'
 
     steps:
       # Checkout the repository
@@ -36,17 +37,47 @@ jobs:
           npm install
 
       # Run tests in 'backend' directory
-      # - name: Run Tests in Backend
-      # working-directory: backend
-      # run: |
-      # npm test
+      - name: Run Tests in Backend
+        working-directory: backend
+        run: |
+          npm test
 
-      # Run tests in 'backend' directory
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      # Checkout the repository
+      - uses: actions/checkout@v4
+
+      # Set up Node.js (using Node.js v22 LTS)
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      # Cache NPM dependencies in the backend directory
+      - name: Cache NPM dependencies
+        uses: actions/cache@v3
+        with:
+          path: backend/node_modules # Path to the node_modules in the backend
+          key: npm-${{ hashFiles('frontend/package-lock.json') }} # Unique key based on the package-lock.json hash
+          restore-keys: |
+            npm-
+
+      # Navigate to the 'backend' directory and install dependencies
+      - name: Install Dependencies in Backend
+        working-directory: backend
+        run: |
+          npm install
+
+      # Build the backend
       - name: Build Backend
         working-directory: backend
         run: |
           npm run build
 
+      # Deploy the dist folder to OCI using SSH
       - name: Deploy to OCI
         env:
           OCI_HOST: ${{ secrets.OCI_HOST }}
@@ -61,7 +92,7 @@ jobs:
           ssh-keyscan $OCI_HOST >> ~/.ssh/known_hosts
           scp -r backend/dist $OCI_USER@$OCI_HOST:$OCI_PATH
 
-      # Deploy to Vercel from the 'frontend' directory 
+      # Deploy to Vercel from the 'frontend' directory
       - name: Deploy to Vercel
         working-directory: frontend
         run: |
