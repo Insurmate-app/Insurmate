@@ -47,6 +47,15 @@ jobs:
         run: |
           npm run build
 
+      - name: Deploy to OCI
+        env:
+          OCI_HOST: ${{ secrets.OCI_HOST }}
+          OCI_USER: ${{ secrets.OCI_USER }}
+          OCI_KEY: ${{ secrets.OCI_KEY }}
+          OCI_PATH: ${{ secrets.OCI_PATH }}
+        run: |
+          scp -i $OCI_KEY -r backend/dist $OCI_USER@$OCI_HOST:$OCI_PATH
+
       # Deploy to Vercel from the 'frontend' directory 
       # - name: Deploy to Vercel
       #   working-directory: frontend
