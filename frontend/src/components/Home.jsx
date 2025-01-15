@@ -12,7 +12,7 @@ const Home = () => {
             className="me-2"
             style={{ height: "40px" }}
           />
-          <h1 className="h5 text-dark mb-0">Insurmate ( CD Test 1 )</h1>
+          <h1 className="h5 text-dark mb-0">Insurmate</h1>
         </div>
         <nav>
           <ul className="nav">

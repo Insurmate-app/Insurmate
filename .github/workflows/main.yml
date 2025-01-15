@@ -21,19 +21,19 @@ jobs:
           node-version: 22.x
 
       # Cache NPM dependencies in the backend directory
-      # - name: Cache NPM dependencies
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: backend/node_modules # Path to the node_modules in the backend
-      #     key: npm-${{ hashFiles('frontend/package-lock.json') }} # Unique key based on the package-lock.json hash
-      #     restore-keys: |
-      #       npm-
+      - name: Cache NPM dependencies
+        uses: actions/cache@v3
+        with:
+          path: backend/node_modules # Path to the node_modules in the backend
+          key: npm-${{ hashFiles('frontend/package-lock.json') }} # Unique key based on the package-lock.json hash
+          restore-keys: |
+            npm-
 
       # Navigate to the 'backend' directory and install dependencies
-      # - name: Install Dependencies in Backend
-      #   working-directory: frontend
-      #   run: |
-      #     npm install
+      - name: Install Dependencies in Backend
+        working-directory: backend
+        run: |
+          npm install
 
       # Run tests in 'backend' directory
       # - name: Run Tests in Backend
@@ -41,9 +41,15 @@ jobs:
       # run: |
       # npm test
 
-      # Deploy to Vercel from the 'frontend' directory (optional)
-      - name: Deploy to Vercel
-        working-directory: frontend
+      # Run tests in 'backend' directory
+      - name: Build Backend
+        working-directory: backend
         run: |
-          npm install -g vercel@latest
-          vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --prod
+          npm run build
+
+      # Deploy to Vercel from the 'frontend' directory 
+      # - name: Deploy to Vercel
+      #   working-directory: frontend
+      #   run: |
+      #     npm install -g vercel@latest
+      #     vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --prod
