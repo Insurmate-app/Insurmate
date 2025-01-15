@@ -2,7 +2,7 @@ name: Node.js CI
 
 on:
   push:
-    branches: [dummy]
+    branches: [main]
   # pull_request:
   #   branches: [main]
 
@@ -21,13 +21,13 @@ jobs:
           node-version: 22.x
 
       # Cache NPM dependencies in the backend directory
-      - name: Cache NPM dependencies
-        uses: actions/cache@v3
-        with:
-          path: backend/node_modules # Path to the node_modules in the backend
-          key: npm-${{ hashFiles('frontend/package-lock.json') }} # Unique key based on the package-lock.json hash
-          restore-keys: |
-            npm-
+      # - name: Cache NPM dependencies
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: backend/node_modules # Path to the node_modules in the backend
+      #     key: npm-${{ hashFiles('frontend/package-lock.json') }} # Unique key based on the package-lock.json hash
+      #     restore-keys: |
+      #       npm-
 
       # Navigate to the 'backend' directory and install dependencies
       # - name: Install Dependencies in Backend
@@ -42,8 +42,8 @@ jobs:
       # npm test
 
       # Deploy to Vercel from the 'backend' directory (optional)
-      # - name: Deploy to Vercel
-      #   working-directory: frontend
-      #   run: |
-      #     npm install -g vercel@latest
-      #     vercel dist --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
+      - name: Deploy to Vercel
+        working-directory: frontend
+        run: |
+          npm install -g vercel@latest
+          vercel dist --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
