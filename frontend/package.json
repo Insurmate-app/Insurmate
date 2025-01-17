@@ -28,6 +28,7 @@
     "file-saver": "^2.0.5",
     "framer-motion": "^11.11.17",
     "gsap": "^3.12.5",
+    "jwt-decode": "^4.0.0",
     "papaparse": "^5.4.1",
     "pdfjs-dist": "^4.9.155",
     "react": "^18.3.1",

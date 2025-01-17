@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-import { storeToken } from "../hooks/tokenManager";
+import { storeToken, isTokenValid } from "../hooks/tokenManager";
 
 import * as Yup from "yup";
 
@@ -18,6 +18,13 @@ const LoginForm = () => {
 
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
+
+  // if the token is valid, navigate to dashboard
+  useEffect(() => {
+    if (isTokenValid()) {
+      window.location.href = "/dashboard";
+    }
+  }, []);
 
   const api = useApi();
 
@@ -62,7 +69,6 @@ const LoginForm = () => {
 
       api.post(`/user/login`, data).then((response) => {
         storeToken(response.data.token);
-
         window.location.href = "/dashboard";
       });
     } catch (err) {
