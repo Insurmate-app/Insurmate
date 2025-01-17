@@ -60,22 +60,6 @@ app.options("*", cors(corsOptions)); // Handle preflight requests
 //   "http://localhost:3000", // Additional allowed origin
 // ];
 
-// // CORS options
-// const corsOptions = {
-//   origin: (origin, callback) => {
-//     // Allow requests with no origin (like mobile apps or Postman)
-//     if (!origin || allowedOrigins.includes(origin)) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error("Not allowed by CORS"));
-//     }
-//   },
-//   credentials: true, // Allow cookies and authentication headers
-// };
-
-// // Use CORS middleware
-// app.use(cors(corsOptions));
-
 // Passport and cookies
 app.use(passport.initialize());
 app.use(cookieParser());
@@ -93,7 +77,7 @@ app.use("/health", healthcheck());
 app.use("/v1/api/user", userRoute);
 app.use("/v1/api/asset", assetRoute);
 
-app.get("/", (req, res) => res.send("App is working (1)!"));
+app.get("/", (req, res) => res.send("App is working CD Test No [ 1 ] !"));
 
 // Error handler middleware
 app.use(errorHandler);

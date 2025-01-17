@@ -1,6 +1,7 @@
 const userService = require("../services/user.service");
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_MAX_AGE = process.env.JWT_MAX_AGE;
 const passport = require("passport");
 require("../security/passport"); // Import Passport JWT configuration
 
@@ -31,15 +32,15 @@ const loginUser = async (req, res, next) => {
 
     // Generate JWT token
     const token = jwt.sign({ id: email }, JWT_SECRET, {
-      expiresIn: "15m", // 15 minutes
+      expiresIn: JWT_MAX_AGE, // one hour
     });
 
     // Set the token as a cookie (HttpOnly for security)
     res.cookie("token", token, {
       httpOnly: true, // Makes the cookie inaccessible to JavaScript on the client-side
-      secure: true, //process.env.NODE_ENV === "production", // Secure only in production
+      secure: true,
       sameSite: "Strict",
-      maxAge: 900000, // 15 minutes in milliseconds
+      maxAge: JWT_MAX_AGE, // one hour
     });
 
     res.status(200).json({ token: token });
