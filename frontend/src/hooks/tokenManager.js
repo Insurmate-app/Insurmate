@@ -3,32 +3,27 @@ import { jwtDecode } from "jwt-decode";
 
 const cookies = new Cookies();
 
+const token_name = import.meta.env.VITE_TOKEN_NAME;
+
 // Set the Bearer Token
 export const storeToken = (token) => {
-  const oneHourFromNow = new Date(
-    new Date().getTime() + 60 * 60 * 1000,
-  );
-
-  console.info(oneHourFromNow)
-  cookies.set("bearerToken", token, {
+  cookies.set(token_name, token, {
     path: "/",
-    expires: oneHourFromNow,
   });
 };
 
 // Get the Bearer Token
 export const getToken = () => {
-  return cookies.get("bearerToken") || null;
+  return cookies.get(token_name) || null;
 };
 
 // Delete the Bearer Token
 export const deleteToken = () => {
-  cookies.remove("bearerToken", { path: "/" });
+  cookies.remove(token_name, { path: "/" });
 };
 
 export const isTokenValid = () => {
-  const cookies = new Cookies();
-  const token = cookies.get("bearerToken");
+  const token = cookies.get(token_name);
 
   if (!token) return false;
 
