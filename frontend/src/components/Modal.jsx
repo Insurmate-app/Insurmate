@@ -1,4 +1,4 @@
-import React from "react";
+import PropTypes from 'prop-types';
 
 const Modal = ({ isVisible, message, hideModal }) => {
   return (
@@ -33,6 +33,12 @@ const Modal = ({ isVisible, message, hideModal }) => {
       </div>
     </div>
   );
+};
+
+Modal.propTypes = {
+  isVisible: PropTypes.bool.isRequired,
+  message: PropTypes.string.isRequired,
+  hideModal: PropTypes.func.isRequired,
 };
 
 export default Modal;

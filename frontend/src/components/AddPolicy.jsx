@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
+import PropTypes from 'prop-types';
+import * as yup from "yup";
 
 import { useApi } from "./useApi";
-import * as yup from "yup";
 
 const AddPolicyModal = ({ showModal, setShowModal, onAddPolicy }) => {
   const [formValues, setFormValues] = useState({
@@ -15,29 +16,39 @@ const AddPolicyModal = ({ showModal, setShowModal, onAddPolicy }) => {
 
   const api = useApi();
 
-  const validationSchema = yup.object().shape({
-    firstName: yup.string().required("First Name is required"),
-    lastName: yup.string().required("Last Name is required"),
-    email: yup
-      .string()
-      .email("Invalid email format")
-      .max(100, "Email must be no more than 100 characters long")
-      .required("Email is required"),
-    policyNumber: yup
-      .string()
-      .min(6, "Policy number must be at least 6 characters")
-      .max(10, "Policy number must be no more than 10 characters")
-      .matches(/^[A-Za-z0-9]+$/, "Policy Number must be alphanumeric")
-      .required("Policy Number is required"),
-  });
+  // Memoize validation schema
+  const validationSchema = useMemo(
+    () =>
+      yup.object().shape({
+        firstName: yup.string().required("First Name is required"),
+        lastName: yup.string().required("Last Name is required"),
+        email: yup
+          .string()
+          .email("Invalid email format")
+          .max(100, "Email must be no more than 100 characters long")
+          .required("Email is required"),
+        policyNumber: yup
+          .string()
+          .min(6, "Policy number must be at least 6 characters")
+          .max(10, "Policy number must be no more than 10 characters")
+          .matches(/^[A-Za-z0-9]+$/, "Policy Number must be alphanumeric")
+          .required("Policy Number is required"),
+      }),
+    [],
+  );
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormValues((prevValues) => ({
-      ...prevValues,
-      [name]: value,
-    }));
-  };
+  // Optimize form handling
+  const handleChange = useCallback(
+    (e) => {
+      const { name, value } = e.target;
+      setFormValues((prev) => ({ ...prev, [name]: value }));
+      // Clear error when user starts typing
+      if (errors[name]) {
+        setErrors((prev) => ({ ...prev, [name]: "" }));
+      }
+    },
+    [errors],
+  );
 
   const validateForm = async () => {
     try {
@@ -54,51 +65,50 @@ const AddPolicyModal = ({ showModal, setShowModal, onAddPolicy }) => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setIsSubmitting(true);
 
-    const isValid = await validateForm();
-    if (!isValid) {
-      setIsSubmitting(false);
-      return;
-    }
+      const isValid = await validateForm();
+      if (!isValid) {
+        setIsSubmitting(false);
+        return;
+      }
 
-    try {
-      const payload = {
-        data: {
-          firstName: formValues.firstName,
-          lastName: formValues.lastName,
-          email: formValues.email,
-          policyNumber: formValues.policyNumber,
-        },
-      };
+      try {
+        const response = await api.post(`/asset/create`, {
+          data: { ...formValues },
+        });
 
-      const response = await api.post(
-        `/asset/create`,
-        payload,
-      );
-
-      onAddPolicy(response.data);
-      setShowModal(false);
-      setFormValues({
-        firstName: "",
-        lastName: "",
-        email: "",
-        policyNumber: "",
-      });
-    } catch (error) {
-      console.error("Error adding policy:", error);
-      setErrors({ submit: "Error adding policy. Please try again." });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+        onAddPolicy(response.data);
+        setShowModal(false);
+        setFormValues({
+          firstName: "",
+          lastName: "",
+          email: "",
+          policyNumber: "",
+        });
+      } catch (error) {
+        console.error("Error adding policy:", error);
+        setErrors({ submit: "Error adding policy. Please try again." });
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [formValues, validateForm, api, onAddPolicy, setShowModal],
+  );
 
   if (!showModal) return null;
 
   return (
-    <div className="modal show d-block" tabIndex="-1" role="dialog">
+    <div
+      className="modal show d-block"
+      tabIndex="-1"
+      role="dialog"
+      aria-labelledby="addPolicyModal"
+      aria-modal="true"
+    >
       <div className="modal-dialog modal-dialog-centered" role="document">
         <div
           className="modal-content p-4 shadow rounded"
@@ -240,4 +250,10 @@ const AddPolicyModal = ({ showModal, setShowModal, onAddPolicy }) => {
   );
 };
 
-export default AddPolicyModal;
+AddPolicyModal.propTypes = {
+  showModal: PropTypes.bool.isRequired,
+  setShowModal: PropTypes.func.isRequired,
+  onAddPolicy: PropTypes.func.isRequired,
+};
+
+export default React.memo(AddPolicyModal);

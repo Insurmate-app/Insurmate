@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import * as Yup from "yup";
 
+import { encodeBase64 } from "../functions/base64";
 import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
 import Modal from "./Modal";
@@ -21,100 +22,123 @@ const SignUpForm = () => {
     isTermsAccepted: false,
   });
   const [errors, setErrors] = useState({});
-  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
 
-  // Validation schema
-  const validationSchema = Yup.object().shape({
-    email: Yup.string()
-      .email("Enter a valid email")
-      .required("Email is required"),
-    password: Yup.string()
-      .min(8, "At least 8 characters")
-      .matches(/[A-Z]/, "Must contain an uppercase letter")
-      .matches(/[!@#$%^&*]/, "Must contain a special character")
-      .required("Password is required"),
-    companyName: Yup.string()
-      .min(8, "At least 8 characters")
-      .max(28, "No more than 28 characters")
-      .required("Company name is required"),
-    addressLine1: Yup.string().required("Address line 1 is required"),
-    addressLine2: Yup.string(),
-    city: Yup.string().required("City is required"),
-    state: Yup.string().required("State is required"),
-    zipCode: Yup.string()
-      .matches(/^\d{5}$/, "Zip code must be 5 digits")
-      .required("Zip code is required"),
-    isTermsAccepted: Yup.boolean().oneOf([true], "You must accept the terms"),
-  });
+  // Memoized validation schema
+  const validationSchema = useMemo(
+    () =>
+      Yup.object().shape({
+        email: Yup.string()
+          .email("Enter a valid email")
+          .required("Email is required"),
+        password: Yup.string()
+          .min(8, "At least 8 characters")
+          .matches(/[A-Z]/, "Must contain an uppercase letter")
+          .matches(/[!@#$%^&*]/, "Must contain a special character")
+          .required("Password is required"),
+        companyName: Yup.string()
+          .min(8, "At least 8 characters")
+          .max(28, "No more than 28 characters")
+          .required("Company name is required"),
+        addressLine1: Yup.string().required("Address line 1 is required"),
+        addressLine2: Yup.string(),
+        city: Yup.string().required("City is required"),
+        state: Yup.string().required("State is required"),
+        zipCode: Yup.string()
+          .matches(/^\d{5}$/, "Zip code must be 5 digits")
+          .required("Zip code is required"),
+        isTermsAccepted: Yup.boolean().oneOf(
+          [true],
+          "You must accept the terms",
+        ),
+      }),
+    [],
+  );
+  // Add isFormValid state
+  const [isFormValid, setIsFormValid] = useState(false);
+  // Update handleInputChange to handle checkbox correctly and validate form
+  const handleInputChange = useCallback(
+    (e) => {
+      const { name, value, type, checked } = e.target;
+      const newValue = type === "checkbox" ? checked : value;
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    const newValue = type === "checkbox" ? checked : value;
+      setFormValues((prevValues) => {
+        const updatedValues = {
+          ...prevValues,
+          [name]: newValue,
+        };
 
-    setFormValues((prev) => {
-      const updatedValues = { ...prev, [name]: newValue };
-      console.log("Updated Form Values:", updatedValues); // Debugging form updates
+        // Validate form after update
+        validationSchema
+          .isValid(updatedValues)
+          .then((valid) => setIsFormValid(valid));
 
-      // Validate the form
-      validationSchema
-        .isValid(updatedValues)
-        .then((isValid) => setIsButtonDisabled(!isValid))
-        .catch((err) => console.log("Validation Error:", err)); // Log validation errors
+        return updatedValues;
+      });
 
-      return updatedValues;
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    activateSpinner();
-
-    try {
-      await validationSchema.validate(formValues, { abortEarly: false });
-      setErrors({}); // Clear previous errors
-
-      // Construct API payload
-      const payload = {
-        email: formValues.email,
-        password: formValues.password,
-        companyName: formValues.companyName,
-        address: {
-          addressLine1: formValues.addressLine1,
-          addressLine2: formValues.addressLine2,
-          city: formValues.city,
-          state: formValues.state,
-          zipCode: formValues.zipCode,
-        },
-      };
-
-      // Send request to the server
-      await api.post(`/user/create`, payload);
-
-      // Redirect after successful submission
-      window.location.href = `/activate?email=${encodeURIComponent(
-        formValues.email,
-      )}`;
-    } catch (err) {
-      deactivateSpinner();
-      console.log("Error during submission:", err); // Debugging submission errors
-      if (err.name === "ValidationError") {
-        const validationErrors = {};
-        err.inner.forEach((error) => {
-          validationErrors[error.path] = error.message;
-        });
-        setErrors(validationErrors);
-      } else if (err.response) {
-        console.log("Server Response Error:", err.response.data); // Debug server response
-        showModal(err.response.data.message || "Error from server");
-      } else {
-        showModal("An unexpected error occurred");
+      if (errors[name]) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          [name]: null,
+        }));
       }
-    }
-  };
+    },
+    [errors, validationSchema],
+  );
+  // Optimized submit handler
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      activateSpinner();
+
+      try {
+        await validationSchema.validate(formValues, { abortEarly: false });
+        setErrors({});
+
+        const payload = {
+          email: formValues.email,
+          password: formValues.password,
+          companyName: formValues.companyName,
+          address: {
+            addressLine1: formValues.addressLine1,
+            addressLine2: formValues.addressLine2,
+            city: formValues.city,
+            state: formValues.state,
+            zipCode: formValues.zipCode,
+          },
+        };
+
+        await api.post(`/user/create`, payload);
+        window.location.href = `/activate?email=${encodeURIComponent(
+          encodeBase64(formValues.email),
+        )}`;
+      } catch (err) {
+        deactivateSpinner();
+
+        if (err.name === "ValidationError") {
+          const validateFormData = {};
+          err.inner.forEach((er) => {
+            validateFormData[er.path] = er.message;
+          });
+          setErrors(validateFormData);
+        } else if (err.response) {
+          showModal(err.response.data.message || "Error from server");
+        } else {
+          showModal("An unexpected error occurred");
+        }
+      }
+    },
+    [
+      formValues,
+      validationSchema,
+      api,
+      activateSpinner,
+      deactivateSpinner,
+      showModal,
+    ],
+  );
 
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light p-3">
@@ -322,17 +346,19 @@ const SignUpForm = () => {
             </label>
           </div>
 
-          {/* Submit Button */}
+          {/* Update the submit button */}
           <button
             type="submit"
             className="btn w-100"
-            disabled={isButtonDisabled}
+            disabled={!isFormValid || isSpinnerVisible}
             style={{
-              backgroundColor: isButtonDisabled ? "#ccc" : "#333",
+              backgroundColor:
+                !isFormValid || isSpinnerVisible ? "#ccc" : "#333",
               color: "#fff",
               borderRadius: "8px",
               fontWeight: "bold",
-              cursor: isButtonDisabled ? "not-allowed" : "pointer",
+              cursor:
+                !isFormValid || isSpinnerVisible ? "not-allowed" : "pointer",
             }}
           >
             {isSpinnerVisible && (

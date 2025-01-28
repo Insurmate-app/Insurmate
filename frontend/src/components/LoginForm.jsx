@@ -1,23 +1,100 @@
-import React, { useEffect, useState } from "react";
-
-import { storeToken, isTokenValid } from "../hooks/tokenManager";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import * as Yup from "yup";
 
+import { isTokenValid, storeToken } from "../hooks/tokenManager";
 import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
 import Modal from "./Modal";
 import { useApi } from "./useApi";
 
 const LoginForm = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
   const [showPassword, setShowPassword] = useState(false);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [errors, setErrors] = useState({});
-
+  const togglePasswordVisibility = useCallback(() => {
+    setShowPassword((prev) => !prev);
+  }, []);
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
+  const api = useApi();
+
+  // Memoized validation schema
+  const schema = useMemo(
+    () =>
+      Yup.object().shape({
+        email: Yup.string()
+          .required("Email is required")
+          .matches(
+            /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+            "Please enter a valid email address",
+          ),
+        password: Yup.string()
+          .min(8, "Password must be at least 8 characters long")
+          .matches(
+            /[A-Z]/,
+            "Password must contain at least one uppercase letter",
+          )
+          .matches(
+            /[!@#$%^&*(),.?":{}|<>]/,
+            "Password must contain at least one special character",
+          )
+          .required("Password is required"),
+      }),
+    [],
+  );
+
+  const handleInputChange = useCallback(
+    (e) => {
+      const { id, value } = e.target;
+      setFormData((prev) => ({
+        ...prev,
+        [id]: value,
+      }));
+
+      if (errors[id]) {
+        setErrors((prev) => ({
+          ...prev,
+          [id]: null,
+        }));
+      }
+    },
+    [formData, errors, schema],
+  );
+
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      activateSpinner();
+
+      try {
+        await schema.validate(formData, { abortEarly: false });
+        setErrors({});
+
+        const response = await api.post(`/user/login`, formData);
+        storeToken(response.data.token);
+        window.location.href = "/dashboard";
+      } catch (err) {
+        deactivateSpinner();
+
+        if (err.name === "ValidationError") {
+          const validationErrors = err.inner.reduce((acc, error) => {
+            acc[error.path] = error.message;
+            return acc;
+          }, {});
+          setErrors(validationErrors);
+        } else if (err.response) {
+          showModal(err.response.data.message || "Login failed.");
+        } else {
+          showModal("An unexpected error occurred");
+        }
+      }
+    },
+    [formData, schema, api, activateSpinner, deactivateSpinner, showModal],
+  );
 
   // if the token is valid, navigate to dashboard
   useEffect(() => {
@@ -25,69 +102,6 @@ const LoginForm = () => {
       window.location.href = "/dashboard";
     }
   }, []);
-
-  const api = useApi();
-
-  const schema = Yup.object().shape({
-    email: Yup.string()
-      .required("Email is required")
-      .matches(
-        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        "Please enter a valid email address",
-      ),
-    password: Yup.string()
-      .required("Password is required")
-      .min(8, "Password must be at least 8 characters long")
-      .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
-      .matches(
-        /[!@#$%^&*,"?":{}|<>]/,
-        "Password must contain at least one special character",
-      ),
-  });
-
-  const handleInputChange = (e) => {
-    const { id, value } = e.target;
-
-    if (id === "email") setEmail(value);
-    if (id === "password") setPassword(value);
-
-    //setIsButtonDisabled(email.trim() === "" || password.trim() === "");
-  };
-
-  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    activateSpinner();
-    setIsButtonDisabled(true);
-
-    const data = { email, password };
-
-    try {
-      await schema.validate(data, { abortEarly: false });
-      setErrors({});
-
-      api.post(`/user/login`, data).then((response) => {
-        storeToken(response.data.token);
-        window.location.href = "/dashboard";
-      });
-    } catch (err) {
-      deactivateSpinner();
-      setIsButtonDisabled(false);
-
-      if (err.name === "ValidationError") {
-        const validationErrors = {};
-        err.inner.forEach((error) => {
-          validationErrors[error.path] = error.message;
-        });
-        setErrors(validationErrors);
-      } else if (err.response) {
-        showModal(err.response.data.message || "Login failed.");
-      } else {
-        showModal("An unexpected error occurred");
-      }
-    }
-  };
 
   return (
     <div className="container-fluid d-flex justify-content-center align-items-center min-vh-100 bg-white">
@@ -127,7 +141,7 @@ const LoginForm = () => {
               id="email"
               className={`form-control ${errors.email ? "is-invalid" : ""}`}
               placeholder="user@example.com"
-              value={email}
+              value={formData.email}
               onChange={handleInputChange}
               style={{
                 backgroundColor: "#fff",
@@ -140,7 +154,6 @@ const LoginForm = () => {
               <small className="text-danger">{errors.email}</small>
             )}
           </div>
-
           {/* Password Input */}
           <div className="mb-3">
             <label htmlFor="password" className="form-label fw-bold">
@@ -152,7 +165,7 @@ const LoginForm = () => {
                 id="password"
                 className={`form-control ${errors.password ? "is-invalid" : ""}`}
                 placeholder="Enter your password"
-                value={password}
+                value={formData.password}
                 onChange={handleInputChange}
                 style={{
                   backgroundColor: "#fff",
@@ -180,19 +193,18 @@ const LoginForm = () => {
               <small className="text-danger">{errors.password}</small>
             )}
           </div>
-
           {/* Submit Button */}
           <button
             type="submit"
             className="btn w-100 mt-3"
             style={{
-              backgroundColor: isButtonDisabled ? "#ccc" : "#333",
+              backgroundColor: isSpinnerVisible ? "#ccc" : "#333",
               color: "#fff",
               borderRadius: "8px",
-              cursor: isButtonDisabled ? "not-allowed" : "pointer",
+              cursor: isSpinnerVisible ? "not-allowed" : "pointer",
               fontWeight: "bold",
             }}
-            disabled={isButtonDisabled}
+            disabled={isSpinnerVisible}
           >
             {isSpinnerVisible && (
               <span

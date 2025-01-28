@@ -1,17 +1,19 @@
-import React, { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import * as Yup from "yup";
 
+import { encodeBase64 } from "../functions/base64";
 import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
 import Modal from "./Modal";
 import { useApi } from "./useApi";
 
 const PasswordResetForm = () => {
-  const [email, setEmail] = useState("");
-  const [newPassword, setNewPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
   const [showPassword, setShowPassword] = useState(false);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
@@ -20,54 +22,73 @@ const PasswordResetForm = () => {
 
   const api = useApi();
 
-  const schema = Yup.object().shape({
-    email: Yup.string()
-      .required("Email is required")
-      .matches(
-        /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        "Please enter a valid email address",
-      ),
-    password: Yup.string()
-      .required("A new password is required")
-      .min(8, "Password must be at least 8 characters long")
-      .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
-      .matches(
-        /[!@#$%^&*,"?":{}|<>]/,
-        "Password must contain at least one special character",
-      ),
-  });
+  const schema = useMemo(
+    () =>
+      Yup.object().shape({
+        email: Yup.string()
+          .required("Email is required")
+          .matches(
+            /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+            "Please enter a valid email address",
+          ),
+        password: Yup.string()
+          .required("A new password is required")
+          .min(8, "Password must be at least 8 characters long")
+          .matches(
+            /[A-Z]/,
+            "Password must contain at least one uppercase letter",
+          )
+          .matches(
+            /[!@#$%^&*,"?":{}|<>]/,
+            "Password must contain at least one special character",
+          ),
+      }),
+    [],
+  );
 
-  const data = {
-    email: email,
-    password: newPassword,
-  };
+  const handleInputChange = useCallback(
+    (e) => {
+      const { id, value } = e.target;
+      setFormData((prev) => ({
+        ...prev,
+        [id]: value,
+      }));
 
-  const handleInputChange = (e) => {
-    const { id, value } = e.target;
+      if (errors[id]) {
+        setErrors((prev) => ({
+          ...prev,
+          [id]: null,
+        }));
+      }
+    },
+    [formData, errors, schema],
+  );
 
-    if (id === "email") setEmail(value);
-    if (id === "password") setNewPassword(value);
-
-    //setIsButtonDisabled(email.trim() === "" || newPassword.trim() === "");
-  };
-
-  const togglePasswordVisibility = () => setShowPassword((prev) => !prev);
+  const togglePasswordVisibility = useCallback(() => {
+    setShowPassword((prev) => !prev);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     activateSpinner();
-    setIsButtonDisabled(true);
 
     try {
-      await schema.validate(data, { abortEarly: false });
+      await schema.validate(formData, { abortEarly: false });
       setErrors({});
+
+      const email = formData.email;
+
+      const data = {
+        email: email,
+        password: formData.password,
+      };
 
       await api.put(`/user/reset-password`, data);
 
-      window.location.href = `/activate?email=${encodeURIComponent(email)}`;
+      window.location.href = `/activate?email=${encodeURIComponent(encodeBase64(email))}`;
     } catch (err) {
+      console.log(err);
       deactivateSpinner();
-      setIsButtonDisabled(false);
 
       if (err.name === "ValidationError") {
         const validationErrors = {};
@@ -107,7 +128,7 @@ const PasswordResetForm = () => {
               id="email"
               className={`form-control ${errors.email ? "is-invalid" : ""}`}
               placeholder="user@example.com"
-              value={email}
+              value={formData.email}
               onChange={handleInputChange}
               style={{
                 backgroundColor: "#fff",
@@ -132,7 +153,7 @@ const PasswordResetForm = () => {
                 id="password"
                 className={`form-control ${errors.password ? "is-invalid" : ""}`}
                 placeholder="Enter a new password"
-                value={newPassword}
+                value={formData.password}
                 onChange={handleInputChange}
                 style={{
                   backgroundColor: "#fff",
@@ -166,13 +187,13 @@ const PasswordResetForm = () => {
             type="submit"
             className="btn w-100 mt-3"
             style={{
-              backgroundColor: isButtonDisabled ? "#ccc" : "#333",
+              backgroundColor: isSpinnerVisible ? "#ccc" : "#333",
               color: "#fff",
               borderRadius: "8px",
-              cursor: isButtonDisabled ? "not-allowed" : "pointer",
+              cursor: isSpinnerVisible ? "not-allowed" : "pointer",
               fontWeight: "bold",
             }}
-            disabled={isButtonDisabled}
+            disabled={isSpinnerVisible}
           >
             {isSpinnerVisible && (
               <span

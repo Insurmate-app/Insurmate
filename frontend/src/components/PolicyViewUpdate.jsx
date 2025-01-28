@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import * as yup from "yup";
 
@@ -9,11 +9,6 @@ import { useApi } from "./useApi";
 const PolicyViewUpdate = () => {
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
-
-  if (!id) {
-    window.location.href = "/dashboard";
-  }
-
   const api = useApi();
 
   const [formValues, setFormValues] = useState({
@@ -31,37 +26,45 @@ const PolicyViewUpdate = () => {
 
   const { isVisible, message, showModal, hideModal } = useModal();
 
-  const validationSchema = yup.object().shape({
-    firstName: yup.string().required("First Name is required"),
-    lastName: yup.string().required("Last Name is required"),
-    email: yup
-      .string()
-      .email("Invalid email format")
-      .max(100, "Email must be no more than 100 characters long")
-      .required("Email is required"),
-    policyNumber: yup
-      .string()
-      .min(6, "Policy number must be at least 6 characters")
-      .max(10, "Policy number must be no more than 10 characters")
-      .matches(/^[A-Za-z0-9]+$/, "Policy Number must be alphanumeric")
-      .required("Policy Number is required"),
-    assetId: yup.string().required("Policy ID is required"),
-    owner: yup.string().required("Owner is required"),
-    status: yup
-      .string()
-      .oneOf(["Pending", "Active", "Inactive"], "Invalid status")
-      .required("Status is required"),
-  });
+  const validationSchema = useMemo(
+    () =>
+      yup.object().shape({
+        firstName: yup.string().required("First Name is required"),
+        lastName: yup.string().required("Last Name is required"),
+        email: yup
+          .string()
+          .email("Invalid email format")
+          .max(100, "Email must be no more than 100 characters long")
+          .required("Email is required"),
+        policyNumber: yup
+          .string()
+          .min(6, "Policy number must be at least 6 characters")
+          .max(10, "Policy number must be no more than 10 characters")
+          .matches(/^[A-Za-z0-9]+$/, "Policy Number must be alphanumeric")
+          .required("Policy Number is required"),
+        assetId: yup.string().required("Policy ID is required"),
+        owner: yup.string().required("Owner is required"),
+        status: yup
+          .string()
+          .oneOf(["Pending", "Active", "Inactive"], "Invalid status")
+          .required("Status is required"),
+      }),
+    [],
+  );
 
   useEffect(() => {
+    if (!id) {
+      window.location.href = "/dashboard";
+      return;
+    }
+
     const fetchPolicy = async () => {
       try {
         const response = await api.get(`/asset/get/${id}`);
-
         const policyData = response.data.data;
 
-        // Update the state with the extracted values
-        setFormValues({
+        setFormValues((prevValues) => ({
+          ...prevValues,
           assetId: id,
           firstName: policyData.firstName || "",
           lastName: policyData.lastName || "",
@@ -69,7 +72,7 @@ const PolicyViewUpdate = () => {
           policyNumber: policyData.policyNumber || "",
           owner: policyData.owner || "",
           status: policyData.status || "Pending",
-        });
+        }));
       } catch (error) {
         console.error("Error fetching policy data:", error);
         showModal("Failed to load policy details. Please try again.");
@@ -78,18 +81,19 @@ const PolicyViewUpdate = () => {
         setIsLoading(false);
       }
     };
-    fetchPolicy();
-  }, [id]);
 
-  const handleChange = (e) => {
+    fetchPolicy();
+  }, [id, api, showModal]);
+
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormValues((prevValues) => ({
       ...prevValues,
       [name]: value,
     }));
-  };
+  }, []);
 
-  const validateForm = async () => {
+  const validateForm = useCallback(async () => {
     try {
       await validationSchema.validate(formValues, { abortEarly: false });
       setErrors({});
@@ -102,44 +106,44 @@ const PolicyViewUpdate = () => {
       setErrors(validationErrors);
       return false;
     }
-  };
+  }, [formValues, validationSchema]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setIsSubmitting(true);
 
-    const isValid = await validateForm();
-    if (!isValid) {
-      setIsSubmitting(false);
-      return;
-    }
+      try {
+        const isValid = await validateForm();
+        if (!isValid) return;
 
-    try {
-      const updatePayload = {
-        id: id,
-        data: {
-          firstName: formValues.firstName,
-          lastName: formValues.lastName,
-          email: formValues.email,
-          policyNumber: formValues.policyNumber,
-          owner: formValues.owner,
-          status: formValues.status,
-        },
-      };
+        const updatePayload = {
+          id,
+          data: {
+            firstName: formValues.firstName,
+            lastName: formValues.lastName,
+            email: formValues.email,
+            policyNumber: formValues.policyNumber,
+            owner: formValues.owner,
+            status: formValues.status,
+          },
+        };
 
-      await api.put(`/asset/update`, updatePayload);
-      showModal("Policy updated successfully!");
-    } catch (error) {
-      console.error("Error updating policy:", error);
-      setErrors({ submit: "Failed to update the policy. Please try again." });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+        await api.put(`/asset/update`, updatePayload);
+        showModal("Policy updated successfully!");
+      } catch (error) {
+        console.error("Error updating policy:", error);
+        setErrors({ submit: "Failed to update the policy. Please try again." });
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [formValues, id, api, validateForm, showModal],
+  );
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     window.location.href = "/dashboard";
-  };
+  }, []);
 
   if (isLoading) {
     return (
