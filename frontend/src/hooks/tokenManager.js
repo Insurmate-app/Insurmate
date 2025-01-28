@@ -3,7 +3,7 @@ import { jwtDecode } from "jwt-decode";
 
 const cookies = new Cookies();
 
-const token_name = import.meta.env.VITE_TOKEN_NAME;
+const token_name = import.meta.env.VITE_TOKEN_NAME || "token";
 
 // Set the Bearer Token
 export const storeToken = (token) => {

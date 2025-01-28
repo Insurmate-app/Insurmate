@@ -1,14 +1,14 @@
-### Interns
+### Collaborators ( Fall 2024 )
 
 - Brain Tran, Henry Nguyen, Jonah Nathan, Matthew Fuentes James
 
 ### Senior Software Engineer
 
-- Dr. Cristian Mateos ( [Website](https://users.exa.unicen.edu.ar/~cmateos/) )
+- Dr. Cristian Mateos ( [Link](https://users.exa.unicen.edu.ar/~cmateos/) )
 
 ### Product Owner
 
-- Toe Arkar ( [GitHub](https://github.com/Toe12) )
+- Toe Arkar ( [Link](https://toearkar.vercel.app/) )
 
 ![mortgage_policy_exchange_workdlow.png](mortgage_policy_exchange_workdlow.png)
 
