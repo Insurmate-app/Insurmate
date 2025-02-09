@@ -52,6 +52,7 @@ const PolicyViewUpdate = () => {
     [],
   );
 
+  // Run the policy fetch only once on mount.
   useEffect(() => {
     if (!id) {
       window.location.href = "/dashboard";
@@ -83,7 +84,8 @@ const PolicyViewUpdate = () => {
     };
 
     fetchPolicy();
-  }, [id, api, showModal]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // empty dependency array ensures the effect runs only once on mount
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
@@ -173,7 +175,7 @@ const PolicyViewUpdate = () => {
               type="text"
               name="assetId"
               value={formValues.assetId}
-              className={`form-control ${errors.owner ? "is-invalid" : ""}`}
+              className={`form-control ${errors.assetId ? "is-invalid" : ""}`}
               readOnly
             />
             {errors.assetId && (
@@ -227,9 +229,7 @@ const PolicyViewUpdate = () => {
               name="policyNumber"
               value={formValues.policyNumber}
               onChange={handleChange}
-              className={`form-control ${
-                errors.policyNumber ? "is-invalid" : ""
-              }`}
+              className={`form-control ${errors.policyNumber ? "is-invalid" : ""}`}
             />
             {errors.policyNumber && (
               <div className="text-danger">{errors.policyNumber}</div>
