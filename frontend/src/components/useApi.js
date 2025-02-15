@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { getToken } from "../hooks/tokenManager";
+import { getToken } from "../functions/tokenManager";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,

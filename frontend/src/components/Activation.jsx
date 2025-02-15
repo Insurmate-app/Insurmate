@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import { decodeBase64 } from "../functions/base64";
+import { deobfuscate } from "../functions/obfs";
 import { useApi } from "./useApi";
 
 const ActivateAccount = () => {
@@ -21,7 +22,7 @@ const ActivateAccount = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const emailFromQuery = decodeBase64(params.get("email"));
+    const emailFromQuery = deobfuscate(decodeBase64(params.get("ep")));
     if (emailFromQuery) {
       setEmail(decodeURIComponent(emailFromQuery));
     } else {

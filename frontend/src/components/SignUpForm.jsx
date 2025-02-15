@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import { encodeBase64 } from "../functions/base64";
+import { obfuscate } from "../functions/obfs";
 import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
 import Modal from "./Modal";
@@ -111,8 +112,11 @@ const SignUpForm = () => {
         };
 
         await api.post(`/user/create`, payload);
-        window.location.href = `/activate?email=${encodeURIComponent(
-          encodeBase64(formValues.email),
+
+        const obfuscated_email = encodeBase64(obfuscate(formValues.email));
+
+        window.location.href = `/activate?ep=${encodeURIComponent(
+          obfuscated_email,
         )}`;
       } catch (err) {
         deactivateSpinner();
