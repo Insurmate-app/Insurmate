@@ -69,6 +69,7 @@ jobs:
       - name: Install Dependencies in Backend
         working-directory: backend
         run: |
+          npm install -g vercel@latest
           npm install
 
       # Build the backend
@@ -96,5 +97,4 @@ jobs:
       - name: Deploy to Vercel
         working-directory: frontend
         run: |
-          npm install -g vercel@latest
           vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --prod
