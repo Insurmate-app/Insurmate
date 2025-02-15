@@ -144,7 +144,9 @@ const PolicyViewUpdate = () => {
   );
 
   const handleBack = useCallback(() => {
-    window.location.href = "/dashboard";
+    document.startViewTransition(() => {
+      window.location.href = "/dashboard";
+    });
   }, []);
 
   if (isLoading) {

@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import * as Yup from "yup";
 
 import { encodeBase64 } from "../functions/base64";
+import { obfuscate } from "../functions/obfs";
 import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
 import Modal from "./Modal";
@@ -85,7 +86,9 @@ const PasswordResetForm = () => {
 
       await api.put(`/user/reset-password`, data);
 
-      window.location.href = `/activate?email=${encodeURIComponent(encodeBase64(email))}`;
+      const obfuscated_email = encodeBase64(obfuscate(email));
+
+      window.location.href = `/activate?ep=${encodeURIComponent(obfuscated_email)}`;
     } catch (err) {
       console.log(err);
       deactivateSpinner();

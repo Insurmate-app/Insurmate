@@ -61,10 +61,12 @@ const AssetHistory = () => {
         <button
           type="button"
           className="btn btn-light"
-          style={{
-            backgroundColor: "#95a5a6",
-          }}
-          onClick={() => (window.location.href = "/dashboard")}
+          style={{ backgroundColor: "#95a5a6" }}
+          onClick={() =>
+            document.startViewTransition(() => {
+              window.location.href = "/dashboard";
+            })
+          }
         >
           Back
         </button>

@@ -1,6 +1,6 @@
 import React from "react";
 
-import { deleteToken } from "../hooks/tokenManager";
+import { deleteToken } from "../functions/tokenManager";
 import { useApi } from "./useApi";
 
 const Navbar = () => {
@@ -9,7 +9,10 @@ const Navbar = () => {
     try {
       await api.post(`/user/logout`).then((response) => {
         deleteToken();
-        window.location.href = "/login";
+        // Navigate smoothly
+        document.startViewTransition(() => {
+          window.location.href = "/login";
+        });
       });
     } catch (error) {
       console.error("Error during logout:", error);

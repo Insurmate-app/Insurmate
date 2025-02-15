@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import * as Yup from "yup";
 
-import { isTokenValid, storeToken } from "../hooks/tokenManager";
+import { isTokenValid, storeToken } from "../functions/tokenManager";
 import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
 import Modal from "./Modal";
@@ -99,7 +99,9 @@ const LoginForm = () => {
   // if the token is valid, navigate to dashboard
   useEffect(() => {
     if (isTokenValid()) {
-      window.location.href = "/dashboard";
+      document.startViewTransition(() => {
+        window.location.assign = "/dashboard";
+      });
     }
   }, []);
 
