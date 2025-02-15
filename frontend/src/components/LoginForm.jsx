@@ -100,7 +100,7 @@ const LoginForm = () => {
   useEffect(() => {
     if (isTokenValid()) {
       document.startViewTransition(() => {
-        window.location.assign = "/dashboard";
+        window.location.href = "/dashboard";
       });
     }
   }, []);
