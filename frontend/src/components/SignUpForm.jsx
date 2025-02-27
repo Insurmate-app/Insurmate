@@ -12,6 +12,8 @@ import { useApi } from "./useApi";
 const SignUpForm = () => {
   const api = useApi();
   const [formValues, setFormValues] = useState({
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     companyName: "",
@@ -31,6 +33,12 @@ const SignUpForm = () => {
   const validationSchema = useMemo(
     () =>
       Yup.object().shape({
+        firstName: Yup.string()
+          .required("First name is required")
+          .max(50, "No more than 50 characters"),
+        lastName: Yup.string()
+          .required("Last name is required")
+          .max(50, "No more than 50 characters"),  
         email: Yup.string()
           .email("Enter a valid email")
           .required("Email is required"),
@@ -99,6 +107,8 @@ const SignUpForm = () => {
         setErrors({});
 
         const payload = {
+          firstName: formValues.firstName,
+          lastName: formValues.lastName,
           email: formValues.email,
           password: formValues.password,
           companyName: formValues.companyName,
@@ -158,6 +168,46 @@ const SignUpForm = () => {
           Create Your Account
         </h2>
         <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label className="form-label fw-bold">
+              First Name <span style={{ color: "red" }}>*</span>{" "}
+            </label>
+            <input
+              type="text"
+              name="firstName"
+              className={`form-control border-0 border-bottom rounded-0 ${
+                errors.firstName ? "is-invalid" : ""
+              }`}
+              placeholder="John"
+              value={formValues.firstName}
+              onChange={handleInputChange}
+              required
+            />
+            {errors.firstName && (
+              <small className="text-danger">{errors.firstName}</small>
+            )}
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label fw-bold">
+              Last Name <span style={{ color: "red" }}>*</span>{" "}
+            </label>
+            <input
+              type="text"
+              name="lastName"
+              className={`form-control border-0 border-bottom rounded-0 ${
+                errors.lastName ? "is-invalid" : ""
+              }`}
+              placeholder="Doe"
+              value={formValues.lastName}
+              onChange={handleInputChange}
+              required
+            />
+            {errors.lastName && (
+              <small className="text-danger">{errors.lastName}</small>
+            )}
+          </div>
+
           <div className="mb-3">
             <label className="form-label fw-bold">
               Email <span style={{ color: "red" }}>*</span>{" "}
