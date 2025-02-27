@@ -74,6 +74,10 @@ const userSchema = new mongoose.Schema(
       required: true,
       maxlength: 50,
     },
+    wallet: {
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,
