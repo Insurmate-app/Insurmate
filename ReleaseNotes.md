@@ -1,6 +1,7 @@
 # Release Notes
 # Code Milestone 1:
 
+In addition to the initial steps of getting familiarized with the existing project, completing tutorials, and setting up our dev environments - here is a summary of what is working as of the Code Milestone 1 due date:
 
 
 ## Environment & Dev Set-Up Automation:
