@@ -78,8 +78,7 @@ fi
 
 
 # Blockchain required software
-cd ~/unomaha/backend/blockchain
-curl -sSL https://bit.ly/2ysbOFE | bash -s
+(cd ~/unomaha/backend/blockchain && curl -sSL https://bit.ly/2ysbOFE | bash -s)
 # Add Fabric binaries to PATH
 echo 'export PATH=$PWD/bin:$PATH' >> ~/.bashrc
 echo 'export FABRIC_CFG_PATH=$PWD/config' >> ~/.bashrc
