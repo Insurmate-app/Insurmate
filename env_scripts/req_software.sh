@@ -4,6 +4,8 @@
 # This script will install all needed software on a new WSL instance
 # Restart your instance after running this script
 
+sudo chattr +i ~/unomaha/env_scripts
+
 # Update/upgrade machine
 cd ~
 sudo apt update
@@ -88,5 +90,7 @@ echo 'export CORE_PEER_TLS_ROOTCERT_FILE=${PWD}/test-network/organizations/peerO
 echo 'export CORE_PEER_MSPCONFIGPATH=${PWD}/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp' >> ~/.bashrc
 echo 'export CORE_PEER_ADDRESS=localhost:7051' >> ~/.bashrc
 source ~/.bashrc
+
+sudo chattr -i ~/unomaha/env_scripts
 
 exit 0
