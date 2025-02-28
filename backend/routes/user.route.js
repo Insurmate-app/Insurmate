@@ -65,6 +65,18 @@ router.post(
       .withMessage("Zip code is required")
       .isLength({ max: 30 })
       .withMessage("Zip code must be no more than 30 characters long"),
+    
+    check("firstName")
+      .notEmpty()
+      .withMessage("First name is required")
+      .isLength({ max: 50 })
+      .withMessage("First name must be no more than 100 characters long"),  
+
+    check("lastName")
+      .notEmpty()
+      .withMessage("Last name is required")
+      .isLength({ max: 50 })
+      .withMessage("Last name must be no more than 100 characters long"),
   ],
   validate,
   userController.createUser

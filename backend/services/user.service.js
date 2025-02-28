@@ -35,6 +35,8 @@ const createUser = async (userData) => {
     const userDto = modelMapper.pick(user, [
       "email",
       "companyName",
+      "firstName",
+      "lastName",
       "address.addressLine1",
       "address.addressLine2",
       "address.city",
