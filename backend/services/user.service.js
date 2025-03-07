@@ -4,6 +4,7 @@ const modelMapper = require("lodash");
 const log = require("../logger");
 const CustomError = require("../errorhandling/errorUtil");
 const passwordService = require("../services/password.service");
+const levenshteinService = require("../services/levenshtein.service");
 
 const sendVerificationEmail = async (email, otp) => {
   await emailService.sendEmail({
@@ -18,6 +19,25 @@ const createUser = async (userData) => {
     userData.failedLoginAttempts = 0;
     userData.activeAccount = false;
     userData.role = "user";
+
+    // In createUser function
+    const existingUsers = await User.find(
+      { companyName: { $ne: userData.companyName } },
+      "companyName"
+    ); // get all company names except the current one
+
+    const uniqueCompanyNames = [
+      ...new Set(existingUsers.map((user) => user.companyName.toUpperCase())),
+    ];
+
+    const eneteredCompanyName = userData.companyName.toUpperCase();
+
+    const similarCompanyName = await levenshteinService.checkSimilarCompanyName(
+      uniqueCompanyNames,
+      eneteredCompanyName
+    );
+
+    userData.companyName = similarCompanyName;
 
     const hashedPassword = await passwordService.hashPassword(
       userData.password
