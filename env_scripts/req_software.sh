@@ -4,12 +4,15 @@
 # This script will install all needed software on a new WSL instance
 # Restart your instance after running this script
 
-sudo chattr +i ~/unomaha/env_scripts
+# Set to exit script on any error
+set -e
+
+# Protect current working directory from modification
+sudo chattr +i $PWD
 
 # Update/upgrade machine
-cd ~
 sudo apt update
-sudo apt install -y && sudo apt upgrade -y
+sudo apt upgrade -y
 
 # Install Node.js
 sudo apt install -y nodejs
@@ -53,19 +56,17 @@ sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt-get update
 # Installation step
 sudo apt-get install docker-ce docker-ce-cli containerd.io -y
-docker-buildx-plugin docker-compose-plugin
+sudo apt install docker-buildx-plugin docker-compose-plugin -y
 # Make docker usable without sudo
-sudo groupadd docker
 sudo usermod -aG docker $USER
 # Configure docker to start on boot
 sudo systemctl enable docker.service
 sudo systemctl enable containerd.service
 
 # Pull Dockerized MongoDB Image
-docker pull mongdb/mongodb-community-server:latest
+docker pull mongodb/mongodb-community-server:latest
 
 # Install jq
-cd ~
 sudo apt install -y jq
 jq --version
 which jq
@@ -80,17 +81,28 @@ fi
 
 
 # Blockchain required software
-(cd ~/unomaha/backend/blockchain && curl -sSL https://bit.ly/2ysbOFE | bash -s)
-# Add Fabric binaries to PATH
-echo 'export PATH=$PWD/bin:$PATH' >> ~/.bashrc
-echo 'export FABRIC_CFG_PATH=$PWD/config' >> ~/.bashrc
-echo 'export CORE_PEER_TLS_ENABLED=true' >> ~/.bashrc
-echo 'export CORE_PEER_LOCALMSPID=Org1MSP' >> ~/.bashrc
-echo 'export CORE_PEER_TLS_ROOTCERT_FILE=${PWD}/test-network/organizations/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem' >> ~/.bashrc
-echo 'export CORE_PEER_MSPCONFIGPATH=${PWD}/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp' >> ~/.bashrc
-echo 'export CORE_PEER_ADDRESS=localhost:7051' >> ~/.bashrc
-source ~/.bashrc
+# It is important that the binaries are installed while in ../backend/blockchain or it won't work
+cd  ../backend/blockchain
+curl -sSL https://bit.ly/2ysbOFE | bash -s
+# Add Fabric binaries to PATH (only if not already present)
+fabric_bashrc="$HOME/.bashrc"
 
-sudo chattr -i ~/unomaha/env_scripts
+if ! grep -q "FABRIC_CFG_PATH" "$fabric_bashrc"; then
+    echo "Configuring Fabric environment variables..."
+    {
+        echo 'export PATH=$PWD/bin:$PATH'
+        echo 'export FABRIC_CFG_PATH=$PWD/config'
+        echo 'export CORE_PEER_TLS_ENABLED=true'
+        echo 'export CORE_PEER_LOCALMSPID=Org1MSP'
+        echo 'export CORE_PEER_TLS_ROOTCERT_FILE=${PWD}/test-network/organizations/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem'
+        echo 'export CORE_PEER_MSPCONFIGPATH=${PWD}/test-network/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp'
+        echo 'export CORE_PEER_ADDRESS=localhost:7051'
+    } >> "$fabric_bashrc"
+fi
+
+source "$fabric_bashrc"
+
+# Release protections on current working directory
+sudo chattr -i $PWD
 
 exit 0

@@ -1,11 +1,14 @@
 #! /bin/bash
 
+# Set script to exit on error
+set -e
+
 # Terminate Blockchain
-cd ~/unomaha/backend/blockchain/test-network
+cd ../backend/blockchain/test-network
 ./network.sh down
 
 # Terminate mongo
-cd ~/unomaha/db_docker_scripts
+cd ../../../db_docker_scripts
 ./mongo_db_remove.sh
 
 exit 0
