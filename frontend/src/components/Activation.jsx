@@ -78,7 +78,12 @@ const ActivateAccount = () => {
 
     try {
       await api.post(`/user/verify`, { email, otpToken: otp });
-      setMessage("Account activated successfully.");
+      setMessage("Account activated successfully. Redirecting...");
+
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 2000);
+
     } catch (err) {
       console.error(err);
       setMessage("Invalid OTP or email. Please try again.");
