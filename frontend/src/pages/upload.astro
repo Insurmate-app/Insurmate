@@ -1,8 +1,11 @@
 ---
+//TODO: need to add DocumentUpload import statement once things are more stable
 import NavBar from "../components/NavBar.jsx"
 import MainLayout from "../layouts/MainLayout.astro"
+import UploadDocument from "../components/DocumentUpload.jsx"
 ---
 
 <MainLayout title="Document Upload" description="Document upload page">
     <NavBar client:load/>
+    <UploadDocument client:load/>
 </MainLayout>

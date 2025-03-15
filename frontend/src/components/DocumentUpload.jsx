@@ -1,10 +1,10 @@
-//TODO: Adapt below page as document upload page for our app. Code provided by Toe
+/**TODO: Page is rendering and buttons are working and will output alerts, console logs, etc
+ * Need to implement ability to upload document to webserver w/ spinner?
+ * Need to implement navigation to upload page
+ */
 
 import { useState, useEffect } from "react";
-import { deobfuscate } from "../functions/obfs";
-import { decodeBase64 } from "../functions/base64";
-import { getCurrentYear } from "../functions/currentYear";
-import Modal from "./Modal";
+import Modal from "./Modal"; 
 import { useApi } from "./useApi";
 import useSpinner from "../hooks/useSpinner";
 import useModal from "../hooks/useModal";
@@ -18,48 +18,9 @@ import useModal from "../hooks/useModal";
  * @returns {JSX.Element} The rendered upload document interface
  */
 const UploadDocument = () => {
-  const api = useApi();
   const [selectedFile, setSelectedFile] = useState(null);
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
-  const [uploadStatus, setUploadStatus] = useState("NOT_UPLOADED");
-  const [clientId, setClientId] = useState(null);
-
-  /**
-   * @description Initializes the client ID from URL parameters
-   * Decodes and deobfuscates the client ID from the URL query parameter
-   */
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const get_cid = params.get("cid");
-
-    if (get_cid) {
-      const deobfuscated_clientId = decodeBase64(get_cid);
-      const id = deobfuscate(deobfuscated_clientId);
-      setClientId(id);
-    }
-  }, []);
-
-  /**
-   * @description Fetches the document upload status for the client
-   * @depends clientId - Executes when clientId is available
-   */
-  useEffect(() => {
-    if (clientId) {
-      api
-        .get(`/customer/document/upload/${clientId}`)
-        .then((response) => {
-          if (response.status === 200) {
-            const status = response.data;
-            setUploadStatus(status);
-          }
-        });
-    }
-  }, [clientId]);
-
-  if (!clientId) {
-    return <h1>Invalid</h1>;
-  }
 
   /**
    * @description Handles file selection event
@@ -73,57 +34,10 @@ const UploadDocument = () => {
   /**
    * @description Handles the form submission and file upload process
    * @param {React.FormEvent<HTMLFormElement>} e - The form submission event
-   * @returns {Promise<void>}
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    activateSpinner();
-    if (selectedFile) {
-      const formData = new FormData();
-      formData.append("file", selectedFile); // Append the file object directly
-
-      api
-        .post(`/customer/document/endUserUpload/${clientId}`, formData)
-        .then((response) => {
-          if (response.status === 200) {
-            setUploadStatus("UPLOADED");
-            showModal("File uploaded successfully!");
-            deactivateSpinner();
-          } else {
-            throw new Error("Error uploading file");
-          }
-        })
-        .catch((error) => {
-          deactivateSpinner();
-          showModal(
-            error.response?.data?.message || "Upload failed, Please Try Again."
-          );
-        });
-    } else {
-      alert("Please select a file.");
-    }
-  };
-
-  if (uploadStatus === "UPLOADED" || uploadStatus === "VERIFIED") {
-    return (
-      <div id="uploadSuccessful-container" className="container py-5">
-        <div className="row justify-content-center">
-          <div className="col-md-6 text-center">
-            <i
-              className="bi bi-check-circle-fill text-success"
-              style={{ fontSize: "5rem" }}
-            ></i>
-            <h2 className="mb-3">Document Uploaded Successfully!</h2>
-            <p className="mb-4">
-              Your insurance document has been uploaded successfully.
-            </p>
-            <a href="/client" className="btn btn-primary mt-4">
-              Return Home
-            </a>
-          </div>
-        </div>
-      </div>
-    );
+    console.log("File Upload logic here");
   }
 
   return (
@@ -185,7 +99,7 @@ const UploadDocument = () => {
                 .
               </p>
               <p className="mb-0">
-                &copy; {getCurrentYear()} Copyright: We Care Insurance INC.
+                &copy; {new Date().getFullYear()} Copyright: We Care Insurance INC.
               </p>
             </div>
           </div>

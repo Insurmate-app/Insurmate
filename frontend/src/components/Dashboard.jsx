@@ -216,6 +216,7 @@ const Dash = () => {
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div className="d-flex gap-3">
           <button
+            onClick={() => window.location.href="/upload"}
             className="btn btn-outline-primary d-flex align-items-center"
             style={{ borderRadius: "8px" }}
           >
