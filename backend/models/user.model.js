@@ -76,8 +76,7 @@ const userSchema = new mongoose.Schema(
     },
     wallet: {
       type: String,
-      default: "0",
-      required: true,
+      required: false,
     },
   },
   {

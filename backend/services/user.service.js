@@ -44,9 +44,6 @@ const createUser = async (userData) => {
     );
     userData.password = hashedPassword;
 
-    userData.wallet = userData.wallet || "0";
-
-    // Fix wallet error 
     const user = await User.create(userData);
 
     const otpToken = await passwordService.generateOtp(user.email);
