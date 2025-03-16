@@ -1,3 +1,5 @@
+//TODO: Add onclick behavior for Document Upload button. Will route to another page.
+
 import React, { useEffect, useMemo, useState } from "react";
 
 import { DataGrid } from "@mui/x-data-grid";
@@ -213,6 +215,17 @@ const Dash = () => {
       <h2 className="text-dark mb-3">Policy Dashboard</h2>
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div className="d-flex gap-3">
+          <button
+            onClick={() => window.location.href="/upload"}
+            className="btn btn-outline-primary d-flex align-items-center"
+            style={{ borderRadius: "8px" }}
+          >
+            <i
+              className="bi bi-plus-lg me-2"
+              style={{ color: "#0d6efd", fontSize: "1.2rem" }}
+            ></i>
+            Upload Document
+          </button>
           <button
             onClick={() => setShowModal(true)}
             className="btn btn-outline-primary d-flex align-items-center"
