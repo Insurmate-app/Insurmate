@@ -5,7 +5,6 @@
 
 import { useState, useEffect } from "react";
 import Modal from "./Modal"; 
-import { useApi } from "./useApi";
 import useSpinner from "../hooks/useSpinner";
 import useModal from "../hooks/useModal";
 
@@ -37,7 +36,38 @@ const UploadDocument = () => {
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("File Upload logic here");
+    activateSpinner();
+    const fileFormData = new FormData();
+    
+    fileFormData.append("file", selectedFile);
+    
+    //Handles user not selecting a file before sending
+    if (!selectedFile){
+      alert("Please select a file first.");
+      return;
+    }
+
+    try{
+      const response = await fetch("http://localhost:3000/v1/api/upload", {
+        method: "POST",
+        body: fileFormData,
+      });
+
+      if (response.ok) {
+        alert("File uploaded successfully!");
+      }
+      else{
+        alert("Failed to upload file.");
+      }
+    } catch (error){
+      alert("Error uploading file:", error);
+    }
+
+    finally{
+      deactivateSpinner()
+    }
+
+
   }
 
   return (

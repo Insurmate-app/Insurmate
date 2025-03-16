@@ -19,6 +19,7 @@ const { initializeWebSocket } = require("./websocket");
 const errorHandler = require("./middlewares/errorHandler.js");
 const userRoute = require("./routes/user.route.js");
 const assetRoute = require("./routes/asset.route.js");
+const uploadRoute = require("./routes/upload.route.js");
 
 // Initialize WebSocket server
 initializeWebSocket(server);
@@ -76,6 +77,7 @@ app.use("/health", healthcheck());
 // Routes
 app.use("/v1/api/user", userRoute);
 app.use("/v1/api/asset", assetRoute);
+app.use("/v1/api/upload", uploadRoute)
 
 app.get("/", (req, res) => res.send("App is working CD Test No [ 1 ] !"));
 
