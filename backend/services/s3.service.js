@@ -1,6 +1,7 @@
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const dotenv = require('dotenv');
 const { v4: uuidv4 } = require('uuid');
+const fs = require("fs");
 
 dotenv.config();
 
@@ -18,10 +19,13 @@ const uploadFile = async (file) => { // take file from multer
   // uuid for unique file name
   const uniqueFileName = `${uuidv4()}-${file.originalname}`;
 
+  // Create a read stream for file stored on disk
+  const fileStream = fs.createReadStream(file.path);
+
   const params = {
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: uniqueFileName,
-    Body: file.stream, // stream
+    Body: fileStream, // stream
     ContentType: file.mimetype,
   };
 

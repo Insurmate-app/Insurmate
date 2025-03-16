@@ -39,16 +39,16 @@ const UploadDocument = () => {
     activateSpinner();
     const fileFormData = new FormData();
     
-    fileFormData.append("file", selectedFile);
-    
     //Handles user not selecting a file before sending
-    if (!selectedFile){
+    if (!selectedFile || selectedFile.size === 0){
       alert("Please select a file first.");
       return;
     }
 
+    fileFormData.append("file", selectedFile);
+
     try{
-      const response = await fetch("http://localhost:3000/v1/api/upload", {
+      const response = await fetch("http://localhost:3000/v1/api/file/upload", {
         method: "POST",
         body: fileFormData,
       });
