@@ -1,5 +1,6 @@
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const dotenv = require('dotenv');
+const { v4: uuidv4 } = require('uuid');
 
 dotenv.config();
 
@@ -12,21 +13,27 @@ const s3Client = new S3Client({
   },
 });
 
-const uploadFile = async (file) => {
+const uploadFile = async (file) => { // take file from multer
+
+  // uuid for unique file name
+  const uniqueFileName = `${uuidv4()}-${file.originalname}`;
 
   const params = {
     Bucket: process.env.AWS_BUCKET_NAME,
-    Key: file.originalname,
-    Body: file.buffer,
+    Key: uniqueFileName,
+    Body: file.stream, // stream
+    ContentType: file.mimetype,
   };
 
   try {
+    
     await s3Client.send(new PutObjectCommand(params));
 
-    console.log('File uploaded successfully'); // test
+    console.log('File uploaded successfully', uniqueFileName); // test
 
     // need to return the url of the file if it uplaods successfully
-    //return url;
+    const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${uniqueFileName}`;
+    return url;
 
   } catch (error) {
     console.error("Upload Failed", error);
