@@ -5,14 +5,16 @@ const Home = () => {
     <div className="container-fluid vh-100 d-flex flex-column align-items-center bg-white">
       {/* Header */}
       <header className="d-flex justify-content-between align-items-center w-100 p-3 bg-light shadow-sm">
-        <div className="logo d-flex align-items-center">
-          <img
-            src="/insurmate_logo.png"
-            alt="Insurmate Logo"
-            className="me-2"
-            style={{ height: "40px" }}
-          />
-          <h1 className="h5 text-dark mb-0">Insurmate</h1>
+      <div className="logo d-flex align-items-center">
+          <a href="/">
+            <img
+              src="/insurmate_logo.png"
+              alt="Insurmate Logo"
+              className="me-2"
+              style={{ height: "40px" }}
+            />
+          </a>  
+            <h1 className="h5 text-dark mb-0">Insurmate</h1>
         </div>
         <nav>
           <ul className="nav">

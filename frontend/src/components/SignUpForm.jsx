@@ -28,6 +28,7 @@ const SignUpForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
+  const [ touchedFields, setTouchedFields ] = useState({});
 
   // Memoized validation schema
   const validationSchema = useMemo(
@@ -65,6 +66,18 @@ const SignUpForm = () => {
       }),
     [],
   );
+
+  const validateField = useCallback(
+    async (name, value) => {
+      try {
+        await Yup.reach(validationSchema, name).validate(value);
+        setErrors((prev) => ({ ...prev, [name]: null }));
+      } catch (err) {
+        setErrors((prev) => ({ ...prev, [name]: err.message }));
+      }
+    },
+    [validationSchema]
+  );
   // Add isFormValid state
   const [isFormValid, setIsFormValid] = useState(false);
   // Update handleInputChange to handle checkbox correctly and validate form
@@ -87,6 +100,10 @@ const SignUpForm = () => {
         return updatedValues;
       });
 
+      if (!touchedFields[name]) {
+        setTouchedFields((prev) => ({ ...prev, [name]: true }));
+      }
+
       if (errors[name]) {
         setErrors((prevErrors) => ({
           ...prevErrors,
@@ -94,8 +111,27 @@ const SignUpForm = () => {
         }));
       }
     },
-    [errors, validationSchema],
+    [errors, validationSchema, touchedFields],
   );
+
+  const handleBlur = useCallback(
+    (e) => {
+      const { name, value, type, checked } = e.target;
+      const fieldValue = type === "checkbox" ? checked : value;
+
+
+      setTouchedFields((prev) => ({ ...prev, [name]: true }));
+      validateField(name, fieldValue);
+    },
+    [validateField]
+  );
+
+  const currentErrors = useMemo(() => {
+    return Object.entries(errors)
+      .filter(([key, value]) => touchedFields[key] && value)
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+  }, [errors, touchedFields]);
+  
   // Optimized submit handler
   const handleSubmit = useCallback(
     async (e) => {
@@ -119,6 +155,8 @@ const SignUpForm = () => {
             state: formValues.state,
             zipCode: formValues.zipCode,
           },
+          // Leaving in this line for now to prevent errors
+          wallet: "0",
         };
 
         await api.post(`/user/create`, payload);
@@ -155,6 +193,40 @@ const SignUpForm = () => {
   );
 
   return (
+    <div>
+      <header className="d-flex justify-content-between align-items-center w-100 p-3 bg-light shadow-sm">
+      <div className="logo d-flex align-items-center">
+          <a href="/">
+            <img
+              src="/insurmate_logo.png"
+              alt="Insurmate Logo"
+              className="me-2"
+              style={{ height: "40px" }}
+            />
+          </a>  
+            <h1 className="h5 text-dark mb-0">Insurmate</h1>
+        </div>
+        <nav>
+          <ul className="nav">
+            <li className="nav-item">
+              <a className="nav-link text-dark" href="/login">
+                Login
+              </a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link text-dark" href="/collaboration">
+                Collaboration
+              </a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link text-dark" href="/contact">
+                Contact Us
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </header>
+
     <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light p-3">
       <div
         className="card p-4 shadow rounded w-100"
@@ -167,6 +239,18 @@ const SignUpForm = () => {
         <h2 className="text-center mb-4" style={{ color: "#333" }}>
           Create Your Account
         </h2>
+
+        {Object.keys(currentErrors).length > 0 && (
+          <div className="alert alert-danger mb-3">
+            <h6 className="mb-1">Please correct the following issues:</h6>
+            <u1 className="mb-0 ps-3">
+              {Object.entries(currentErrors).map(([field, message]) => (
+                <li key={field}>{message}</li>
+              ))}
+            </u1>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label className="form-label fw-bold">
@@ -176,14 +260,15 @@ const SignUpForm = () => {
               type="text"
               name="firstName"
               className={`form-control border-0 border-bottom rounded-0 ${
-                errors.firstName ? "is-invalid" : ""
+                touchedFields.firstName && errors.firstName ? "is-invalid" : ""
               }`}
               placeholder="John"
               value={formValues.firstName}
               onChange={handleInputChange}
+              onBlur={handleBlur}
               required
             />
-            {errors.firstName && (
+            {touchedFields.firstName && errors.firstName && (
               <small className="text-danger">{errors.firstName}</small>
             )}
           </div>
@@ -196,14 +281,15 @@ const SignUpForm = () => {
               type="text"
               name="lastName"
               className={`form-control border-0 border-bottom rounded-0 ${
-                errors.lastName ? "is-invalid" : ""
+                touchedFields.lastName && errors.lastName ? "is-invalid" : ""
               }`}
               placeholder="Doe"
               value={formValues.lastName}
               onChange={handleInputChange}
+              onBlur={handleBlur}
               required
             />
-            {errors.lastName && (
+            {touchedFields.lastName && errors.lastName && (
               <small className="text-danger">{errors.lastName}</small>
             )}
           </div>
@@ -216,14 +302,15 @@ const SignUpForm = () => {
               type="email"
               name="email"
               className={`form-control border-0 border-bottom rounded-0 ${
-                errors.email ? "is-invalid" : ""
+                touchedFields.email && errors.email ? "is-invalid" : ""
               }`}
               placeholder="user@example.com"
               value={formValues.email}
               onChange={handleInputChange}
+              onBlur={handleBlur}
               required
             />
-            {errors.email && (
+            {touchedFields.email && errors.email && (
               <small className="text-danger">{errors.email}</small>
             )}
           </div>
@@ -237,11 +324,12 @@ const SignUpForm = () => {
                 type={showPassword ? "text" : "password"}
                 name="password"
                 className={`form-control border-0 border-bottom rounded-0 ${
-                  errors.password ? "is-invalid" : ""
+                  touchedFields.Password && errors.password ? "is-invalid" : ""
                 }`}
                 placeholder="Password"
                 value={formValues.password}
                 onChange={handleInputChange}
+                onBlur={handleBlur}
                 required
               />
               <span
@@ -254,7 +342,7 @@ const SignUpForm = () => {
                 ></i>
               </span>
             </div>
-            {errors.password && (
+            {touchedFields.password && errors.password && (
               <small className="text-danger">{errors.password}</small>
             )}
           </div>
@@ -267,14 +355,15 @@ const SignUpForm = () => {
               type="text"
               name="companyName"
               className={`form-control border-0 border-bottom rounded-0 ${
-                errors.companyName ? "is-invalid" : ""
+                touchedFields.companyName && errors.companyName ? "is-invalid" : ""
               }`}
               placeholder="ABC Corporation"
               value={formValues.companyName}
               onChange={handleInputChange}
+              onBlur={handleBlur}
               required
             />
-            {errors.companyName && (
+            {touchedFields.companyName && errors.companyName && (
               <small className="text-danger">{errors.companyName}</small>
             )}
           </div>
@@ -287,14 +376,15 @@ const SignUpForm = () => {
               type="text"
               name="addressLine1"
               className={`form-control border-0 border-bottom rounded-0 ${
-                errors.addressLine1 ? "is-invalid" : ""
+                touchedFields.addressLine1 && errors.addressLine1 ? "is-invalid" : ""
               }`}
               placeholder="123 Main St"
               value={formValues.addressLine1}
               onChange={handleInputChange}
+              onBlur={handleBlur}
               required
             />
-            {errors.addressLine1 && (
+            {touchedFields.addressLine1 && errors.addressLine1 && (
               <small className="text-danger">{errors.addressLine1}</small>
             )}
           </div>
@@ -305,13 +395,14 @@ const SignUpForm = () => {
               type="text"
               name="addressLine2"
               className={`form-control border-0 border-bottom rounded-0 ${
-                errors.addressLine2 ? "is-invalid" : ""
+                touchedFields.addressLine2 && errors.addressLine2 ? "is-invalid" : ""
               }`}
               placeholder="Apt 1"
               value={formValues.addressLine2}
               onChange={handleInputChange}
+              onBlur={handleBlur}
             />
-            {errors.addressLine2 && (
+            {touchedFields.addressLine2 && errors.addressLine2 && (
               <small className="text-danger">{errors.addressLine2}</small>
             )}
           </div>
@@ -324,14 +415,15 @@ const SignUpForm = () => {
               type="text"
               name="city"
               className={`form-control border-0 border-bottom rounded-0 ${
-                errors.city ? "is-invalid" : ""
+                touchedFields.city && errors.city ? "is-invalid" : ""
               }`}
               placeholder="City"
               value={formValues.city}
               onChange={handleInputChange}
+              onBlur={handleBlur}
               required
             />
-            {errors.city && (
+            {touchedFields.city && errors.city && (
               <small className="text-danger">{errors.city}</small>
             )}
           </div>
@@ -344,14 +436,15 @@ const SignUpForm = () => {
               type="text"
               name="state"
               className={`form-control border-0 border-bottom rounded-0 ${
-                errors.state ? "is-invalid" : ""
+                touchedFields.state && errors.state ? "is-invalid" : ""
               }`}
               placeholder="State"
               value={formValues.state}
               onChange={handleInputChange}
+              onBlur={handleBlur}
               required
             />
-            {errors.state && (
+            {touchedFields.state && errors.state && (
               <small className="text-danger">{errors.state}</small>
             )}
           </div>
@@ -364,14 +457,15 @@ const SignUpForm = () => {
               type="text"
               name="zipCode"
               className={`form-control border-0 border-bottom rounded-0 ${
-                errors.zipCode ? "is-invalid" : ""
+                touchedFields.zipCode && errors.zipCode ? "is-invalid" : ""
               }`}
               placeholder="12345"
               value={formValues.zipCode}
               onChange={handleInputChange}
+              onBlur={handleBlur}
               required
             />
-            {errors.zipCode && (
+            {touchedFields.zipCode && errors.zipCode && (
               <small className="text-danger">{errors.zipCode}</small>
             )}
           </div>
@@ -404,15 +498,13 @@ const SignUpForm = () => {
           <button
             type="submit"
             className="btn w-100"
-            disabled={!isFormValid || isSpinnerVisible}
+            disabled={isSpinnerVisible}
             style={{
-              backgroundColor:
-                !isFormValid || isSpinnerVisible ? "#ccc" : "#333",
+              backgroundColor: isSpinnerVisible ? "#ccc" : "#333",
               color: "#fff",
               borderRadius: "8px",
               fontWeight: "bold",
-              cursor:
-                !isFormValid || isSpinnerVisible ? "not-allowed" : "pointer",
+              cursor: isSpinnerVisible ? "not-allowed" : "pointer",
             }}
           >
             {isSpinnerVisible && (
@@ -439,6 +531,7 @@ const SignUpForm = () => {
         </p>
       </div>
       <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
+    </div>
     </div>
   );
 };
