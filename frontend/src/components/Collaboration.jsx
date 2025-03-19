@@ -12,6 +12,40 @@ const CollaborationComponent = () => {
   };
 
   return (
+    <div>
+      <header className="d-flex justify-content-between align-items-center w-100 p-3 bg-light shadow-sm">
+      <div className="logo d-flex align-items-center">
+          <a href="/">
+            <img
+              src="/insurmate_logo.png"
+              alt="Insurmate Logo"
+              className="me-2"
+              style={{ height: "40px" }}
+            />
+          </a>  
+            <h1 className="h5 text-dark mb-0">Insurmate</h1>
+        </div>
+        <nav>
+          <ul className="nav">
+            <li className="nav-item">
+              <a className="nav-link text-dark" href="/login">
+                Login
+              </a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link text-dark" href="/collaboration">
+                Collaboration
+              </a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link text-dark" href="/contact">
+                Contact Us
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </header>
+    
     <div className="container mt-5">
       <div className="row justify-content-start">
         <div className="col-md-6">
@@ -63,6 +97,7 @@ const CollaborationComponent = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

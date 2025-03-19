@@ -106,68 +106,78 @@ const LoginForm = () => {
   }, []);
 
   return (
-    <div className="container-fluid d-flex justify-content-center align-items-center min-vh-100 bg-white">
-      <div
-        className="card p-4 shadow rounded w-100"
-        style={{
-          maxWidth: "400px",
-          backgroundColor: "#f9f9f9",
-          border: "1px solid #ddd",
-        }}
-      >
-        {/* Circular Icon */}
-        <div className="text-center mb-3">
-          <img
-            src="/insurmate_logo.png"
-            alt="Icon"
-            style={{
-              width: "70px",
-              height: "70px",
-              borderRadius: "50%",
-              backgroundColor: "#fff",
-              boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-            }}
-          />
-        </div>
-        <h2 className="text-center mb-4" style={{ color: "#333" }}>
-          Welcome Back
-        </h2>
-        <form onSubmit={handleSubmit}>
-          {/* Email Input */}
-          <div className="mb-3">
-            <label htmlFor="email" className="form-label fw-bold">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              className={`form-control ${errors.email ? "is-invalid" : ""}`}
-              placeholder="user@example.com"
-              value={formData.email}
-              onChange={handleInputChange}
-              style={{
-                backgroundColor: "#fff",
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-              }}
-              required
+    <div>
+      <header className="d-flex justify-content-between align-items-center w-100 p-3 bg-light shadow-sm">
+        <div className="logo d-flex align-items-center">
+          <a href="/">
+            <img
+              src="/insurmate_logo.png"
+              alt="Insurmate Logo"
+              className="me-2"
+              style={{ height: "40px" }}
             />
-            {errors.email && (
-              <small className="text-danger">{errors.email}</small>
-            )}
+          </a>  
+            <h1 className="h5 text-dark mb-0">Insurmate</h1>
+        </div>
+        <nav>
+          <ul className="nav">
+            <li className="nav-item">
+              <a className="nav-link text-dark" href="/login">
+                Login
+              </a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link text-dark" href="/collaboration">
+                Collaboration
+              </a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link text-dark" href="/contact">
+                Contact Us
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </header>
+    
+      <div className="container-fluid d-flex justify-content-center align-items-center min-vh-100 bg-white">
+        <div
+          className="card p-4 shadow rounded w-100"
+          style={{
+            maxWidth: "400px",
+            backgroundColor: "#f9f9f9",
+            border: "1px solid #ddd",
+          }}
+        >
+          {/* Circular Icon */}
+          <div className="text-center mb-3">
+            <img
+              src="/insurmate_logo.png"
+              alt="Icon"
+              style={{
+                width: "70px",
+                height: "70px",
+                borderRadius: "50%",
+                backgroundColor: "#fff",
+                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+              }}
+            />
           </div>
-          {/* Password Input */}
-          <div className="mb-3">
-            <label htmlFor="password" className="form-label fw-bold">
-              Password
-            </label>
-            <div className="input-group">
+          <h2 className="text-center mb-4" style={{ color: "#333" }}>
+            Welcome Back
+          </h2>
+          <form onSubmit={handleSubmit}>
+            {/* Email Input */}
+            <div className="mb-3">
+              <label htmlFor="email" className="form-label fw-bold">
+                Email
+              </label>
               <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                className={`form-control ${errors.password ? "is-invalid" : ""}`}
-                placeholder="Enter your password"
-                value={formData.password}
+                type="email"
+                id="email"
+                className={`form-control ${errors.email ? "is-invalid" : ""}`}
+                placeholder="user@example.com"
+                value={formData.email}
                 onChange={handleInputChange}
                 style={{
                   backgroundColor: "#fff",
@@ -176,79 +186,104 @@ const LoginForm = () => {
                 }}
                 required
               />
-              <span
-                className="input-group-text bg-transparent border-0"
-                onClick={togglePasswordVisibility}
-                style={{
-                  cursor: "pointer",
-                  borderRadius: "8px",
-                  color: "#333",
-                }}
-                role="button"
-              >
-                <i
-                  className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
-                ></i>
-              </span>
+              {errors.email && (
+                <small className="text-danger">{errors.email}</small>
+              )}
             </div>
-            {errors.password && (
-              <small className="text-danger">{errors.password}</small>
-            )}
+            {/* Password Input */}
+            <div className="mb-3">
+              <label htmlFor="password" className="form-label fw-bold">
+                Password
+              </label>
+              <div className="input-group">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  className={`form-control ${errors.password ? "is-invalid" : ""}`}
+                  placeholder="Enter your password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  style={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                  }}
+                  required
+                />
+                <span
+                  className="input-group-text bg-transparent border-0"
+                  onClick={togglePasswordVisibility}
+                  style={{
+                    cursor: "pointer",
+                    borderRadius: "8px",
+                    color: "#333",
+                  }}
+                  role="button"
+                >
+                  <i
+                    className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
+                  ></i>
+                </span>
+              </div>
+              {errors.password && (
+                <small className="text-danger">{errors.password}</small>
+              )}
+            </div>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="btn w-100 mt-3"
+              style={{
+                backgroundColor: isSpinnerVisible ? "#ccc" : "#333",
+                color: "#fff",
+                borderRadius: "8px",
+                cursor: isSpinnerVisible ? "not-allowed" : "pointer",
+                fontWeight: "bold",
+              }}
+              disabled={isSpinnerVisible}
+            >
+              {isSpinnerVisible && (
+                <span
+                  className="spinner-border spinner-border-sm text-light me-2"
+                  role="status"
+                ></span>
+              )}
+              Login
+            </button>
+          </form>
+
+          {/* Forgot Password & Sign-Up Links */}
+          <div className="mt-4 text-center">
+            <p>
+              Don’t have an account?{" "}
+              <a
+                href="/signup"
+                style={{
+                  color: "#333",
+                  fontWeight: "bold",
+                  textDecoration: "none",
+                }}
+              >
+                Sign Up
+              </a>
+            </p>
+            <p>
+              <a
+                href="/password-reset"
+                style={{
+                  color: "#333",
+                  fontWeight: "bold",
+                  textDecoration: "none",
+                }}
+              >
+                Forgot Password?
+              </a>
+            </p>
           </div>
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="btn w-100 mt-3"
-            style={{
-              backgroundColor: isSpinnerVisible ? "#ccc" : "#333",
-              color: "#fff",
-              borderRadius: "8px",
-              cursor: isSpinnerVisible ? "not-allowed" : "pointer",
-              fontWeight: "bold",
-            }}
-            disabled={isSpinnerVisible}
-          >
-            {isSpinnerVisible && (
-              <span
-                className="spinner-border spinner-border-sm text-light me-2"
-                role="status"
-              ></span>
-            )}
-            Login
-          </button>
-        </form>
 
-        {/* Forgot Password & Sign-Up Links */}
-        <div className="mt-4 text-center">
-          <p>
-            Don’t have an account?{" "}
-            <a
-              href="/signup"
-              style={{
-                color: "#333",
-                fontWeight: "bold",
-                textDecoration: "none",
-              }}
-            >
-              Sign Up
-            </a>
-          </p>
-          <p>
-            <a
-              href="/password-reset"
-              style={{
-                color: "#333",
-                fontWeight: "bold",
-                textDecoration: "none",
-              }}
-            >
-              Forgot Password?
-            </a>
-          </p>
+          {/* Modal for Errors */}
+          <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
         </div>
-
-        {/* Modal for Errors */}
-        <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
       </div>
     </div>
   );
