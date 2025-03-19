@@ -1,4 +1,4 @@
-export function calculateLevenshteinDistance(str1, str2) {
+function calculateLevenshteinDistance(str1, str2) {
   const matrix = Array(str2.length + 1)
     .fill(null)
     .map(() => Array(str1.length + 1).fill(null));
@@ -26,12 +26,12 @@ export function calculateLevenshteinDistance(str1, str2) {
   return matrix[str2.length][str1.length];
 }
 
-export async function findWordsInMixedCase(text) {
+async function findWordsInMixedCase(text) {
   const WORD_FINDER = /([A-Z][a-z]+|[A-Z]+(?![a-z])|[a-z]+)/g;
   return text.match(WORD_FINDER) || [];
 }
 
-export async function splitAndProcess(input) {
+async function splitAndProcess(input) {
   let modifiedInput = input.replace(/_/g, " ");
   let trimmedInput = modifiedInput.trim();
   let squeezedInput = trimmedInput.replace(/\s+/g, " ");
@@ -55,7 +55,7 @@ export async function splitAndProcess(input) {
   ).toUpperCase();
 }
 
-export async function checkSimilarCompanyName(
+async function checkSimilarCompanyName(
   existingCompanyNames,
   enteredCompanyName
 ) {
@@ -89,7 +89,7 @@ export async function checkSimilarCompanyName(
   return smallestDistance < 4 ? mostSimilarCompany : enteredCompanyName;
 }
 
-export default {
+module.exports = {
   calculateLevenshteinDistance,
   findWordsInMixedCase,
   splitAndProcess,
