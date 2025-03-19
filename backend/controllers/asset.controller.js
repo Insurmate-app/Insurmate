@@ -2,6 +2,7 @@ const assetService = require("../services/asset.service");
 const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 const extractToken = require("../util/tokenExtractor");
+const S3Service = require("../services/s3.service");
 const { broadcastData } = require("../websocket");
 
 const createAsset = async (req, res, next) => {
@@ -27,6 +28,9 @@ const createAsset = async (req, res, next) => {
     const allAssets = await assetService.getAllAssets(payloadId);
 
     // Broadcast the updated asset list to WebSocket clients
+    // note: this is a simplified example, in production you may want to
+    // broadcast only to specific clients or channels
+    // this will inscread the overload on the server
     broadcastData({ type: "ASSET_LIST_UPDATE", data: allAssets });
 
     res.status(201).json(result);
@@ -135,6 +139,7 @@ const deleteAsset = async (req, res, next) => {
     const payload = jwt.decode(token);
 
     const assetId = req.params.id;
+    await S3Service.deleteFile(payload.id, assetId);
     const result = await assetService.deleteAsset(payload.id, assetId);
     res.status(200).json(result);
   } catch (error) {

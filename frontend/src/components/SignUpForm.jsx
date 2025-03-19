@@ -155,8 +155,7 @@ const SignUpForm = () => {
             state: formValues.state,
             zipCode: formValues.zipCode,
           },
-          // Leaving in this line for now to prevent errors
-          wallet: "0",
+          wallet: formValues.lastName
         };
 
         await api.post(`/user/create`, payload);
