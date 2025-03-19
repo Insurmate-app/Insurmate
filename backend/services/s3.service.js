@@ -1,50 +1,225 @@
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
-const dotenv = require('dotenv');
-const { v4: uuidv4 } = require('uuid');
-const fs = require("fs");
+const { Upload } = require("@aws-sdk/lib-storage");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const {
+  S3Client,
+  GetObjectCommand,
+  DeleteObjectCommand,
+  HeadObjectCommand,
+} = require("@aws-sdk/client-s3");
+const { v4: uuidv4 } = require("uuid");
+const assetService = require("./asset.service");
+const CustomError = require("../errorhandling/errorUtil");
+const log = require("../logger");
 
-dotenv.config();
+// Validate AWS environment variables
+const REQUIRED_ENV_VARS = [
+  "AWS_REGION",
+  "AWS_BUCKET_NAME",
+  "AWS_ACCESS_KEY_ID",
+  "AWS_SECRET_ACCESS_KEY",
+];
 
-// Set up AWS credentials
+REQUIRED_ENV_VARS.forEach((envVar) => {
+  if (!process.env[envVar]) {
+    throw new Error(`Missing required environment variable: ${envVar}`);
+  }
+});
+
+// Initialize AWS S3 Client
 const s3Client = new S3Client({
-  region: process.env.AWS_REGION, // need to find this
+  region: process.env.AWS_REGION,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
 });
 
-const uploadFile = async (file) => { // take file from multer
+/**
+ * Upload a file to S3 using automatic Multipart Upload
+ * @param {Object} file - File object from Multer
+ * @returns {Object} - Response with uploaded filename
+ */
+const uploadFile = async (file, email, assetId) => {
+  if (!file) throw new CustomError(`No file provided`, 404);
 
-  // uuid for unique file name
-  const uniqueFileName = `${uuidv4()}-${file.originalname}`;
+  const uniqueFileName = `${uuidv4()}.pdf`;
 
-  // Create a read stream for file stored on disk
-  const fileStream = fs.createReadStream(file.path);
+  const upload = new Upload({
+    client: s3Client,
+    params: {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: uniqueFileName,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    },
+    queueSize: 3, // Control parallel uploads
+    partSize: 5 * 1024 * 1024, // Each part is 5MB
+  });
 
+  try {
+    await upload.done();
+
+    const asset = await assetService.getAssetById(email, assetId);
+
+    if (asset) {
+      const data = asset.data;
+      data.fileName = uniqueFileName;
+      await assetService.updateAsset(email, { id: assetId, data });
+    }
+
+    return {
+      message: "Successfully Uploaded using Multipart Upload",
+    };
+  } catch (error) {
+    log.error("Upload Failed:", error);
+    throw new CustomError("Upload Failed", 400);
+  }
+};
+
+/**
+ * Check if the file exists in S3 before deleting
+ * @param {string} fileName - The file name to check
+ * @returns {boolean} - True if file exists, False otherwise
+ */
+const fileExists = async (fileName) => {
   const params = {
     Bucket: process.env.AWS_BUCKET_NAME,
-    Key: uniqueFileName,
-    Body: fileStream, // stream
-    ContentType: file.mimetype,
+    Key: fileName,
   };
 
   try {
-    
-    await s3Client.send(new PutObjectCommand(params));
-
-    console.log('File uploaded successfully', uniqueFileName); // test
-
-    // need to return the url of the file if it uplaods successfully
-    const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${uniqueFileName}`;
-    return url;
-
+    const command = new HeadObjectCommand(params);
+    await s3Client.send(command);
+    return true; // File exists
   } catch (error) {
-    console.error("Upload Failed", error);
-    throw new Error("Upload Failed");
+    return false; // File does not exist
+  }
+};
+
+/**
+ * Reupload (overwrite) a file using Multipart Upload
+ * @param {string} fileName - Existing file name in S3
+ * @param {Object} file - File object from Multer
+ * @returns {Object} - Response with updated filename
+ */
+const reuploadFile = async (file, assetId, email) => {
+  if (!file) throw new Error("Invalid file or filename provided");
+
+  const asset = await assetService.getAssetById(email, assetId);
+
+  if (!asset) throw new CustomError(`Customer not found`, 404);
+
+  const fileName = asset.data.fileName;
+
+  // Check if the file exists before attempting to delete
+  const exists = await fileExists(fileName);
+  if (!exists) throw new CustomError(`File not found: ${fileName}`, 404);
+
+  const upload = new Upload({
+    client: s3Client,
+    params: {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: fileName,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    },
+    queueSize: 3, // Control parallel uploads
+    partSize: 5 * 1024 * 1024, // Each part is 5MB
+  });
+
+  try {
+    await upload.done();
+
+    return {
+      message: "Successfully Reuploaded using Multipart Upload",
+    };
+  } catch (error) {
+    log.error("Upload Failed:", error);
+    throw new CustomError("Upload Failed", 400);
+  }
+};
+
+const generateSignedUrl = async (email, assetId) => {
+  const asset = await assetService.getAssetById(email, assetId);
+
+  if (!asset) {
+    throw new CustomError(`Customer not found`, 404);
+  }
+
+  const fileName = asset.data.fileName;
+
+  // Check if the file exists before attempting to delete
+  const exists = await fileExists(fileName);
+  if (!exists) throw new CustomError(`File not found: ${fileName}`, 404);
+
+  const params = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: fileName,
+  };
+
+  try {
+    const command = new GetObjectCommand(params);
+    const url = await getSignedUrl(s3Client, command, {
+      expiresIn: 300, // 5 minutes
+    });
+
+    return {
+      url,
+      message: "URL generated successfully",
+      expiresIn: "5 minutes",
+    };
+  } catch (error) {
+    log.error("Upload Failed:", error);
+    throw new CustomError("Unable to generate signed URL", 400);
+  }
+};
+
+/**
+ * Delete an object from S3
+ * @param {string} fileName - The name of the file to delete
+ * @returns {Object} - Response indicating success or failure
+ */
+const deleteFile = async (email, assetId) => {
+  const asset = await assetService.getAssetById(email, assetId);
+  const data = asset.data;
+
+  console.log("Asset: ", asset);
+
+  if (!asset) {
+    throw new CustomError(`Customer not found`, 404);
+  }
+
+  const fileName = data.fileName;
+
+  // Check if the file exists before attempting to delete
+  const exists = await fileExists(fileName);
+  if (!exists) {
+    throw new CustomError(`File not found: ${fileName}`, 404);
+  }
+
+  const params = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: fileName,
+  };
+
+  try {
+    const command = new DeleteObjectCommand(params);
+    await s3Client.send(command);
+    console.log(`File deleted successfully: ${fileName}`);
+
+    await assetService.updateAsset(email, { id: assetId, asset });
+    data.fileName = "N/A";
+    await assetService.updateAsset(email, { id: assetId, data });
+
+    return { message: "File deleted successfully", fileName };
+  } catch (error) {
+    log.error("Delete Failed:", error);
   }
 };
 
 module.exports = {
   uploadFile,
+  reuploadFile,
+  generateSignedUrl,
+  deleteFile,
 };

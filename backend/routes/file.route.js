@@ -1,12 +1,52 @@
 const express = require("express");
-const { uploadDocument, upload } = require("../controllers/file.controller");
-
 const router = express.Router();
+const multer = require("multer");
+const fileController = require("../controllers/file.controller");
+const passport = require("passport");
+require("../security/passport"); // Import Passport JWT configuration
 
+// Configure multer to store files in memory
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 1024 * 1024, // 1MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF files are allowed"), false);
+    }
+  },
+});
+
+// Upload a new file
 router.post(
-  "/upload",
+  "/upload/:assetId",
+  passport.authenticate("jwt", { session: false }),
   upload.single("file"),
-  uploadDocument
+  fileController.uploadFileHandler
+);
+
+// Re-upload a file
+router.put(
+  "/reupload/:assetId",
+  passport.authenticate("jwt", { session: false }),
+  upload.single("file"),
+  fileController.reuploadFileHandler
+);
+
+// Generate signed URL for file download
+router.get(
+  "/signed-url/:assetId",
+  passport.authenticate("jwt", { session: false }),
+  fileController.generateSignedUrlHandler
+);
+
+router.delete(
+  "/delete/:assetId",
+  passport.authenticate("jwt", { session: false }),
+  fileController.deleteFileHandler
 );
 
 module.exports = router;

@@ -1,55 +1,133 @@
-const { uploadFile } = require("../services/s3.service"); // service for uploading files to S3
-const multer = require("multer"); // middleware for handling file uploads
-const path = require("path");
-const fs = require("fs");
+const {
+  uploadFile,
+  reuploadFile,
+  generateSignedUrl,
+  deleteFile,
+} = require("../services/s3.service");
+const jwt = require("jsonwebtoken");
+const extractToken = require("../util/tokenExtractor");
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "../uploads"); // makes sure that /uploads exists in project directory
-    },
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`); //names the file with format currentdate-filename
+/**
+ * Handle file upload request
+ */
+const uploadFileHandler = async (req, res, next) => {
+  try {
+    const token = extractToken(req);
+
+    if (!token) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
     }
-});
+    jwt.verify(token, process.env.JWT_SECRET);
 
-const upload = multer({ storage: storage });
+    const payload = jwt.decode(token);
+    const payloadId = payload.id;
 
-const uploadDocument = async (req, res, next) => {
-    try {
-        console.log("Incoming request received");
-        console.log("Headers:", req.headers); 
-        console.log("Body:", req.body); 
-        console.log("File:", req.file); 
-
-        if (!req.file) {
-            return res.status(400).json({ error: "No file uploaded" });
-        }
-        
-        // Upload file
-        const file = await uploadFile(req.file);
-
-        // Overwrite, then delete file from ../uploads
-        fs.writeFile(req.file.path, "", (err) => {
-            if (err) console.error("Error overwriting file:", err);
-
-            fs.unlink(req.file.path, (err) => {
-                if (err) console.error("Error deleting file:", err);
-                else console.log("File securely deleted:", req.file.path);
-            });
-        });
-
-
-        return res.status(201).json({ file: file });
-
-    } catch (error) {
-        return res.status(500).json({ error: error.message });
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
     }
 
-  };
+    const { assetId } = req.params;
+    if (!assetId) {
+      return res.status(400).json({ error: "Filename is required" });
+    }
 
-  
+    const result = await uploadFile(req.file, payloadId, assetId);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Handle file reupload request
+ */
+const reuploadFileHandler = async (req, res, next) => {
+  try {
+    const token = extractToken(req);
+
+    if (!token) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    jwt.verify(token, process.env.JWT_SECRET);
+
+    const payload = jwt.decode(token);
+    const payloadId = payload.id;
+
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const { assetId } = req.params;
+    if (!assetId) {
+      return res.status(400).json({ error: "Asset id is required" });
+    }
+
+    const result = await reuploadFile(req.file, assetId, payloadId);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Handle request to generate a signed URL
+ */
+const generateSignedUrlHandler = async (req, res, next) => {
+  try {
+    const token = extractToken(req);
+
+    if (!token) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    jwt.verify(token, process.env.JWT_SECRET);
+
+    const payload = jwt.decode(token);
+    const payloadId = payload.id;
+
+    const { assetId } = req.params;
+    if (!assetId) {
+      return res.status(400).json({ error: "Filename is required" });
+    }
+
+    const result = await generateSignedUrl(payloadId, assetId);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteFileHandler = async (req, res, next) => {
+  try {
+    const token = extractToken(req);
+
+    if (!token) {
+      res.status(401).json({ error: "Unauthorized" });
+      return;
+    }
+    jwt.verify(token, process.env.JWT_SECRET);
+
+    const payload = jwt.decode(token);
+    const payloadId = payload.id;
+
+    const { assetId } = req.params;
+
+    if (!assetId) {
+      return res.status(400).json({ error: "Filename is required" });
+    }
+
+    const result = await deleteFile(payloadId, assetId);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
-    uploadDocument,
-    upload,
-
+  uploadFileHandler,
+  reuploadFileHandler,
+  generateSignedUrlHandler,
+  deleteFileHandler,
 };

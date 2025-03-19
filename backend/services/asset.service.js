@@ -4,6 +4,7 @@ const {
 } = require("../blockchain/backend/src/chaincodeHelper");
 const userService = require("./user.service");
 const CustomError = require("../errorhandling/errorUtil");
+//const s3Service = require("./s3.service");
 const log = require("../logger");
 
 // TODO: Hardcoded values for now; replace with environment variables / mongoDB if needed
@@ -22,9 +23,12 @@ const createAsset = async (email, data) => {
   try {
     const user = await userService.findUserByEmail(email);
 
-    data.data.owner = user._id;
+    const asset = data.data || {};
 
-    data.data.status = "Pending";
+    asset.owner = user._id;
+
+    asset.status = "Pending";
+    asset.fileName = "N/A";
 
     const org = whichOrg(user.role);
 
@@ -208,6 +212,8 @@ const deleteAsset = async (email, assetId) => {
       "DeleteAsset",
       assetId
     );
+
+    // await s3Service.deleteFile(assetId, email, assetId);
     return { message: `Asset with ID ${assetId} has been deleted.` };
   } catch (error) {
     if (error.statusCode >= 400 && error.statusCode < 500) {
