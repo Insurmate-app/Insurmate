@@ -1,5 +1,3 @@
-//TODO: Add onclick behavior for Document Upload button. Will route to another page.
-
 import React, { useEffect, useMemo, useState } from "react";
 
 import { DataGrid } from "@mui/x-data-grid";

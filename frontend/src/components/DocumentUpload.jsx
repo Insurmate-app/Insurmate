@@ -1,12 +1,8 @@
-/**TODO: Page is rendering and buttons are working and will output alerts, console logs, etc
- * Need to implement ability to upload document to webserver w/ spinner?
- * Need to implement navigation to upload page
- */
-
 import { useState, useEffect } from "react";
 import Modal from "./Modal"; 
 import useSpinner from "../hooks/useSpinner";
 import useModal from "../hooks/useModal";
+import { useApi } from "./useApi";
 
 /**
  * @component UploadDocument
@@ -20,6 +16,8 @@ const UploadDocument = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
+  const [assetId, setAssetId] = useState(null);
+  const api = useApi();
 
   /**
    * @description Handles file selection event
@@ -30,14 +28,28 @@ const UploadDocument = () => {
     setSelectedFile(file);
   };
 
+  useEffect(() => {
+    const fetchAssetId = async () => {
+      try {
+        const response = await api.get("asset/get-all");
+        const id = response.data[0]?.id; // or however your backend returns it
+        setAssetId(id);
+      } catch (err) {
+        console.error("Failed to fetch assetId:", err);
+      }
+    };
+  
+    fetchAssetId();
+  }, []);  
+
   /**
    * @description Handles the form submission and file upload process
    * @param {React.FormEvent<HTMLFormElement>} e - The form submission event
    */
   const handleSubmit = async (e) => {
+    const fileFormData = new FormData();
     e.preventDefault();
     activateSpinner();
-    const fileFormData = new FormData();
     
     //Handles user not selecting a file before sending
     if (!selectedFile || selectedFile.size === 0){
@@ -46,28 +58,24 @@ const UploadDocument = () => {
     }
 
     fileFormData.append("file", selectedFile);
-
+    
     try{
-      const response = await fetch("http://localhost:3000/v1/api/file/upload", {
-        method: "POST",
-        body: fileFormData,
-      });
 
-      if (response.ok) {
-        alert("File uploaded successfully!");
-      }
-      else{
-        alert("Failed to upload file.");
-      }
-    } catch (error){
-      alert("Error uploading file:", error);
+      const response = await api.post(`/file/upload/${assetId}`, fileFormData);
+      return response.data;
+
+    } catch(error){
+
+      alert("File upload failed. Check console for details.");
+      console.error("Upload error:", error);
+      throw error;
+
     }
-
     finally{
-      deactivateSpinner()
+
+      deactivateSpinner();
+
     }
-
-
   }
 
   return (
