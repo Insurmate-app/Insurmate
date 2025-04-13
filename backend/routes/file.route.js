@@ -5,6 +5,8 @@ const fileController = require("../controllers/file.controller");
 const passport = require("passport");
 require("../security/passport"); // Import Passport JWT configuration
 
+const s3Service = require("../services/s3.service");
+
 // Configure multer to store files in memory
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -18,6 +20,15 @@ const upload = multer({
       cb(new Error("Only PDF files are allowed"), false);
     }
   },
+});
+
+router.get("/list", async (req, res, next) => {
+  try {
+    const files = await s3Service.listFiles();
+    res.json(files);
+  } catch (err) {
+    next(err);
+  }
 });
 
 // Upload a new file

@@ -16,7 +16,11 @@ const UploadDocument = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
-  const [assetId, setAssetId] = useState(null);
+  const [allFiles, setAllFiles] = useState(null);
+  const [filteredFiles, setFilteredFiles] = useState(null);
+
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
   const api = useApi();
 
   /**
@@ -29,17 +33,26 @@ const UploadDocument = () => {
   };
 
   useEffect(() => {
-    const fetchAssetId = async () => {
+    const fetchFiles = async () => {
       try {
-        const response = await api.get("asset/get-all");
-        const id = response.data[0]?.id; // or however your backend returns it
-        setAssetId(id);
-      } catch (err) {
-        console.error("Failed to fetch assetId:", err);
+        const response = await api.get("/file/list");
+        const files = response.data;
+
+        const matchingFiles = files.filter((file) => file.originalname.includes(id));
+
+        setAllFiles(files);
+        setFilteredFiles(matchingFiles);
+      } catch(error){
+        console.error("Failed to fetch files:", error);
       }
     };
-  
-    fetchAssetId();
+
+    if (id){
+      fetchFiles();
+    } else{
+      window.location.href = "/dashboard";
+      return;
+    }
   }, []);  
 
   /**
@@ -61,7 +74,8 @@ const UploadDocument = () => {
     
     try{
 
-      const response = await api.post(`/file/upload/${assetId}`, fileFormData);
+      const response = await api.post(`/file/upload/${id}`, fileFormData);
+      alert("File Upload successful!")
       return response.data;
 
     } catch(error){
@@ -114,17 +128,8 @@ const UploadDocument = () => {
               </h5>
               <p>
                 Acceptable Documents Include: Declaration Page, Coverage Summary
-                Page, Certificate of Insurance. Details on the document include:
+                Page, Certificate of Insurance.
               </p>
-              <ul>
-                <li>Insured’s Name</li>
-                <li>Insured’s Address</li>
-                <li>Insurance Company Name</li>
-                <li>Policy Number</li>
-                <li>Effective and Expiration Dates</li>
-                <li>Covered Vehicle with deductible</li>
-                <li>Lender Name and Address</li>
-              </ul>
             </div>
             <div className="text-center mt-4">
               <p>

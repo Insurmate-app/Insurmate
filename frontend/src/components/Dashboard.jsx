@@ -140,7 +140,7 @@ const Dash = () => {
       {
         field: "actions",
         headerName: "Actions",
-        flex: 1,
+        flex: 1.10,
         sortable: false,
         renderCell: (params) => {
           const isDeleting = deletingId === params.row.id;
@@ -156,6 +156,16 @@ const Dash = () => {
                 disabled={isDeleting}
               >
                 <i className="bi bi-eye-fill"></i>
+              </button>
+              <button
+                className="btn btn-link text-info"
+                title="Upload Document"
+                onClick={() => {
+                  window.location.href = `/upload?id=${encodeURIComponent(params.row.id)}`;
+                }}
+                disabled={isDeleting}
+              >
+                <i className="bi bi-plus-lg"></i>
               </button>
               <button
                 className="btn btn-link text-info"
@@ -213,17 +223,6 @@ const Dash = () => {
       <h2 className="text-dark mb-3">Policy Dashboard</h2>
       <div className="d-flex justify-content-between align-items-center mb-3">
         <div className="d-flex gap-3">
-          <button
-            onClick={() => window.location.href="/upload"}
-            className="btn btn-outline-primary d-flex align-items-center"
-            style={{ borderRadius: "8px" }}
-          >
-            <i
-              className="bi bi-plus-lg me-2"
-              style={{ color: "#0d6efd", fontSize: "1.2rem" }}
-            ></i>
-            Upload Document
-          </button>
           <button
             onClick={() => setShowModal(true)}
             className="btn btn-outline-primary d-flex align-items-center"

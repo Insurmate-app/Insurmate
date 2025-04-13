@@ -5,6 +5,7 @@ const {
   GetObjectCommand,
   DeleteObjectCommand,
   HeadObjectCommand,
+  ListObjectsV2Command,
 } = require("@aws-sdk/client-s3");
 const { v4: uuidv4 } = require("uuid");
 const assetService = require("./asset.service");
@@ -33,6 +34,19 @@ const s3Client = new S3Client({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
 });
+
+const listFiles = async () => {
+  const command = new ListObjectsV2Command({
+    Bucket: process.env.AWS_BUCKET_NAME,
+  });
+
+  const response = await s3Client.send(command);
+
+  return response.Contents.map(obj => ({
+    filename: obj.Key,
+    uploadedAt: obj.LastModified,
+  }));
+};
 
 /**
  * Upload a file to S3 using automatic Multipart Upload
@@ -222,4 +236,5 @@ module.exports = {
   reuploadFile,
   generateSignedUrl,
   deleteFile,
+  listFiles,
 };
