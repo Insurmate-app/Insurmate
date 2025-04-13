@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "./Modal"; 
 import useSpinner from "../hooks/useSpinner";
 import useModal from "../hooks/useModal";
@@ -16,8 +16,8 @@ const UploadDocument = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
-  const [allFiles, setAllFiles] = useState(null);
-  const [filteredFiles, setFilteredFiles] = useState(null);
+  const [allFiles, setAllFiles] = useState([]);
+  const [filteredFiles, setFilteredFiles] = useState([]);
 
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
@@ -35,10 +35,10 @@ const UploadDocument = () => {
   useEffect(() => {
     const fetchFiles = async () => {
       try {
-        const response = await api.get("/file/list");
+        const response = await api.get("file/list");
         const files = response.data;
 
-        const matchingFiles = files.filter((file) => file.originalname.includes(id));
+        const matchingFiles = files.filter((file) => file.filename === `${id}.pdf`);
 
         setAllFiles(files);
         setFilteredFiles(matchingFiles);
@@ -53,7 +53,15 @@ const UploadDocument = () => {
       window.location.href = "/dashboard";
       return;
     }
-  }, []);  
+  }, [id]);  
+
+  const handleView= async (e) => {
+    console.log("View Clicked!");
+  }
+
+  const handleDelete = async (e) => {
+    console.log("Delete clicked!");
+  }
 
   /**
    * @description Handles the form submission and file upload process
@@ -122,6 +130,50 @@ const UploadDocument = () => {
                 </div>
               </div>
             </form>
+            {filteredFiles.length > 0 && (
+              <div>
+                <h5><br></br>Uploaded Documents for Asset ID: {id}</h5>
+                <table className="table table-striped mt-3">
+                  <thead>
+                    <tr>
+                      <th scope="col">File Name</th>
+                      <th scope="col">Uploaded</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredFiles.map((file, index) => (
+                      <tr key={index}>
+                        <td>{file.filename}</td>
+                        <td>{new Date(file.uploadedAt).toLocaleString()}</td>
+                        <td>
+                          <a 
+                          href={file.url} 
+                          target="_blank" rel="noopener noreferrer" 
+                          className="btn btn-sm btn-outline-primary"
+                          onClick={() => {
+                            handleView();
+                          }}
+                          >
+                            View File
+                          </a>
+                          <a 
+                          href={file.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="btn btn-sm btn-outline-primary"
+                          onClick={() => {
+                            handleDelete();
+                          }}
+                          >
+                            Delete File
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
             <div className="mt-4">
               <h5>
                 <i className="bi bi-info-circle-fill"></i> Add upload tips:

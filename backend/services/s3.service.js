@@ -35,6 +35,7 @@ const s3Client = new S3Client({
   },
 });
 
+//Returns a list of files in S3
 const listFiles = async () => {
   const command = new ListObjectsV2Command({
     Bucket: process.env.AWS_BUCKET_NAME,
@@ -56,7 +57,7 @@ const listFiles = async () => {
 const uploadFile = async (file, email, assetId) => {
   if (!file) throw new CustomError(`No file provided`, 404);
 
-  const uniqueFileName = `${uuidv4()}.pdf`;
+  const uniqueFileName = `${assetId}.pdf`;
 
   const upload = new Upload({
     client: s3Client,
