@@ -67,6 +67,7 @@ const uploadFile = async (file, email, assetId) => {
 
   // analyze document using LLM
   const analysis = await analyzeDocument(text);
+  console.log("Analysis: ", analysis);
 
   // check if the document is valid
   if (analysis.valid === false) {
