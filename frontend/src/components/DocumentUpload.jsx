@@ -108,7 +108,11 @@ const UploadDocument = () => {
 
     } catch(error){
 
-      alert("File upload failed. Check console for details.");
+      if (error.response && error.response.data && error.response.data.error) {
+        alert(`File upload failed: ${error.response.data.error}`);
+      } else {
+        alert("File upload failed. Check console for details.");
+      }
       console.error("Upload error:", error);
       throw error;
 
