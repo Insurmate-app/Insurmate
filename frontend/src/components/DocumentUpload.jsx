@@ -74,7 +74,9 @@ const UploadDocument = () => {
 
   const handleDelete = async (id) => {
     try{
-      console.log("Delete Clicked!");
+      const response = await api.delete(`/file/delete/${id}`);
+      alert("File deleted successfully!");
+
     } catch (error) {
       console.error("Failed to delete file:", error);
       alert("Failed to delete file. Please try again.");
@@ -172,7 +174,7 @@ const UploadDocument = () => {
                           </button>
                           <button
                             className="btn btn-sm btn-outline-primary"
-                            onClick={() => handleDelete()}
+                            onClick={() => handleDelete(file.filename.replace(".pdf", ""))}
                             >
                               Delete File
                             </button>
