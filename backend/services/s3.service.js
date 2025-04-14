@@ -1,5 +1,9 @@
 const { Upload } = require("@aws-sdk/lib-storage");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+
+const pdfParse = require("pdf-parse");
+const { analyzeDocument } = require("./llm.service");
+
 const {
   S3Client,
   GetObjectCommand,
@@ -56,6 +60,18 @@ const listFiles = async () => {
  */
 const uploadFile = async (file, email, assetId) => {
   if (!file) throw new CustomError(`No file provided`, 404);
+
+  // extract pdf text
+  const data = await pdfParse(file.buffer);
+  const text = data.text;
+
+  // analyze document using LLM
+  const analysis = await analyzeDocument(text);
+
+  // check if the document is valid
+  if (analysis.valid === false) {
+    throw new CustomError(`Document did not pass verification: ${analysis.reason}`, 400);
+  }
 
   const uniqueFileName = `${assetId}.pdf`;
 
