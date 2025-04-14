@@ -22,15 +22,6 @@ const upload = multer({
   },
 });
 
-router.get("/list", async (req, res, next) => {
-  try {
-    const files = await s3Service.listFiles();
-    res.json(files);
-  } catch (err) {
-    next(err);
-  }
-});
-
 // Upload a new file
 router.post(
   "/upload/:assetId",
@@ -53,6 +44,15 @@ router.get(
   passport.authenticate("jwt", { session: false }),
   fileController.generateSignedUrlHandler
 );
+
+router.get("/list", async (req, res, next) => {
+  try {
+    const files = await s3Service.listFiles();
+    res.json(files);
+  } catch (err) {
+    next(err);
+  }
+});
 
 router.delete(
   "/delete/:assetId",

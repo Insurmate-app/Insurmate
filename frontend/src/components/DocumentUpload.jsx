@@ -55,13 +55,31 @@ const UploadDocument = () => {
     }
   }, [id]);  
 
-  const handleView= async (e) => {
-    console.log("View Clicked!");
-  }
+  const handleView= async (id) => {
+    const newTab = window.open("about:blank");
 
-  const handleDelete = async (e) => {
-    console.log("Delete clicked!");
-  }
+    try {
+      const response = await api.get(`/file/signed-url/${id}`);
+
+      const signedUrl = response.data.url;
+
+      newTab.location.href = signedUrl;
+
+    } catch (error) {
+
+      console.error("Failed to generate signed URL:", error);
+      alert("Failed to open file. Please try again.");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try{
+      console.log("Delete Clicked!");
+    } catch (error) {
+      console.error("Failed to delete file:", error);
+      alert("Failed to delete file. Please try again.");
+    }
+  };
 
   /**
    * @description Handles the form submission and file upload process
@@ -146,27 +164,18 @@ const UploadDocument = () => {
                         <td>{file.filename}</td>
                         <td>{new Date(file.uploadedAt).toLocaleString()}</td>
                         <td>
-                          <a 
-                          href={file.url} 
-                          target="_blank" rel="noopener noreferrer" 
-                          className="btn btn-sm btn-outline-primary"
-                          onClick={() => {
-                            handleView();
-                          }}
+                          <button
+                            className="btn btn-sm btn-outline-primary"
+                            onClick={() => handleView(file.filename.replace(".pdf", ""))}
                           >
                             View File
-                          </a>
-                          <a 
-                          href={file.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="btn btn-sm btn-outline-primary"
-                          onClick={() => {
-                            handleDelete();
-                          }}
-                          >
-                            Delete File
-                          </a>
+                          </button>
+                          <button
+                            className="btn btn-sm btn-outline-primary"
+                            onClick={() => handleDelete()}
+                            >
+                              Delete File
+                            </button>
                         </td>
                       </tr>
                     ))}
