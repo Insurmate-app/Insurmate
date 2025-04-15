@@ -19,6 +19,8 @@ const PolicyViewUpdate = () => {
     policyNumber: "",
     owner: "",
     status: "Pending",
+    llmResponse: null,
+    expirationDate: "", // Add this line
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,7 +48,10 @@ const PolicyViewUpdate = () => {
         owner: yup.string().required("Owner is required"),
         status: yup
           .string()
-          .oneOf(["Pending", "Active", "Inactive"], "Invalid status")
+          .oneOf(
+            ["Pending", "Active", "Inactive", "Verified"],
+            "Invalid status",
+          )
           .required("Status is required"),
       }),
     [],
@@ -64,6 +69,8 @@ const PolicyViewUpdate = () => {
         const response = await api.get(`/asset/get/${id}`);
         const policyData = response.data.data;
 
+        const llmResponse = policyData.llmResponse;
+
         setFormValues((prevValues) => ({
           ...prevValues,
           assetId: id,
@@ -73,6 +80,8 @@ const PolicyViewUpdate = () => {
           policyNumber: policyData.policyNumber || "",
           owner: policyData.owner || "",
           status: policyData.status || "Pending",
+          llmResponse: llmResponse || null,
+          expirationDate: llmResponse?.expirationDate || "", // Add this line
         }));
       } catch (error) {
         console.error("Error fetching policy data:", error);
@@ -261,11 +270,50 @@ const PolicyViewUpdate = () => {
             >
               <option value="Pending">Pending</option>
               <option value="Active">Active</option>
+              <option value="Verified">Verified</option>
               <option value="Inactive">Inactive</option>
             </select>
             {errors.status && (
               <div className="text-danger">{errors.status}</div>
             )}
+          </div>
+
+          {/* LLM Response Section */}
+          <div className="mb-3">
+            <label className="form-label">Expiration Date</label>
+            <input
+              type="text"
+              name="expirationDate"
+              value={formValues.expirationDate}
+              className="form-control"
+              readOnly
+            />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">AI Analysis</label>
+            <div className="card">
+              <div className="card-body">
+                <div className="mb-2">
+                  <strong>Confidence Score: </strong>
+                  {formValues.llmResponse?.confidenceScore || "N/A"}
+                </div>
+                <div className="mb-2">
+                  <strong>Validation Status: </strong>
+                  <span
+                    className={`badge ${formValues.llmResponse?.valid ? "bg-success" : "bg-danger"}`}
+                  >
+                    {formValues.llmResponse?.valid ? "Valid" : "Invalid"}
+                  </span>
+                </div>
+                <div>
+                  <strong>Analysis Notes: </strong>
+                  <p className="mb-0">
+                    {formValues.llmResponse?.reason || "No analysis available"}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Buttons */}

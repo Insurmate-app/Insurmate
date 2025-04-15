@@ -36,50 +36,11 @@ const Dash = () => {
     };
 
     fetchData();
-
-    // WebSocket setup
-    const ws = new WebSocket(import.meta.env.VITE_WS_URL); // Replace with your WebSocket server URL
-
-    ws.onopen = () => {
-      console.log("WebSocket connection established");
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-
-        // Handle policy list update
-        if (message.type === "ASSET_LIST_UPDATE") {
-          console.log("Received asset list update:", message.data);
-          const transformedData = message.data.map((item) => ({
-            id: item.id,
-            ...item.data,
-          }));
-
-          setData(transformedData);
-        }
-      } catch (error) {
-        console.error("Error processing WebSocket message:", error);
-      }
-    };
-
-    ws.onclose = () => {
-      console.log("WebSocket connection closed");
-    };
-
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
-
-    // Cleanup WebSocket on component unmount
-    return () => {
-      ws.close();
-    };
-  }, []);
+  }, [data]);
 
   const handleAddPolicy = (newPolicy) => {
     setShowModal(false);
-    // No need to reload the page as WebSocket will update the data
+    setData((prevData) => [...prevData, newPolicy]);
   };
 
   const handleExportCSV = () => {
@@ -111,44 +72,114 @@ const Dash = () => {
 
   const columns = useMemo(
     () => [
-      { field: "firstName", headerName: "First Name", flex: 1 },
-      { field: "lastName", headerName: "Last Name", flex: 1 },
-      { field: "email", headerName: "Email", flex: 1 },
-      { field: "owner", headerName: "Owner", flex: 1 },
+      {
+        field: "firstName",
+        headerName: "First Name",
+        flex: 1,
+        headerAlign: "center",
+        align: "center",
+      },
+      {
+        field: "lastName",
+        headerName: "Last Name",
+        flex: 1,
+        headerAlign: "center",
+        align: "center",
+      },
+      {
+        field: "email",
+        headerName: "Email",
+        flex: 1,
+        headerAlign: "center",
+        align: "center",
+      },
+      {
+        field: "owner",
+        headerName: "Owner",
+        flex: 1.2,
+        minWidth: 200,
+        headerAlign: "center",
+        align: "center",
+      },
       {
         field: "status",
         headerName: "Status",
         flex: 1,
+        minWidth: 130,
+        headerAlign: "center",
+        align: "center",
         renderCell: (params) => {
           const status = params.row.status;
+          const isVerified = params.row.isVerified;
+
+          let badgeClass = "badge rounded-pill ";
+          if (status === "Active") {
+            badgeClass += "bg-success bg-opacity-50";
+          } else if (status === "Pending") {
+            badgeClass += "bg-warning bg-opacity-50";
+          } else if (status === "Verified") {
+            badgeClass += "bg-info bg-opacity-50";
+          } else {
+            badgeClass += "bg-secondary bg-opacity-50";
+          }
+
           return (
-            <span
-              className={`badge ${
-                status === "Active"
-                  ? "bg-success"
-                  : status === "Pending"
-                    ? "bg-warning text-dark"
-                    : "bg-secondary"
-              }`}
-            >
-              {params.row.status}
-            </span>
+            <div className="d-flex align-items-center justify-content-center w-100">
+              <div
+                className={badgeClass}
+                style={{
+                  padding: "6px 12px",
+                  minWidth: "90px",
+                  textAlign: "center",
+                }}
+              >
+                <span>{params.row.status}</span>
+                {(status === "Active" || status === "Verified") && (
+                  <i
+                    className={`bi ${isVerified ? "bi-shield-fill-check" : "bi-shield"} ms-2`}
+                    style={{ verticalAlign: "middle" }}
+                    title={isVerified ? "Verified" : "Not Verified"}
+                  ></i>
+                )}
+              </div>
+            </div>
           );
         },
       },
-      { field: "policyNumber", headerName: "Policy Number", flex: 1 },
+      {
+        field: "policyNumber",
+        headerName: "Policy Number",
+        flex: 1,
+        minWidth: 120,
+        headerAlign: "center",
+        align: "center",
+      },
+      // {
+      //   field: "llmResponse.expirationDate",
+      //   headerName: "Expiration Date",
+      //   flex: 1,
+      //   minWidth: 130,
+      //   headerAlign: "center",
+      //   align: "center",
+      //   valueGetter: (params) => {
+      //     return params.row.llmResponse?.expirationDate || 'N/A';
+      //   }
+      // },
       {
         field: "actions",
         headerName: "Actions",
-        flex: 1.10,
+        flex: 1.2,
+        minWidth: 160,
         sortable: false,
+        headerAlign: "center",
+        align: "center",
         renderCell: (params) => {
           const isDeleting = deletingId === params.row.id;
 
           return (
-            <>
+            <div className="d-flex justify-content-center gap-2">
               <button
-                className="btn btn-link text-info"
+                className="btn btn-link text-info p-1"
                 title="View"
                 onClick={() => {
                   window.location.href = `/policy?id=${encodeURIComponent(params.row.id)}`;
@@ -158,17 +189,17 @@ const Dash = () => {
                 <i className="bi bi-eye-fill"></i>
               </button>
               <button
-                className="btn btn-link text-info"
+                className="btn btn-link text-info p-1"
                 title="Upload Document"
                 onClick={() => {
                   window.location.href = `/upload?id=${encodeURIComponent(params.row.id)}`;
                 }}
                 disabled={isDeleting}
               >
-                <i className="bi bi-plus-lg"></i>
+                <i className="bi bi-cloud-arrow-up"></i>
               </button>
               <button
-                className="btn btn-link text-info"
+                className="btn btn-link text-info p-1"
                 title="History"
                 onClick={() => {
                   window.location.href = `/history?id=${encodeURIComponent(params.row.id)}`;
@@ -177,7 +208,7 @@ const Dash = () => {
                 <i className="bi bi-clock-history"></i>
               </button>
               <button
-                className="btn btn-link text-danger"
+                className="btn btn-link text-danger p-1"
                 title="Delete Policy"
                 onClick={() => handleDelete(params.row.id)}
                 disabled={isDeleting}
@@ -191,7 +222,7 @@ const Dash = () => {
                   <i className="bi bi-trash-fill"></i>
                 )}
               </button>
-            </>
+            </div>
           );
         },
       },
@@ -219,10 +250,10 @@ const Dash = () => {
   }
 
   return (
-    <div className="container my-4">
+    <div className="container-fluid my-4">
       <h2 className="text-dark mb-3">Policy Dashboard</h2>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <div className="d-flex gap-3">
+      <div className="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <div className="d-flex gap-3 mb-2 mb-sm-0">
           <button
             onClick={() => setShowModal(true)}
             className="btn btn-outline-primary d-flex align-items-center"
@@ -251,18 +282,52 @@ const Dash = () => {
           value={globalFilter || ""}
           onChange={(e) => setGlobalFilter(e.target.value)}
           placeholder="Search all columns..."
-          className="form-control w-25"
-          style={{ borderRadius: "8px" }}
+          className="form-control"
+          style={{ borderRadius: "8px", maxWidth: "300px" }}
         />
       </div>
-      <div style={{ height: 400, width: "100%" }}>
+      <div style={{ height: "70vh", width: "100%" }}>
         <DataGrid
           rows={filteredData}
           columns={columns}
           pageSize={5}
           rowsPerPageOptions={[5, 10, 20]}
-          getRowId={(row) => row.id}
-          checkboxSelection
+          disableSelectionOnClick
+          loading={isLoading}
+          pagination
+          sx={{
+            "& .MuiDataGrid-cell": {
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "52px !important",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            },
+            "& .MuiDataGrid-row": {
+              maxHeight: "none !important",
+              height: "52px !important",
+            },
+            "& .MuiDataGrid-main": {
+              width: "100%",
+              overflow: "auto",
+            },
+            "& .MuiDataGrid-virtualScroller": {
+              overflow: "auto",
+            },
+            "& .MuiDataGrid-columnHeaders": {
+              display: "flex",
+              alignItems: "center",
+              paddingTop: "8px",
+              paddingBottom: "8px",
+            },
+            "& .MuiDataGrid-columnHeader": {
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+            },
+          }}
         />
       </div>
       <AddPolicyModal

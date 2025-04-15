@@ -121,6 +121,15 @@ const UploadDocument = () => {
       <div className="container mt-5">
         <div className="row justify-content-center">
           <div className="col-md-8">
+            <div className="mb-4">
+              <button
+                onClick={() => window.location.href = "/dashboard"}
+                className="btn btn-outline-secondary"
+              >
+                <i className="bi bi-arrow-left me-2"></i>
+                Back to Client List
+              </button>
+            </div>
             <div className="card shadow-sm border-0 rounded-4">
               <div className="card-body p-5">
                 <h4 className="card-title mb-4">Insurance Document Upload</h4>
