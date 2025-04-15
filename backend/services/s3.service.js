@@ -92,7 +92,7 @@ const uploadFile = async (file, email, assetId) => {
       ContentType: file.mimetype,
     },
     queueSize: 3, // Control parallel uploads
-    partSize: 2 * 1024 * 1024, // Each part is 5MB
+    partSize: 5 * 1024 * 1024, // Each part is 5MB
   });
 
   try {
