@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from "react";
-import Modal from "./Modal"; 
-import useSpinner from "../hooks/useSpinner";
+import { useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import useModal from "../hooks/useModal";
+import useSpinner from "../hooks/useSpinner";
+import Modal from "./Modal";
 import { useApi } from "./useApi";
 
 /**
@@ -9,7 +12,7 @@ import { useApi } from "./useApi";
  * @description A component that handles insurance document upload functionality.
  * It manages file selection, upload process, and displays upload status.
  * The component includes validation for client ID and provides feedback through modals.
- * 
+ *
  * @returns {JSX.Element} The rendered upload document interface
  */
 const UploadDocument = () => {
@@ -18,6 +21,7 @@ const UploadDocument = () => {
   const { isVisible, message, showModal, hideModal } = useModal();
   const [allFiles, setAllFiles] = useState([]);
   const [filteredFiles, setFilteredFiles] = useState([]);
+  const [needRefresh, setNeedRefresh] = useState(false); // State to track if a refresh is needed
 
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
@@ -33,190 +37,181 @@ const UploadDocument = () => {
   };
 
   useEffect(() => {
+    if (!id) {
+      window.location.href = "/dashboard";
+      return;
+    }
     const fetchFiles = async () => {
       try {
-        const response = await api.get("file/list");
+        const response = await api.get(`/file/list/${id}`);
         const files = response.data;
 
-        const matchingFiles = files.filter((file) => file.filename === `${id}.pdf`);
+        const matchingFiles = files.filter(
+          (file) => file.filename === `${id}.pdf`,
+        );
 
         setAllFiles(files);
         setFilteredFiles(matchingFiles);
-      } catch(error){
+      } catch (error) {
+        showModal("Failed to fetch files. Please try again.");
         console.error("Failed to fetch files:", error);
       }
     };
 
-    if (id){
-      fetchFiles();
-    } else{
-      window.location.href = "/dashboard";
-      return;
-    }
-  }, [id]);  
+    fetchFiles();
+  }, [id, needRefresh]);
 
-  const handleView= async (id) => {
+  const handleView = async (id) => {
     const newTab = window.open("about:blank");
 
     try {
       const response = await api.get(`/file/signed-url/${id}`);
-
       const signedUrl = response.data.url;
-
       newTab.location.href = signedUrl;
-
     } catch (error) {
-
       console.error("Failed to generate signed URL:", error);
-      alert("Failed to open file. Please try again.");
+      toast.error("Failed to open file. Please try again.");
+      if (newTab) newTab.close();
     }
   };
 
   const handleDelete = async (id) => {
-    try{
+    try {
       const response = await api.delete(`/file/delete/${id}`);
-      alert("File deleted successfully!");
-
+      if (response.status === 200) {
+        setNeedRefresh((prev) => !prev);
+        toast.success("File deleted successfully!");
+      }
     } catch (error) {
       console.error("Failed to delete file:", error);
-      alert("Failed to delete file. Please try again.");
+      toast.error(error.response?.data?.message || "Failed to delete file");
     }
   };
 
-  /**
-   * @description Handles the form submission and file upload process
-   * @param {React.FormEvent<HTMLFormElement>} e - The form submission event
-   */
   const handleSubmit = async (e) => {
     const fileFormData = new FormData();
     e.preventDefault();
     activateSpinner();
-    
-    //Handles user not selecting a file before sending
-    if (!selectedFile || selectedFile.size === 0){
-      alert("Please select a file first.");
+
+    if (!selectedFile || selectedFile.size === 0) {
+      toast.warning("Please select a file first.");
       return;
     }
 
     fileFormData.append("file", selectedFile);
-    
-    try{
 
+    try {
       const response = await api.post(`/file/upload/${id}`, fileFormData);
-      alert("File Upload successful!")
-      return response.data;
-
-    } catch(error){
-
-      if (error.response && error.response.data && error.response.data.error) {
-        alert(`File upload failed: ${error.response.data.error}`);
-      } else {
-        alert("File upload failed. Check console for details.");
+      if (response.status === 200) {
+        setSelectedFile(null);
+        toast.success("File Upload successful!");
+        setNeedRefresh((prev) => !prev);
       }
-      console.error("Upload error:", error);
-      throw error;
-
-    }
-    finally{
-
+    } catch (error) {
+      console.error("File upload failed:", error);
+      showModal(error.response?.data?.message || "File upload failed");
+    } finally {
       deactivateSpinner();
-
     }
-  }
+  };
 
   return (
-    <div className="container mt-5">
-      <div className="row justify-content-center">
-        <div className="col-md-8">
-          <div className="card shadow p-4">
-            <h4 className="mb-3">
-              Upload Insurance Document <i className="bi bi-filetype-pdf"></i>
-            </h4>
-            <form onSubmit={handleSubmit}>
-              <div className="row align-items-center">
-                <div className="col-md-6">
-                  <input
-                    type="file"
-                    name="file"
-                    className="form-control"
-                    multiple
-                    accept=".pdf"
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="col-md-4">
-                  <button type="submit" className="btn btn-primary">
-                    {isSpinnerVisible && (
-                      <span className="spinner-border spinner-border-sm text-dark mt-2"></span>
-                    )}
-                    <i className="bi bi-cloud-upload"></i> Upload Document
-                  </button>
-                </div>
-              </div>
-            </form>
-            {filteredFiles.length > 0 && (
-              <div>
-                <h5><br></br>Uploaded Documents for Asset ID: {id}</h5>
-                <table className="table table-striped mt-3">
-                  <thead>
-                    <tr>
-                      <th scope="col">File Name</th>
-                      <th scope="col">Uploaded</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredFiles.map((file, index) => (
-                      <tr key={index}>
-                        <td>{file.filename}</td>
-                        <td>{new Date(file.uploadedAt).toLocaleString()}</td>
-                        <td>
-                          <button
-                            className="btn btn-sm btn-outline-primary"
-                            onClick={() => handleView(file.filename.replace(".pdf", ""))}
-                          >
-                            View File
-                          </button>
-                          <button
-                            className="btn btn-sm btn-outline-primary"
-                            onClick={() => handleDelete(file.filename.replace(".pdf", ""))}
+    <>
+      <ToastContainer position="top-right" autoClose={3000} />
+      <div className="container mt-5">
+        <div className="row justify-content-center">
+          <div className="col-md-8">
+            <div className="card shadow-sm border-0 rounded-4">
+              <div className="card-body p-5">
+                <h4 className="card-title mb-4">Insurance Document Upload</h4>
+
+                <form onSubmit={handleSubmit} className="mb-5">
+                  <div className="upload-container p-4 bg-light rounded-3 text-center">
+                    <input
+                      type="file"
+                      name="file"
+                      id="file"
+                      className="d-none"
+                      accept=".pdf"
+                      onChange={handleChange}
+                    />
+                    <label htmlFor="file" className="upload-label mb-3 d-block">
+                      <i className="bi bi-cloud-upload fs-1 text-primary mb-3 d-block"></i>
+                      <span className="d-block mb-2">
+                        Choose a PDF file to upload
+                      </span>
+                      <span className="selected-file text-muted small">
+                        {selectedFile ? selectedFile.name : "No file chosen"}
+                      </span>
+                    </label>
+                    <button
+                      type="submit"
+                      className="btn btn-primary px-4 py-2"
+                      disabled={!selectedFile}
+                    >
+                      {isSpinnerVisible ? (
+                        <span className="spinner-border spinner-border-sm me-2"></span>
+                      ) : (
+                        <i className="bi bi-upload me-2"></i>
+                      )}
+                      Upload Document
+                    </button>
+                  </div>
+                </form>
+
+                {filteredFiles.length > 0 && (
+                  <div className="uploaded-files mt-4">
+                    <h5 className="mb-3">Uploaded Documents</h5>
+                    <div className="list-group">
+                      {filteredFiles.map((file, index) => (
+                        <div
+                          key={index}
+                          className="list-group-item d-flex justify-content-between align-items-center p-3"
+                        >
+                          <div>
+                            <i className="bi bi-file-pdf text-danger me-2"></i>
+                            <span>{file.filename}</span>
+                            <small className="text-muted d-block">
+                              {new Date(file.uploadedAt).toLocaleString()}
+                            </small>
+                          </div>
+                          <div>
+                            <button
+                              className="btn btn-link text-primary me-2"
+                              onClick={() =>
+                                handleView(file.filename.replace(".pdf", ""))
+                              }
                             >
-                              Delete File
+                              <i className="bi bi-eye"></i>
                             </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                            <button
+                              className="btn btn-link text-danger"
+                              onClick={() =>
+                                handleDelete(file.filename.replace(".pdf", ""))
+                              }
+                            >
+                              <i className="bi bi-trash"></i>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="guidelines mt-4">
+                  <small className="text-muted">
+                    <i className="bi bi-info-circle me-1"></i>
+                    Accepted formats: PDF only. Max file size: 1MB
+                  </small>
+                </div>
               </div>
-            )}
-            <div className="mt-4">
-              <h5>
-                <i className="bi bi-info-circle-fill"></i> Add upload tips:
-              </h5>
-              <p>
-                Acceptable Documents Include: Declaration Page, Coverage Summary
-                Page, Certificate of Insurance.
-              </p>
-            </div>
-            <div className="text-center mt-4">
-              <p>
-                <i className="bi bi-info-circle-fill"></i> If you need
-                assistance or would like to inquire about insurance options,
-                please contact us at{" "}
-                <a href="tel:4029572123" className="text-primary">
-                  <i className="bi bi-telephone"></i> (402) 957-2123
-                </a>
-                .
-              </p>
-              <p className="mb-0">
-                &copy; {new Date().getFullYear()} Copyright: We Care Insurance INC.
-              </p>
             </div>
           </div>
         </div>
+        <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
       </div>
-      <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
-    </div>
+    </>
   );
 };
 

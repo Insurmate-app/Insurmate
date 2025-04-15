@@ -45,14 +45,11 @@ router.get(
   fileController.generateSignedUrlHandler
 );
 
-router.get("/list", async (req, res, next) => {
-  try {
-    const files = await s3Service.listFiles();
-    res.json(files);
-  } catch (err) {
-    next(err);
-  }
-});
+router.get(
+  "/list/:fileName",
+  passport.authenticate("jwt", { session: false }),
+  fileController.listFilesHandler
+);
 
 router.delete(
   "/delete/:assetId",

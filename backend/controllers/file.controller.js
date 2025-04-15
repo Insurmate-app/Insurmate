@@ -3,6 +3,7 @@ const {
   reuploadFile,
   generateSignedUrl,
   deleteFile,
+  listFiles,
 } = require("../services/s3.service");
 const jwt = require("jsonwebtoken");
 const extractToken = require("../util/tokenExtractor");
@@ -125,9 +126,20 @@ const deleteFileHandler = async (req, res, next) => {
   }
 };
 
+const listFilesHandler = async (req, res, next) => {
+  try {
+    const { fileName } = req.params;
+    const files = await listFiles(fileName);
+    res.json(files);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   uploadFileHandler,
   reuploadFileHandler,
   generateSignedUrlHandler,
   deleteFileHandler,
+  listFilesHandler,
 };

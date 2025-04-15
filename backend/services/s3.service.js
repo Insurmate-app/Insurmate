@@ -40,12 +40,17 @@ const s3Client = new S3Client({
 });
 
 //Returns a list of files in S3
-const listFiles = async () => {
+const listFiles = async (fileName) => {
   const command = new ListObjectsV2Command({
     Bucket: process.env.AWS_BUCKET_NAME,
+    Prefix: fileName
   });
 
   const response = await s3Client.send(command);
+
+  if (!response.Contents || response.Contents.length === 0) {
+    return [];
+  }
 
   return response.Contents.map((obj) => ({
     filename: obj.Key,
