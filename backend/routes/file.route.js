@@ -5,6 +5,8 @@ const fileController = require("../controllers/file.controller");
 const passport = require("passport");
 require("../security/passport"); // Import Passport JWT configuration
 
+const s3Service = require("../services/s3.service");
+
 // Configure multer to store files in memory
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -41,6 +43,12 @@ router.get(
   "/signed-url/:assetId",
   passport.authenticate("jwt", { session: false }),
   fileController.generateSignedUrlHandler
+);
+
+router.get(
+  "/list/:fileName",
+  passport.authenticate("jwt", { session: false }),
+  fileController.listFilesHandler
 );
 
 router.delete(

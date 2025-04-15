@@ -1,12 +1,16 @@
 const { Upload } = require("@aws-sdk/lib-storage");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+
+const pdfParse = require("pdf-parse");
+const { analyzeDocument } = require("./llm.service");
+
 const {
   S3Client,
   GetObjectCommand,
   DeleteObjectCommand,
   HeadObjectCommand,
+  ListObjectsV2Command,
 } = require("@aws-sdk/client-s3");
-const { v4: uuidv4 } = require("uuid");
 const assetService = require("./asset.service");
 const CustomError = require("../errorhandling/errorUtil");
 const log = require("../logger");
@@ -34,6 +38,25 @@ const s3Client = new S3Client({
   },
 });
 
+//Returns a list of files in S3
+const listFiles = async (fileName) => {
+  const command = new ListObjectsV2Command({
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Prefix: fileName,
+  });
+
+  const response = await s3Client.send(command);
+
+  if (!response.Contents || response.Contents.length === 0) {
+    return [];
+  }
+
+  return response.Contents.map((obj) => ({
+    filename: obj.Key,
+    uploadedAt: obj.LastModified,
+  }));
+};
+
 /**
  * Upload a file to S3 using automatic Multipart Upload
  * @param {Object} file - File object from Multer
@@ -42,7 +65,23 @@ const s3Client = new S3Client({
 const uploadFile = async (file, email, assetId) => {
   if (!file) throw new CustomError(`No file provided`, 404);
 
-  const uniqueFileName = `${uuidv4()}.pdf`;
+  // extract pdf text
+  const data = await pdfParse(file.buffer);
+  const text = data.text;
+
+  // analyze document using LLM
+  const analysis = await analyzeDocument(text);
+  console.log("Analysis: ", analysis);
+
+  // // check if the document is valid
+  if (!analysis.valid) {
+    throw new CustomError(
+      `Document did not pass verification: ${analysis.reason}`,
+      400
+    );
+  }
+
+  const uniqueFileName = `${assetId}.pdf`;
 
   const upload = new Upload({
     client: s3Client,
@@ -53,7 +92,7 @@ const uploadFile = async (file, email, assetId) => {
       ContentType: file.mimetype,
     },
     queueSize: 3, // Control parallel uploads
-    partSize: 5 * 1024 * 1024, // Each part is 5MB
+    partSize: 2 * 1024 * 1024, // Each part is 5MB
   });
 
   try {
@@ -64,7 +103,13 @@ const uploadFile = async (file, email, assetId) => {
     if (asset) {
       const data = asset.data;
       data.fileName = uniqueFileName;
-      await assetService.updateAsset(email, { id: assetId, data });
+      data.status = "Verified";
+      data.policyNumber = analysis.policyNumber;
+      data.llmResponse = analysis;
+      await assetService.updateAssetWhileUploadingDocument(email, {
+        id: assetId,
+        data,
+      });
     }
 
     return {
@@ -92,6 +137,7 @@ const fileExists = async (fileName) => {
     await s3Client.send(command);
     return true; // File exists
   } catch (error) {
+    log.error("File Existence Check Failed:", error);
     return false; // File does not exist
   }
 };
@@ -112,8 +158,20 @@ const reuploadFile = async (file, assetId, email) => {
   const fileName = asset.data.fileName;
 
   // Check if the file exists before attempting to delete
-  const exists = await fileExists(fileName);
+  const exists = fileExists(fileName);
   if (!exists) throw new CustomError(`File not found: ${fileName}`, 404);
+
+  // analyze document using LLM
+  const analysis = await analyzeDocument(text);
+  console.log("Analysis: ", analysis);
+
+  // check if the document is valid
+  if (!analysis.valid) {
+    throw new CustomError(
+      `Document did not pass verification: ${analysis.reason}`,
+      400
+    );
+  }
 
   const upload = new Upload({
     client: s3Client,
@@ -192,7 +250,7 @@ const deleteFile = async (email, assetId) => {
   const fileName = data.fileName;
 
   // Check if the file exists before attempting to delete
-  const exists = await fileExists(fileName);
+  const exists = fileExists(fileName);
   if (!exists) {
     throw new CustomError(`File not found: ${fileName}`, 404);
   }
@@ -222,4 +280,5 @@ module.exports = {
   reuploadFile,
   generateSignedUrl,
   deleteFile,
+  listFiles,
 };

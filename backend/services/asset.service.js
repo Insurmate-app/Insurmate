@@ -4,7 +4,6 @@ const {
 } = require("../blockchain/backend/src/chaincodeHelper");
 const userService = require("./user.service");
 const CustomError = require("../errorhandling/errorUtil");
-//const s3Service = require("./s3.service");
 const log = require("../logger");
 
 // TODO: Hardcoded values for now; replace with environment variables / mongoDB if needed
@@ -29,6 +28,7 @@ const createAsset = async (email, data) => {
 
     asset.status = "Pending";
     asset.fileName = "N/A";
+    asset.llmResponse = "N/A";
 
     const org = whichOrg(user.role);
 
@@ -52,11 +52,45 @@ const createAsset = async (email, data) => {
   }
 };
 
+const updateAssetWhileUploadingDocument = async (email, data) => {
+  try {
+    const asset = await getAssetById(email, data.id);
+
+    data.data.owner = asset?.data?.owner;
+
+    const user = await userService.findUserByEmail(email);
+    
+    if (!data.data.status?.trim()) {
+      data.data.status = asset?.data?.status;
+    }
+
+    const org = whichOrg(user.role);
+
+    const result = await submitTransaction(
+      userId,
+      org,
+      channel,
+      chaincodeName,
+      "UpdateAsset",
+      JSON.stringify(data)
+    );
+    return JSON.parse(result);
+  } catch (error) {
+    if (error.statusCode >= 400 && error.statusCode < 500) {
+      throw error;
+    } else {
+      log.error(error.message);
+      throw CustomError("Error updating asset", 500);
+    }
+  }
+};
+
 const updateAsset = async (email, data) => {
   try {
     const asset = await getAssetById(email, data.id);
 
     data.data.owner = asset?.data?.owner;
+    data.data.llmResponse = asset?.data?.llmResponse;
 
     const user = await userService.findUserByEmail(email);
 
@@ -254,6 +288,7 @@ async function transferAsset(email, assetId, newOwner) {
 module.exports = {
   createAsset,
   updateAsset,
+  updateAssetWhileUploadingDocument,
   getAllAssets,
   getAssetById,
   getAssetHistory,

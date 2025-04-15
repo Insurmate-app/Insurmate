@@ -3,7 +3,6 @@ const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 const extractToken = require("../util/tokenExtractor");
 const S3Service = require("../services/s3.service");
-const { broadcastData } = require("../websocket");
 
 const createAsset = async (req, res, next) => {
   try {
@@ -23,15 +22,6 @@ const createAsset = async (req, res, next) => {
     const payloadId = payload.id;
 
     const result = await assetService.createAsset(payloadId, { id, data });
-
-    // Fetch all assets to broadcast the updated list
-    const allAssets = await assetService.getAllAssets(payloadId);
-
-    // Broadcast the updated asset list to WebSocket clients
-    // note: this is a simplified example, in production you may want to
-    // broadcast only to specific clients or channels
-    // this will inscread the overload on the server
-    broadcastData({ type: "ASSET_LIST_UPDATE", data: allAssets });
 
     res.status(201).json(result);
   } catch (error) {
