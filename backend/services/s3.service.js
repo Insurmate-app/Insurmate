@@ -47,7 +47,7 @@ const listFiles = async () => {
 
   const response = await s3Client.send(command);
 
-  return response.Contents.map(obj => ({
+  return response.Contents.map((obj) => ({
     filename: obj.Key,
     uploadedAt: obj.LastModified,
   }));
@@ -70,8 +70,11 @@ const uploadFile = async (file, email, assetId) => {
   console.log("Analysis: ", analysis);
 
   // check if the document is valid
-  if (analysis.valid === false) {
-    throw new CustomError(`Document did not pass verification: ${analysis.reason}`, 400);
+  if (!analysis.valid) {
+    throw new CustomError(
+      `Document did not pass verification: ${analysis.reason}`,
+      400
+    );
   }
 
   const uniqueFileName = `${assetId}.pdf`;
@@ -144,8 +147,20 @@ const reuploadFile = async (file, assetId, email) => {
   const fileName = asset.data.fileName;
 
   // Check if the file exists before attempting to delete
-  const exists = await fileExists(fileName);
+  const exists = fileExists(fileName);
   if (!exists) throw new CustomError(`File not found: ${fileName}`, 404);
+
+  // analyze document using LLM
+  const analysis = await analyzeDocument(text);
+  console.log("Analysis: ", analysis);
+
+  // check if the document is valid
+  if (!analysis.valid) {
+    throw new CustomError(
+      `Document did not pass verification: ${analysis.reason}`,
+      400
+    );
+  }
 
   const upload = new Upload({
     client: s3Client,
