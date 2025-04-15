@@ -11,7 +11,6 @@ const {
   HeadObjectCommand,
   ListObjectsV2Command,
 } = require("@aws-sdk/client-s3");
-const { v4: uuidv4 } = require("uuid");
 const assetService = require("./asset.service");
 const CustomError = require("../errorhandling/errorUtil");
 const log = require("../logger");
@@ -43,7 +42,7 @@ const s3Client = new S3Client({
 const listFiles = async (fileName) => {
   const command = new ListObjectsV2Command({
     Bucket: process.env.AWS_BUCKET_NAME,
-    Prefix: fileName
+    Prefix: fileName,
   });
 
   const response = await s3Client.send(command);
@@ -74,7 +73,7 @@ const uploadFile = async (file, email, assetId) => {
   const analysis = await analyzeDocument(text);
   console.log("Analysis: ", analysis);
 
-  // check if the document is valid
+  // // check if the document is valid
   if (!analysis.valid) {
     throw new CustomError(
       `Document did not pass verification: ${analysis.reason}`,
@@ -93,7 +92,7 @@ const uploadFile = async (file, email, assetId) => {
       ContentType: file.mimetype,
     },
     queueSize: 3, // Control parallel uploads
-    partSize: 5 * 1024 * 1024, // Each part is 5MB
+    partSize: 2 * 1024 * 1024, // Each part is 5MB
   });
 
   try {
@@ -104,7 +103,13 @@ const uploadFile = async (file, email, assetId) => {
     if (asset) {
       const data = asset.data;
       data.fileName = uniqueFileName;
-      await assetService.updateAsset(email, { id: assetId, data });
+      data.status = "Verified";
+      data.policyNumber = analysis.policyNumber;
+      data.llmResponse = analysis;
+      await assetService.updateAssetWhileUploadingDocument(email, {
+        id: assetId,
+        data,
+      });
     }
 
     return {
@@ -132,6 +137,7 @@ const fileExists = async (fileName) => {
     await s3Client.send(command);
     return true; // File exists
   } catch (error) {
+    log.error("File Existence Check Failed:", error);
     return false; // File does not exist
   }
 };
@@ -244,7 +250,7 @@ const deleteFile = async (email, assetId) => {
   const fileName = data.fileName;
 
   // Check if the file exists before attempting to delete
-  const exists = await fileExists(fileName);
+  const exists = fileExists(fileName);
   if (!exists) {
     throw new CustomError(`File not found: ${fileName}`, 404);
   }
