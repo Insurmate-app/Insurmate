@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
-
+import { useEffect, useMemo, useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import fileSaver from "file-saver";
 import Papa from "papaparse";
 
 import AddPolicyModal from "./AddPolicy";
 import { useApi } from "./useApi";
+import { transformPolicyData } from "../utils/transformData";
 
 const Dash = () => {
   const [data, setData] = useState([]);
@@ -20,12 +20,7 @@ const Dash = () => {
     const fetchData = async () => {
       try {
         const response = await api.get(`/asset/get-all`);
-
-        const transformedData = await response.data.map((item) => ({
-          id: item.id,
-          ...item.data,
-        }));
-
+        const transformedData = transformPolicyData(response.data);
         setData(transformedData);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -36,11 +31,15 @@ const Dash = () => {
     };
 
     fetchData();
-  }, [data]);
+  }, [api]);
 
   const handleAddPolicy = (newPolicy) => {
+    console.log("New policy added:", newPolicy);
     setShowModal(false);
-    setData((prevData) => [...prevData, newPolicy]);
+    setData((prevData) => [...prevData, {
+      id: newPolicy.id,
+      ...newPolicy.data,
+    }]);
   };
 
   const handleExportCSV = () => {
@@ -76,6 +75,7 @@ const Dash = () => {
         field: "firstName",
         headerName: "First Name",
         flex: 1,
+        minWidth: 120,
         headerAlign: "center",
         align: "center",
       },
@@ -83,6 +83,7 @@ const Dash = () => {
         field: "lastName",
         headerName: "Last Name",
         flex: 1,
+        minWidth: 120,
         headerAlign: "center",
         align: "center",
       },
@@ -90,6 +91,7 @@ const Dash = () => {
         field: "email",
         headerName: "Email",
         flex: 1,
+        minWidth: 180,
         headerAlign: "center",
         align: "center",
       },
@@ -286,7 +288,7 @@ const Dash = () => {
           style={{ borderRadius: "8px", maxWidth: "300px" }}
         />
       </div>
-      <div style={{ height: "70vh", width: "100%" }}>
+      <div style={{ height: "calc(100vh - 200px)", width: "100%" }}>
         <DataGrid
           rows={filteredData}
           columns={columns}
@@ -296,36 +298,67 @@ const Dash = () => {
           loading={isLoading}
           pagination
           sx={{
+            width: "100%",
+            "& .MuiDataGrid-root": {
+              backgroundColor: "white",
+              border: "none",
+            },
             "& .MuiDataGrid-cell": {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              height: "52px !important",
-              whiteSpace: "nowrap",
+              minHeight: "52px !important",
+              lineHeight: "1.4",
+              whiteSpace: "normal",
               overflow: "hidden",
-              textOverflow: "ellipsis",
+              padding: "8px 4px",
+              fontSize: "0.9rem",
+              wordBreak: "break-word",
+            },
+            "& .MuiDataGrid-cellContent": {
+              textAlign: "center",
+              width: "100%",
             },
             "& .MuiDataGrid-row": {
-              maxHeight: "none !important",
-              height: "52px !important",
+              minHeight: "52px !important",
             },
-            "& .MuiDataGrid-main": {
-              width: "100%",
-              overflow: "auto",
-            },
-            "& .MuiDataGrid-virtualScroller": {
-              overflow: "auto",
-            },
-            "& .MuiDataGrid-columnHeaders": {
-              display: "flex",
-              alignItems: "center",
-              paddingTop: "8px",
-              paddingBottom: "8px",
-            },
-            "& .MuiDataGrid-columnHeader": {
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
+            "@media (max-width: 768px)": {
+              "& .MuiDataGrid-cell": {
+                fontSize: "0.8rem",
+                padding: "4px 2px",
+                lineHeight: "1.2",
+                minHeight: "40px !important",
+              },
+              "& .MuiDataGrid-columnHeaders": {
+                fontSize: "0.8rem",
+                minHeight: "40px !important",
+              },
+              "& .MuiDataGrid-columnHeader": {
+                padding: "0 2px",
+              },
+              "& .MuiDataGrid-columnHeaderTitle": {
+                width: "100%",
+                textAlign: "center",
+                fontWeight: "600",
+                overflow: "hidden",
+                lineHeight: "1.2",
+                whiteSpace: "normal",
+                textOverflow: "ellipsis",
+              },
+              "@media (max-width: 768px)": {
+                "& .MuiDataGrid-columnHeaders": {
+                  fontSize: "0.8rem",
+                  minHeight: "48px !important",
+                  padding: "4px 0",
+                },
+                "& .MuiDataGrid-columnHeaderTitle": {
+                  fontSize: "0.8rem",
+                  lineHeight: "1.1",
+                },
+                "& .MuiDataGrid-columnHeader": {
+                  padding: "0 4px",
+                },
+              },
             },
           }}
         />

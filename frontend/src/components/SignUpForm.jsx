@@ -28,7 +28,7 @@ const SignUpForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
   const { isVisible, message, showModal, hideModal } = useModal();
-  const [ touchedFields, setTouchedFields ] = useState({});
+  const [touchedFields, setTouchedFields] = useState({});
 
   // Memoized validation schema
   const validationSchema = useMemo(
@@ -39,7 +39,7 @@ const SignUpForm = () => {
           .max(50, "No more than 50 characters"),
         lastName: Yup.string()
           .required("Last name is required")
-          .max(50, "No more than 50 characters"),  
+          .max(50, "No more than 50 characters"),
         email: Yup.string()
           .email("Enter a valid email")
           .required("Email is required"),
@@ -76,7 +76,7 @@ const SignUpForm = () => {
         setErrors((prev) => ({ ...prev, [name]: err.message }));
       }
     },
-    [validationSchema]
+    [validationSchema],
   );
   // Add isFormValid state
   const [isFormValid, setIsFormValid] = useState(false);
@@ -119,11 +119,10 @@ const SignUpForm = () => {
       const { name, value, type, checked } = e.target;
       const fieldValue = type === "checkbox" ? checked : value;
 
-
       setTouchedFields((prev) => ({ ...prev, [name]: true }));
       validateField(name, fieldValue);
     },
-    [validateField]
+    [validateField],
   );
 
   const currentErrors = useMemo(() => {
@@ -131,7 +130,7 @@ const SignUpForm = () => {
       .filter(([key, value]) => touchedFields[key] && value)
       .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
   }, [errors, touchedFields]);
-  
+
   // Optimized submit handler
   const handleSubmit = useCallback(
     async (e) => {
@@ -155,7 +154,7 @@ const SignUpForm = () => {
             state: formValues.state,
             zipCode: formValues.zipCode,
           },
-          wallet: formValues.lastName
+          wallet: formValues.lastName,
         };
 
         await api.post(`/user/create`, payload);
@@ -193,344 +192,335 @@ const SignUpForm = () => {
 
   return (
     <div>
-      <header className="d-flex justify-content-between align-items-center w-100 p-3 bg-light shadow-sm">
-      <div className="logo d-flex align-items-center">
-          <a href="/">
-            <img
-              src="/insurmate_logo.png"
-              alt="Insurmate Logo"
-              className="me-2"
-              style={{ height: "40px" }}
-            />
-          </a>  
-            <h1 className="h5 text-dark mb-0">Insurmate</h1>
-        </div>
-        <nav>
-          <ul className="nav">
-            <li className="nav-item">
-              <a className="nav-link text-dark" href="/login">
-                Login
-              </a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link text-dark" href="/collaboration">
-                Collaboration
-              </a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link text-dark" href="/contact">
-                Contact Us
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </header>
+      <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light p-3">
+        <div
+          className="card p-4 shadow rounded w-100"
+          style={{
+            maxWidth: "800px",
+            backgroundColor: "#f9f9f9",
+            border: "1px solid #ddd",
+          }}
+        >
+          <h2 className="text-center mb-4" style={{ color: "#333" }}>
+            Create Your Account
+          </h2>
 
-    <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light p-3">
-      <div
-        className="card p-4 shadow rounded w-100"
-        style={{
-          maxWidth: "450px",
-          backgroundColor: "#f9f9f9",
-          border: "1px solid #ddd",
-        }}
-      >
-        <h2 className="text-center mb-4" style={{ color: "#333" }}>
-          Create Your Account
-        </h2>
+          {Object.keys(currentErrors).length > 0 && (
+            <div className="alert alert-danger mb-3">
+              <h6 className="mb-1">Please correct the following issues:</h6>
+              <u1 className="mb-0 ps-3">
+                {Object.entries(currentErrors).map(([field, message]) => (
+                  <li key={field}>{message}</li>
+                ))}
+              </u1>
+            </div>
+          )}
 
-        {Object.keys(currentErrors).length > 0 && (
-          <div className="alert alert-danger mb-3">
-            <h6 className="mb-1">Please correct the following issues:</h6>
-            <u1 className="mb-0 ps-3">
-              {Object.entries(currentErrors).map(([field, message]) => (
-                <li key={field}>{message}</li>
-              ))}
-            </u1>
-          </div>
-        )}
+          <form onSubmit={handleSubmit}>
+            <div className="row g-3">
+              <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label fw-bold">
+                    First Name <span style={{ color: "red" }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    className={`form-control ${
+                      touchedFields.firstName && errors.firstName
+                        ? "is-invalid"
+                        : ""
+                    }`}
+                    placeholder="John"
+                    value={formValues.firstName}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    required
+                  />
+                  {touchedFields.firstName && errors.firstName && (
+                    <small className="text-danger">{errors.firstName}</small>
+                  )}
+                </div>
+              </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label className="form-label fw-bold">
-              First Name <span style={{ color: "red" }}>*</span>{" "}
-            </label>
-            <input
-              type="text"
-              name="firstName"
-              className={`form-control border-0 border-bottom rounded-0 ${
-                touchedFields.firstName && errors.firstName ? "is-invalid" : ""
-              }`}
-              placeholder="John"
-              value={formValues.firstName}
-              onChange={handleInputChange}
-              onBlur={handleBlur}
-              required
-            />
-            {touchedFields.firstName && errors.firstName && (
-              <small className="text-danger">{errors.firstName}</small>
-            )}
-          </div>
+              <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label fw-bold">
+                    Last Name <span style={{ color: "red" }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    className={`form-control ${
+                      touchedFields.lastName && errors.lastName
+                        ? "is-invalid"
+                        : ""
+                    }`}
+                    placeholder="Doe"
+                    value={formValues.lastName}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    required
+                  />
+                  {touchedFields.lastName && errors.lastName && (
+                    <small className="text-danger">{errors.lastName}</small>
+                  )}
+                </div>
+              </div>
+            </div>
+            {/* New Email and Password row */}
+            <div className="row g-3">
+              <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label fw-bold">
+                    Email <span style={{ color: "red" }}>*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    className={`form-control ${
+                      touchedFields.email && errors.email ? "is-invalid" : ""
+                    }`}
+                    placeholder="user@example.com"
+                    value={formValues.email}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    required
+                  />
+                  {touchedFields.email && errors.email && (
+                    <small className="text-danger">{errors.email}</small>
+                  )}
+                </div>
+              </div>
 
-          <div className="mb-3">
-            <label className="form-label fw-bold">
-              Last Name <span style={{ color: "red" }}>*</span>{" "}
-            </label>
-            <input
-              type="text"
-              name="lastName"
-              className={`form-control border-0 border-bottom rounded-0 ${
-                touchedFields.lastName && errors.lastName ? "is-invalid" : ""
-              }`}
-              placeholder="Doe"
-              value={formValues.lastName}
-              onChange={handleInputChange}
-              onBlur={handleBlur}
-              required
-            />
-            {touchedFields.lastName && errors.lastName && (
-              <small className="text-danger">{errors.lastName}</small>
-            )}
-          </div>
+              <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label fw-bold">
+                    Password <span style={{ color: "red" }}>*</span>
+                  </label>
+                  <div className="input-group">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      className={`form-control ${
+                        touchedFields.Password && errors.password
+                          ? "is-invalid"
+                          : ""
+                      }`}
+                      placeholder="Password"
+                      value={formValues.password}
+                      onChange={handleInputChange}
+                      onBlur={handleBlur}
+                      required
+                    />
+                    <span
+                      className="input-group-text bg-transparent border-0"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      role="button"
+                    >
+                      <i
+                        className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
+                      ></i>
+                    </span>
+                  </div>
+                  {touchedFields.password && errors.password && (
+                    <small className="text-danger">{errors.password}</small>
+                  )}
+                </div>
+              </div>
+            </div>
 
-          <div className="mb-3">
-            <label className="form-label fw-bold">
-              Email <span style={{ color: "red" }}>*</span>{" "}
-            </label>
-            <input
-              type="email"
-              name="email"
-              className={`form-control border-0 border-bottom rounded-0 ${
-                touchedFields.email && errors.email ? "is-invalid" : ""
-              }`}
-              placeholder="user@example.com"
-              value={formValues.email}
-              onChange={handleInputChange}
-              onBlur={handleBlur}
-              required
-            />
-            {touchedFields.email && errors.email && (
-              <small className="text-danger">{errors.email}</small>
-            )}
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label fw-bold">
-              Password <span style={{ color: "red" }}>*</span>{" "}
-            </label>
-            <div className="input-group">
+            <div className="mb-3">
+              <label className="form-label fw-bold">
+                Company Name <span style={{ color: "red" }}>*</span>{" "}
+              </label>
               <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                className={`form-control border-0 border-bottom rounded-0 ${
-                  touchedFields.Password && errors.password ? "is-invalid" : ""
+                type="text"
+                name="companyName"
+                className={`form-control ${
+                  touchedFields.companyName && errors.companyName
+                    ? "is-invalid"
+                    : ""
                 }`}
-                placeholder="Password"
-                value={formValues.password}
+                placeholder="ABC Corporation"
+                value={formValues.companyName}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
                 required
               />
-              <span
-                className="input-group-text bg-transparent border-0"
-                onClick={() => setShowPassword((prev) => !prev)}
-                role="button"
-              >
-                <i
-                  className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
-                ></i>
-              </span>
+              {touchedFields.companyName && errors.companyName && (
+                <small className="text-danger">{errors.companyName}</small>
+              )}
             </div>
-            {touchedFields.password && errors.password && (
-              <small className="text-danger">{errors.password}</small>
-            )}
-          </div>
 
-          <div className="mb-3">
-            <label className="form-label fw-bold">
-              Company Name <span style={{ color: "red" }}>*</span>{" "}
-            </label>
-            <input
-              type="text"
-              name="companyName"
-              className={`form-control border-0 border-bottom rounded-0 ${
-                touchedFields.companyName && errors.companyName ? "is-invalid" : ""
-              }`}
-              placeholder="ABC Corporation"
-              value={formValues.companyName}
-              onChange={handleInputChange}
-              onBlur={handleBlur}
-              required
-            />
-            {touchedFields.companyName && errors.companyName && (
-              <small className="text-danger">{errors.companyName}</small>
-            )}
-          </div>
+            <div className="mb-3">
+              <label className="form-label fw-bold">
+                Address Line 1 <span style={{ color: "red" }}>*</span>{" "}
+              </label>
+              <input
+                type="text"
+                name="addressLine1"
+                className={`form-control ${
+                  touchedFields.addressLine1 && errors.addressLine1
+                    ? "is-invalid"
+                    : ""
+                }`}
+                placeholder="123 Main St"
+                value={formValues.addressLine1}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                required
+              />
+              {touchedFields.addressLine1 && errors.addressLine1 && (
+                <small className="text-danger">{errors.addressLine1}</small>
+              )}
+            </div>
 
-          <div className="mb-3">
-            <label className="form-label fw-bold">
-              Address Line 1 <span style={{ color: "red" }}>*</span>{" "}
-            </label>
-            <input
-              type="text"
-              name="addressLine1"
-              className={`form-control border-0 border-bottom rounded-0 ${
-                touchedFields.addressLine1 && errors.addressLine1 ? "is-invalid" : ""
-              }`}
-              placeholder="123 Main St"
-              value={formValues.addressLine1}
-              onChange={handleInputChange}
-              onBlur={handleBlur}
-              required
-            />
-            {touchedFields.addressLine1 && errors.addressLine1 && (
-              <small className="text-danger">{errors.addressLine1}</small>
-            )}
-          </div>
+            <div className="mb-3">
+              <label className="form-label fw-bold">Address Line 2</label>
+              <input
+                type="text"
+                name="addressLine2"
+                className={`form-control border-0 border-bottom rounded-0 ${
+                  touchedFields.addressLine2 && errors.addressLine2
+                    ? "is-invalid"
+                    : ""
+                }`}
+                placeholder="Apt 1"
+                value={formValues.addressLine2}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+              />
+              {touchedFields.addressLine2 && errors.addressLine2 && (
+                <small className="text-danger">{errors.addressLine2}</small>
+              )}
+            </div>
 
-          <div className="mb-3">
-            <label className="form-label fw-bold">Address Line 2</label>
-            <input
-              type="text"
-              name="addressLine2"
-              className={`form-control border-0 border-bottom rounded-0 ${
-                touchedFields.addressLine2 && errors.addressLine2 ? "is-invalid" : ""
-              }`}
-              placeholder="Apt 1"
-              value={formValues.addressLine2}
-              onChange={handleInputChange}
-              onBlur={handleBlur}
-            />
-            {touchedFields.addressLine2 && errors.addressLine2 && (
-              <small className="text-danger">{errors.addressLine2}</small>
-            )}
-          </div>
+            <div className="mb-3">
+              <label className="form-label fw-bold">
+                City <span style={{ color: "red" }}>*</span>
+              </label>
+              <input
+                type="text"
+                name="city"
+                className={`form-control border-0 border-bottom rounded-0 ${
+                  touchedFields.city && errors.city ? "is-invalid" : ""
+                }`}
+                placeholder="City"
+                value={formValues.city}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                required
+              />
+              {touchedFields.city && errors.city && (
+                <small className="text-danger">{errors.city}</small>
+              )}
+            </div>
 
-          <div className="mb-3">
-            <label className="form-label fw-bold">
-              City <span style={{ color: "red" }}>*</span>
-            </label>
-            <input
-              type="text"
-              name="city"
-              className={`form-control border-0 border-bottom rounded-0 ${
-                touchedFields.city && errors.city ? "is-invalid" : ""
-              }`}
-              placeholder="City"
-              value={formValues.city}
-              onChange={handleInputChange}
-              onBlur={handleBlur}
-              required
-            />
-            {touchedFields.city && errors.city && (
-              <small className="text-danger">{errors.city}</small>
-            )}
-          </div>
+            <div className="mb-3">
+              <label className="form-label fw-bold">
+                State <span style={{ color: "red" }}>*</span>
+              </label>
+              <input
+                type="text"
+                name="state"
+                className={`form-control border-0 border-bottom rounded-0 ${
+                  touchedFields.state && errors.state ? "is-invalid" : ""
+                }`}
+                placeholder="State"
+                value={formValues.state}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                required
+              />
+              {touchedFields.state && errors.state && (
+                <small className="text-danger">{errors.state}</small>
+              )}
+            </div>
 
-          <div className="mb-3">
-            <label className="form-label fw-bold">
-              State <span style={{ color: "red" }}>*</span>
-            </label>
-            <input
-              type="text"
-              name="state"
-              className={`form-control border-0 border-bottom rounded-0 ${
-                touchedFields.state && errors.state ? "is-invalid" : ""
-              }`}
-              placeholder="State"
-              value={formValues.state}
-              onChange={handleInputChange}
-              onBlur={handleBlur}
-              required
-            />
-            {touchedFields.state && errors.state && (
-              <small className="text-danger">{errors.state}</small>
-            )}
-          </div>
+            <div className="mb-3">
+              <label className="form-label fw-bold">
+                Zip Code <span style={{ color: "red" }}>*</span>
+              </label>
+              <input
+                type="text"
+                name="zipCode"
+                className={`form-control border-0 border-bottom rounded-0 ${
+                  touchedFields.zipCode && errors.zipCode ? "is-invalid" : ""
+                }`}
+                placeholder="12345"
+                value={formValues.zipCode}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                required
+              />
+              {touchedFields.zipCode && errors.zipCode && (
+                <small className="text-danger">{errors.zipCode}</small>
+              )}
+            </div>
 
-          <div className="mb-3">
-            <label className="form-label fw-bold">
-              Zip Code <span style={{ color: "red" }}>*</span>
-            </label>
-            <input
-              type="text"
-              name="zipCode"
-              className={`form-control border-0 border-bottom rounded-0 ${
-                touchedFields.zipCode && errors.zipCode ? "is-invalid" : ""
-              }`}
-              placeholder="12345"
-              value={formValues.zipCode}
-              onChange={handleInputChange}
-              onBlur={handleBlur}
-              required
-            />
-            {touchedFields.zipCode && errors.zipCode && (
-              <small className="text-danger">{errors.zipCode}</small>
-            )}
-          </div>
+            <div className="form-check mb-3">
+              <input
+                type="checkbox"
+                name="isTermsAccepted"
+                className="form-check-input"
+                checked={formValues.isTermsAccepted}
+                onChange={handleInputChange}
+              />
+              <label className="form-check-label">
+                I agree to the{" "}
+                <a
+                  href="/tos"
+                  target="_blank"
+                  style={{
+                    color: "#333",
+                    fontWeight: "bold",
+                    textDecoration: "none",
+                  }}
+                >
+                  Terms of Service
+                </a>
+              </label>
+            </div>
 
-          <div className="form-check mb-3">
-            <input
-              type="checkbox"
-              name="isTermsAccepted"
-              className="form-check-input"
-              checked={formValues.isTermsAccepted}
-              onChange={handleInputChange}
-            />
-            <label className="form-check-label">
-              I agree to the{" "}
-              <a
-                href="/tos"
-                target="_blank"
-                style={{
-                  color: "#333",
-                  fontWeight: "bold",
-                  textDecoration: "none",
-                }}
-              >
-                Terms of Service
-              </a>
-            </label>
-          </div>
-
-          {/* Update the submit button */}
-          <button
-            type="submit"
-            className="btn w-100"
-            disabled={isSpinnerVisible}
-            style={{
-              backgroundColor: isSpinnerVisible ? "#ccc" : "#333",
-              color: "#fff",
-              borderRadius: "8px",
-              fontWeight: "bold",
-              cursor: isSpinnerVisible ? "not-allowed" : "pointer",
-            }}
-          >
-            {isSpinnerVisible && (
-              <span
-                className="spinner-border spinner-border-sm text-light me-2"
-                role="status"
-              ></span>
-            )}
-            Sign Up
-          </button>
-        </form>
-        <p className="text-center mt-4">
-          Already have an account?{" "}
-          <a
-            href="/login"
-            style={{
-              color: "#333",
-              fontWeight: "bold",
-              textDecoration: "none",
-            }}
-          >
-            Login
-          </a>
-        </p>
+            {/* Update the submit button */}
+            <button
+              type="submit"
+              className="btn w-100"
+              disabled={isSpinnerVisible}
+              style={{
+                backgroundColor: isSpinnerVisible ? "#ccc" : "#333",
+                color: "#fff",
+                borderRadius: "8px",
+                fontWeight: "bold",
+                cursor: isSpinnerVisible ? "not-allowed" : "pointer",
+              }}
+            >
+              {isSpinnerVisible && (
+                <span
+                  className="spinner-border spinner-border-sm text-light me-2"
+                  role="status"
+                ></span>
+              )}
+              Sign Up
+            </button>
+          </form>
+          <p className="text-center mt-4">
+            Already have an account?{" "}
+            <a
+              href="/login"
+              style={{
+                color: "#333",
+                fontWeight: "bold",
+                textDecoration: "none",
+              }}
+            >
+              Login
+            </a>
+          </p>
+        </div>
+        <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
       </div>
-      <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
-    </div>
     </div>
   );
 };

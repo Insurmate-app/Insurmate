@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
-import PropTypes from 'prop-types';
+
+import PropTypes from "prop-types";
 import * as yup from "yup";
 
 import { useApi } from "./useApi";
@@ -27,12 +28,6 @@ const AddPolicyModal = ({ showModal, setShowModal, onAddPolicy }) => {
           .email("Invalid email format")
           .max(100, "Email must be no more than 100 characters long")
           .required("Email is required"),
-        policyNumber: yup
-          .string()
-          .min(6, "Policy number must be at least 6 characters")
-          .max(10, "Policy number must be no more than 10 characters")
-          .matches(/^[A-Za-z0-9]+$/, "Policy Number must be alphanumeric")
-          .required("Policy Number is required"),
       }),
     [],
   );
@@ -78,7 +73,10 @@ const AddPolicyModal = ({ showModal, setShowModal, onAddPolicy }) => {
 
       try {
         const response = await api.post(`/asset/create`, {
-          data: { ...formValues },
+          data: { 
+            ...formValues,
+            policyNumber: formValues.policyNumber || "000000"
+          },
         });
 
         onAddPolicy(response.data);
@@ -205,9 +203,7 @@ const AddPolicyModal = ({ showModal, setShowModal, onAddPolicy }) => {
 
               {/* Policy Number */}
               <div className="mb-3">
-                <label className="form-label fw-bold">
-                  Policy Number <span style={{ color: "red" }}>*</span>
-                </label>
+                <label className="form-label fw-bold">Policy Number</label>
                 <input
                   type="text"
                   name="policyNumber"
