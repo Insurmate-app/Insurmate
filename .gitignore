@@ -1,2 +1,2 @@
-/env_scripts/
-.qodo
+.env
+.env.test

@@ -35,9 +35,9 @@ app.use((req, res, next) => {
 });
 
 // Rate limiter
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === "production") {
   const limiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
+    windowMs: 10 * 60 * 1000, // 10 minutes
     max: 1000,
     message: "Too many requests from this IP, please try again later",
   });
@@ -75,7 +75,7 @@ app.use("/health", healthcheck());
 // Routes
 app.use("/v1/api/user", userRoute);
 app.use("/v1/api/asset", assetRoute);
-app.use("/v1/api/file", fileRoute); 
+app.use("/v1/api/file", fileRoute);
 
 app.get("/", (req, res) => res.send("active"));
 

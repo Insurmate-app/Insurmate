@@ -127,6 +127,8 @@ const Dash = () => {
             badgeClass += "bg-warning bg-opacity-50";
           } else if (status === "Verified") {
             badgeClass += "bg-info bg-opacity-50";
+          } else if (status === "Invalid") {
+            badgeClass += "bg-danger bg-opacity-50";
           } else {
             badgeClass += "bg-secondary bg-opacity-50";
           }
@@ -142,7 +144,9 @@ const Dash = () => {
                 }}
               >
                 <span>{params.row.status}</span>
-                {(status === "Active" || status === "Verified") && (
+                {(status === "Active" ||
+                  status === "Verified" ||
+                  status === "Invalid") && (
                   <i
                     className={`bi ${isVerified ? "bi-shield-fill-check" : "bi-shield"} ms-2`}
                     style={{ verticalAlign: "middle" }}

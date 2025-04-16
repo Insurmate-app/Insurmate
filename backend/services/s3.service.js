@@ -73,8 +73,21 @@ const uploadFile = async (file, email, assetId) => {
   const analysis = await analyzeDocument(text);
   console.log("Analysis: ", analysis);
 
-  // // check if the document is valid
-  if (!analysis.valid) {
+  const documentStatus = analysis.valid;
+
+  const asset = await assetService.getAssetById(email, assetId);
+
+  // check if the document is valid
+  if (!documentStatus) {
+    if (asset) {
+      const data = asset.data;
+      data.status = "Invalid";
+      data.llmResponse = analysis;
+      await assetService.updateAssetWhileUploadingDocument(email, {
+        id: assetId,
+        data,
+      });
+    }
     throw new CustomError(
       `Document did not pass verification: ${analysis.reason}`,
       400
@@ -98,8 +111,6 @@ const uploadFile = async (file, email, assetId) => {
   try {
     await upload.done();
 
-    const asset = await assetService.getAssetById(email, assetId);
-
     if (asset) {
       const data = asset.data;
       data.fileName = uniqueFileName;
@@ -111,7 +122,6 @@ const uploadFile = async (file, email, assetId) => {
         data,
       });
     }
-
     return {
       message: "Successfully Uploaded using Multipart Upload",
     };

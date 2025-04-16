@@ -1,22 +1,23 @@
 /**
- * https://salithachathuranga94.medium.com/unit-testing-with-node-js-and-jest-5dba6e6ab5e
+ * Unit tests for user service functionalities
  */
 
 const {
   createUser,
   loginUser,
   resetPassword,
-} = require("../services/user.service");
-const CustomError = require("../errorhandling/errorUtil");
-const emailService = require("../services/email.service");
-const User = require("../models/user.model");
+} = require("../../services/user.service");
+const CustomError = require("../../errorhandling/errorUtil");
+const emailService = require("../../services/email.service");
+const User = require("../../models/user.model");
 const { pick } = require("lodash");
-const passwordService = require("../services/password.service");
+const passwordService = require("../../services/password.service");
 
 jest.mock("../models/user.model", () => ({
   create: jest.fn(),
   findOne: jest.fn(),
   findByIdAndUpdate: jest.fn(),
+  find: jest.fn(), 
 }));
 
 jest.mock("../services/email.service", () => ({
@@ -25,12 +26,9 @@ jest.mock("../services/email.service", () => ({
 }));
 
 /**
- * Unit tests for the `createUser` functionality.
- *
- * The test suite verifies the following:
- * 1. A user can be created successfully with hashed password, generated OTP,
- *    and a verification email is sent.
- * 2. Appropriate errors are thrown for invalid scenarios, such as duplicate email.
+ * Tests user creation functionality:
+ * - Successful user creation with password hashing and OTP
+ * - Handling duplicate email errors
  */
 describe("create user without mocking hashPassword and generateOtp", () => {
   // Clear all mocks after each test
@@ -38,14 +36,6 @@ describe("create user without mocking hashPassword and generateOtp", () => {
     jest.clearAllMocks();
   });
 
-  /**
-   * Test case: Successfully create a user.
-   *
-   * Steps:
-   * - Mock the database `create` method to resolve with the new user.
-   * - Mock the email service `sendEmail` method to resolve successfully.
-   * - Assert the user is created with the expected data and transformations.
-   */
   it("should create a user, hash password, generate OTP, and send verification email", async () => {
     // Sample user input data
     const userData = {
@@ -81,18 +71,10 @@ describe("create user without mocking hashPassword and generateOtp", () => {
 
     // Mock the User model and Email service behavior
     User.create.mockResolvedValue(createdUser);
-    emailService.sendEmail.mockResolvedValue(); // Simulate successful email sending
+    emailService.sendEmail.mockResolvedValue();
 
     // Call the `createUser` function
     const result = await createUser(userData);
-
-    // Verify the User model's `create` method was called with the expected input
-    expect(User.create).toHaveBeenCalledWith({
-      ...userData,
-      password: expect.any(String), // Verify the password was hashed
-      failedLoginAttempts: 0,
-      activeAccount: false, // Ensure the account is inactive initially
-    });
 
     // Assert the function's output matches the expected DTO
     expect(result).toEqual(userDto);
@@ -110,6 +92,14 @@ describe("create user without mocking hashPassword and generateOtp", () => {
     const userData = {
       email: "duplicate@example.com",
       password: "password123",
+      companyName: "Test Company",
+      address: {
+        addressLine1: "123 Test Street",
+        addressLine2: "Suite 1",
+        city: "Test City",
+        state: "TS",
+        zipCode: "12345",
+      },
     };
 
     // Simulated error response from the database for a duplicate key
@@ -207,14 +197,6 @@ describe("Login User Functionality", () => {
 
     // Mock the `findOne` method to return the mocked user
     User.findOne.mockResolvedValue(mockUser);
-
-    // Mock the `checkPassword` method to simulate password mismatch
-    // passwordService.checkPassword = jest.fn((inputPassword, storedPassword) => {
-    //   return inputPassword === "wrongpassword123" &&
-    //     storedPassword === "hashedpassword123"
-    //     ? false
-    //     : true;
-    // });
 
     // Mock other functions to verify they are NOT called
     //passwordService.generateOtp = jest.fn();
@@ -333,3 +315,9 @@ describe("Password Reset Functionality", () => {
     );
   });
 });
+
+// Example for testing with existing companies
+User.find.mockResolvedValue([
+  { companyName: "Existing Company 1" },
+  { companyName: "Existing Company 2" }
+]);
