@@ -59,7 +59,7 @@ const updateAssetWhileUploadingDocument = async (email, data) => {
     data.data.owner = asset?.data?.owner;
 
     const user = await userService.findUserByEmail(email);
-    
+
     if (!data.data.status?.trim()) {
       data.data.status = asset?.data?.status;
     }
@@ -123,12 +123,8 @@ const updateAsset = async (email, data) => {
 const getAllAssets = async (email) => {
   try {
     const user = await userService.findUserByEmail(email);
-
     const role = user.role;
 
-    // if (role !== "admin") {
-    //   throw new CustomError("Regular user cannot retrieve all assets", 403);
-    // }
     const org = whichOrg(role);
 
     const result = await evaluateTransaction(
@@ -139,19 +135,20 @@ const getAllAssets = async (email) => {
       "GetAllAssets"
     );
     let assets = JSON.parse(result);
-    // TODO:Map the owner field to the user's full name
-    // assets = await Promise.all(
-    //   assets.map(async (asset) => {
-    //     const ownerUser = await userService.findUserById(asset.owner); // Retrieve user by owner
-    //     console.log(ownerUser);
-    //     return {
-    //       ...asset,
-    //       owner: ownerUser
-    //         ? `${ownerUser.firstName} ${ownerUser.lastName}`
-    //         : asset.owner, // Fallback to original owner if user not found
-    //     };
-    //   })
-    // );
+
+    // Transform assets with proper user lookup
+    assets = await Promise.all(
+      assets.map(async (asset) => {
+        const ownerUser = await userService.findUserById(asset.owner);
+        return {
+          ...asset,
+          accountManager: ownerUser
+            ? `${ownerUser.firstName} ${ownerUser.lastName} | ${user.companyName}`
+            : "N/A",
+        };
+      })
+    );
+
     return assets;
   } catch (error) {
     if (error.statusCode >= 400 && error.statusCode < 500) {

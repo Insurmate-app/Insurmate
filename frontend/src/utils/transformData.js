@@ -1,6 +1,7 @@
 export const transformPolicyData = (data) => {
-  return data.map((item) => ({
+  return data.flatMap((item) => ({
     id: item.id,
+    accountManager: item.accountManager,
     ...item.data,
   }));
 };

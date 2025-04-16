@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+
 import { DataGrid } from "@mui/x-data-grid";
 import fileSaver from "file-saver";
 import Papa from "papaparse";
 
+import { transformPolicyData } from "../utils/transformData";
 import AddPolicyModal from "./AddPolicy";
 import { useApi } from "./useApi";
-import { transformPolicyData } from "../utils/transformData";
 
 const Dash = () => {
   const [data, setData] = useState([]);
@@ -21,6 +22,8 @@ const Dash = () => {
       try {
         const response = await api.get(`/asset/get-all`);
         const transformedData = transformPolicyData(response.data);
+
+        console.log("Transformed data:", transformedData);
         setData(transformedData);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -36,10 +39,13 @@ const Dash = () => {
   const handleAddPolicy = (newPolicy) => {
     console.log("New policy added:", newPolicy);
     setShowModal(false);
-    setData((prevData) => [...prevData, {
-      id: newPolicy.id,
-      ...newPolicy.data,
-    }]);
+    setData((prevData) => [
+      ...prevData,
+      {
+        id: newPolicy.id,
+        ...newPolicy.data,
+      },
+    ]);
   };
 
   const handleExportCSV = () => {
@@ -96,8 +102,8 @@ const Dash = () => {
         align: "center",
       },
       {
-        field: "owner",
-        headerName: "Owner",
+        field: "accountManager",
+        headerName: "Account Manager",
         flex: 1.2,
         minWidth: 200,
         headerAlign: "center",

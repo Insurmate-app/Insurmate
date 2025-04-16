@@ -75,7 +75,7 @@ app.use("/health", healthcheck());
 // Routes
 app.use("/v1/api/user", userRoute);
 app.use("/v1/api/asset", assetRoute);
-app.use("/v1/api/file", fileRoute); // http://localhost:3000/v1/api/file/upload
+app.use("/v1/api/file", fileRoute); 
 
 app.get("/", (req, res) => res.send("active"));
 
