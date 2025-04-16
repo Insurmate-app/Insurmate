@@ -15,14 +15,10 @@ const passport = require("passport");
 const app = express();
 const server = http.createServer(app);
 
-const { initializeWebSocket } = require("./websocket");
 const errorHandler = require("./middlewares/errorHandler.js");
 const userRoute = require("./routes/user.route.js");
 const assetRoute = require("./routes/asset.route.js");
 const fileRoute = require("./routes/file.route.js");
-
-// Initialize WebSocket server
-initializeWebSocket(server);
 
 const dbUrl = process.env.DATABASE_URL;
 const maxPoolSize = process.env.MAX_POOL_SIZE;
@@ -39,12 +35,14 @@ app.use((req, res, next) => {
 });
 
 // Rate limiter
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // Limit each IP
-  message: "Too many requests from this IP, please try again later",
-});
-app.use(limiter);
+if (process.env.NODE_ENV === 'production') {
+  const limiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 1000,
+    message: "Too many requests from this IP, please try again later",
+  });
+  app.use(limiter);
+}
 
 // CORS configuration
 const corsOptions = {
@@ -79,7 +77,7 @@ app.use("/v1/api/user", userRoute);
 app.use("/v1/api/asset", assetRoute);
 app.use("/v1/api/file", fileRoute); // http://localhost:3000/v1/api/file/upload
 
-app.get("/", (req, res) => res.send("App is working CD Test No [ 1 ] !"));
+app.get("/", (req, res) => res.send("active"));
 
 // Error handler middleware
 app.use(errorHandler);
@@ -92,40 +90,73 @@ server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-// Connect to MongoDB
+// Add unhandled rejection handler
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  // Don't exit the process here, just log it
+});
+
+// Add uncaught exception handler
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception:", error);
+  // Gracefully shutdown on uncaught exceptions
+  gracefulExit();
+});
+
+// Improve MongoDB connection options
 mongoose
   .connect(dbUrl, {
     maxPoolSize: maxPoolSize,
     maxIdleTimeMS: maxIdleTimeMS,
     connectTimeoutMS: connectionTimeoutMS,
+    serverSelectionTimeoutMS: 5000, // Add timeout for server selection
+    socketTimeoutMS: 45000, // Add socket timeout
+    family: 4, // Use IPv4, skip trying IPv6
+    retryWrites: true,
+    retryReads: true,
   })
   .then(() => {
     console.log("Connected to database!");
   })
   .catch((error) => {
     console.error("Database connection failed:", error);
+    // Don't exit process here, let the app continue trying to connect
   });
 
-// Graceful shutdown logic
+// Improve graceful shutdown logic
 const gracefulExit = async () => {
   console.log("Graceful shutdown initiated");
 
-  // Stop accepting new requests
-  server.close((err) => {
-    if (err) {
-      console.error("Error closing server:", err);
-      process.exit(1);
-    }
+  let exitCode = 0;
+
+  try {
+    // Close server first
+    await new Promise((resolve, reject) => {
+      server.close((err) => {
+        if (err) {
+          console.error("Error closing server:", err);
+          exitCode = 1;
+          reject(err);
+        }
+        resolve();
+      });
+    });
 
     console.log("HTTP server closed, closing MongoDB connection");
 
-    mongoose.disconnect();
-  });
-
-  setTimeout(() => {
-    console.log("Forced shutdown after timeout");
-    process.exit(1);
-  }, 10000); // 10 seconds timeout
+    // Close MongoDB connection
+    await mongoose.disconnect();
+    console.log("MongoDB connection closed");
+  } catch (error) {
+    console.error("Error during shutdown:", error);
+    exitCode = 1;
+  } finally {
+    // Set a shorter timeout
+    setTimeout(() => {
+      console.log("Forced shutdown after timeout");
+      process.exit(exitCode);
+    }, 5000); // 5 seconds timeout
+  }
 };
 
 process.on("SIGTERM", gracefulExit);
