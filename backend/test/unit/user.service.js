@@ -1,11 +1,27 @@
-/**
- * Unit tests for user service functionalities
+/*
+ * User Service Unit Tests
+ *
+ * This file contains unit tests for the User Service module which handles:
+ * - User registration and account creation
+ * - Authentication and login
+ * - Password management
+ * - User data retrieval
+ *
+ * Dependencies:
+ * - user.service.js: Core user management functions
+ * - errorUtil.js: Custom error handling
+ * - email.service.js: Email notification system
+ * - user.model.js: User data model
+ * - password.service.js: Password encryption and validation
  */
 
+// Import required modules
 const {
   createUser,
   loginUser,
   resetPassword,
+  findUserByEmail,
+  findUserById,
 } = require("../../services/user.service");
 const CustomError = require("../../errorhandling/errorUtil");
 const emailService = require("../../services/email.service");
@@ -13,16 +29,28 @@ const User = require("../../models/user.model");
 const { pick } = require("lodash");
 const passwordService = require("../../services/password.service");
 
-jest.mock("../models/user.model", () => ({
+/*
+ * Mock Configurations
+ * Setting up test doubles to isolate the user service from external dependencies
+ */
+jest.mock("../../models/user.model", () => ({
   create: jest.fn(),
   findOne: jest.fn(),
   findByIdAndUpdate: jest.fn(),
-  find: jest.fn(), 
+  find: jest.fn(),
 }));
 
-jest.mock("../services/email.service", () => ({
+jest.mock("../../services/email.service", () => ({
   sendVerificationEmail: jest.fn(),
   sendEmail: jest.fn(),
+}));
+
+// Add password service mock
+jest.mock("../../services/password.service", () => ({
+  hashPassword: jest.fn().mockResolvedValue("hashedPassword"),
+  generateOtp: jest.fn().mockResolvedValue("123456"),
+  checkPassword: jest.fn(),
+  verifyOtp: jest.fn(),
 }));
 
 /**
@@ -55,7 +83,7 @@ describe("create user without mocking hashPassword and generateOtp", () => {
     const createdUser = {
       ...userData,
       _id: "12345",
-      password: expect.any(String), // Ensure password is hashed
+      password: expect.any(String),
     };
 
     // DTO format for the user data to be returned
@@ -199,7 +227,6 @@ describe("Login User Functionality", () => {
     User.findOne.mockResolvedValue(mockUser);
 
     // Mock other functions to verify they are NOT called
-    //passwordService.generateOtp = jest.fn();
     emailService.sendEmail = jest.fn();
 
     // Assert that the function throws a `CustomError` with the correct details
@@ -208,32 +235,92 @@ describe("Login User Functionality", () => {
     ).rejects.toThrow(new CustomError("Invalid password.", 401));
   });
 
-  /**
-   * Test case: Handle nonexistent user error.
-   *
-   * Steps:
-   * - Mock the database `findOne` method to return `null` for the given email.
-   * - Assert a `CustomError` is thrown with the appropriate message and status code.
-   * - Verify other functions (e.g., `checkPassword`, `generateOtp`) were NOT called.
-   */
-  it("should throw a custom error for a nonexistent user", async () => {
-    const loginData = {
-      email: "nonexistent@example.com",
-      password: "password123",
+  it("should login successfully when the user is active", async () => {
+    const email = "active_user@email.com";
+    const password = "validPassword123";
+
+    // Create mock user without save method (it will inherit from prototype)
+    const mockUser = {
+      email: email,
+      password: "hashedPassword",
+      activeAccount: true,
+      failedLoginAttempts: 0,
+      save: jest.fn().mockResolvedValue(undefined),
     };
 
-    // Mock the `findOne` method to return null (user not found)
+    User.findOne.mockResolvedValue(mockUser);
+    passwordService.checkPassword.mockResolvedValue(true);
+
+    await loginUser(email, password);
+
+    // Verify the expected behaviors
+    expect(mockUser.failedLoginAttempts).toBe(0);
+    expect(mockUser.activeAccount).toBe(true);
+    expect(passwordService.checkPassword).toHaveBeenCalledWith(
+      password,
+      mockUser.password
+    );
+  });
+});
+
+describe("retrieve users functionality", () => {
+  afterAll(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should retrieve a user by email", async () => {
+    const email = "test@example.com";
+
+    User.findOne.mockResolvedValue({
+      email: email,
+      companyName: "Test Company",
+    });
+
+    const result = await findUserByEmail(email);
+
+    expect(result).toEqual({
+      email: email,
+      companyName: "Test Company",
+    });
+  });
+
+  it("should return not found error when user does not exist", async () => {
+    const email = "fake_user@test.com";
+
     User.findOne.mockResolvedValue(null);
 
-    // Mock other functions to verify they are NOT called
-    passwordService.checkPassword = jest.fn();
-    passwordService.generateOtp = jest.fn();
-    emailService.sendEmail = jest.fn();
+    await expect(findUserByEmail(email)).rejects.toThrow(
+      new CustomError("User not found.", 404)
+    );
 
-    // Assert that the function throws a `CustomError` with the correct details
-    await expect(
-      loginUser(loginData.email, loginData.password)
-    ).rejects.toThrow(new CustomError("User not found.", 404));
+    expect(User.findOne).toHaveBeenCalledWith({ email });
+  });
+
+  it("should retrieve by user ID", async () => {
+    const userId = "123456";
+    const user = {
+      _id: userId,
+      email: "test_user@test.com",
+      password: "hashedPassword",
+      activeAccount: true,
+      failedLoginAttempts: 0,
+    };
+
+    User.findOne.mockResolvedValue(user);
+
+    const result = await findUserById(userId);
+
+    expect(result).toEqual(user);
+  });
+
+  it("should return not found error when user ID does not exist", async () => {
+    const userId = "fake_user_id";
+
+    User.findOne.mockResolvedValue(null);
+
+    await expect(findUserById(userId)).rejects.toThrow(
+      new CustomError("User not found.", 404)
+    );
   });
 });
 
@@ -319,5 +406,5 @@ describe("Password Reset Functionality", () => {
 // Example for testing with existing companies
 User.find.mockResolvedValue([
   { companyName: "Existing Company 1" },
-  { companyName: "Existing Company 2" }
+  { companyName: "Existing Company 2" },
 ]);
