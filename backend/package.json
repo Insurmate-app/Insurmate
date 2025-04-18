@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "jest test/*.test.js",
+    "test": "jest \"test/**/*.js\"",
+    "test:watch": "jest \"test/**/*.js\" --watch",
+    "test:coverage": "jest \"test/**/*.js\" --coverage",
     "serve": "app.js",
     "eslint": "eslint ./",
     "eslint-fix": "eslint ./ --fix",

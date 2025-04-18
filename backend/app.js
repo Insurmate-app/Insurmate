@@ -35,7 +35,7 @@ app.use((req, res, next) => {
 });
 
 // Rate limiter
-if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV === "prod") {
   const limiter = rateLimit({
     windowMs: 10 * 60 * 1000, // 10 minutes
     max: 1000,

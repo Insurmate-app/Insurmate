@@ -4,7 +4,8 @@ const modelMapper = require("lodash");
 const log = require("../logger");
 const CustomError = require("../errorhandling/errorUtil");
 const passwordService = require("../services/password.service");
-const levenshteinService = require("../services/levenshtein.service");
+const nameMatcherService = require("../services/name-matcher.service");
+const cache = require("../utils/cache");
 
 const sendVerificationEmail = async (email, otp) => {
   await emailService.sendEmail({
@@ -32,7 +33,7 @@ const createUser = async (userData) => {
 
     const eneteredCompanyName = userData.companyName.toUpperCase();
 
-    const similarCompanyName = await levenshteinService.checkSimilarCompanyName(
+    const similarCompanyName = await nameMatcherService.checkSimilarCompanyName(
       uniqueCompanyNames,
       eneteredCompanyName
     );
@@ -63,6 +64,9 @@ const createUser = async (userData) => {
       "address.state",
       "address.zipCode",
     ]);
+
+    // Invalidate cache for the new user's email
+    cache.delete(`user_${userDto.email}`);
 
     return userDto;
   } catch (error) {
@@ -107,6 +111,9 @@ const resetPassword = async (email, newPassword) => {
       await sendVerificationEmail(updatedUser.email, otpToken);
     }
 
+    cache.delete(`user_${updatedUser.email}`); // Use updatedUser.email instead of email
+    cache.delete(updatedUser._id.toString()); // Convert ObjectId to string
+
     return "Password reset successfully.";
   } catch (error) {
     if (error.statusCode >= 400 && error.statusCode < 500) {
@@ -119,18 +126,31 @@ const resetPassword = async (email, newPassword) => {
 };
 
 const findUserById = async (id) => {
+  // Check cache first
+  const cachedUser = cache.get(id);
+  if (cachedUser) {
+    return cachedUser;
+  }
   const user = await User.findOne({ id });
   if (!user) {
     throw CustomError("User not found.", 404);
   }
+  // Store in cache
+  cache.set(id, user);
   return user;
 };
 
 const findUserByEmail = async (email) => {
+  const cachedUser = cache.get(`user_${email}`);
+  if (cachedUser) {
+    return cachedUser;
+  }
   const user = await User.findOne({ email });
   if (!user) {
     throw CustomError("User not found.", 404);
   }
+  // Store in cache
+  cache.set(`user_${email}`, user);
   return user;
 };
 
@@ -197,7 +217,6 @@ const regenerateOtp = async (email) => {
       { new: true }
     );
 
-    console.log(email);
     const otpToken = await passwordService.generateOtp(email);
 
     await sendVerificationEmail(user.email, otpToken);
