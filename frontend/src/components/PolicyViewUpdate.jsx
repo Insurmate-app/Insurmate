@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
 
 import * as yup from "yup";
 
-import useModal from "../hooks/useModal";
-import Modal from "./Modal";
+import RubikSpinner from "./RubikSpinner";
+import ToastComponent from "./ToastComponent";
 import { useApi } from "./useApi";
 
 const PolicyViewUpdate = () => {
@@ -26,8 +27,6 @@ const PolicyViewUpdate = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { isVisible, message, showModal, hideModal } = useModal();
-
   const validationSchema = useMemo(
     () =>
       yup.object().shape({
@@ -41,8 +40,7 @@ const PolicyViewUpdate = () => {
         policyNumber: yup
           .string()
           .min(6, "Policy number must be at least 6 characters")
-          .max(10, "Policy number must be no more than 10 characters")
-          .matches(/^[A-Za-z0-9]+$/, "Policy Number must be alphanumeric")
+          .max(100, "Policy number must be no more than 100 characters")
           .required("Policy Number is required"),
         assetId: yup.string().required("Policy ID is required"),
         owner: yup.string().required("Owner is required"),
@@ -84,7 +82,7 @@ const PolicyViewUpdate = () => {
           expirationDate: llmResponse?.expirationDate || "", // Add this line
         }));
       } catch (error) {
-        console.error("Error fetching policy data:", error);
+        toast.error("Error fetching policy data:", error);
         showModal("Failed to load policy details. Please try again.");
         window.location.href = "/dashboard";
       } finally {
@@ -141,15 +139,15 @@ const PolicyViewUpdate = () => {
         };
 
         await api.put(`/asset/update`, updatePayload);
-        showModal("Policy updated successfully!");
+        toast.success("Policy updated successfully!");
       } catch (error) {
-        console.error("Error updating policy:", error);
+        toast.error("Error updating policy:", error);
         setErrors({ submit: "Failed to update the policy. Please try again." });
       } finally {
         setIsSubmitting(false);
       }
     },
-    [formValues, id, api, validateForm, showModal],
+    [formValues, id, api, validateForm],
   );
 
   const handleBack = useCallback(() => {
@@ -158,19 +156,11 @@ const PolicyViewUpdate = () => {
     });
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="text-center mt-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p>Loading policy details...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="container mt-5">
+      {isLoading && <RubikSpinner />}
+      {isSubmitting && <RubikSpinner />}
+      <ToastComponent />
       <div className="card shadow p-4">
         <h2 className="text-center mb-4">View / Update Policy</h2>
 
@@ -341,7 +331,6 @@ const PolicyViewUpdate = () => {
           </div>
         </form>
       </div>
-      <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
     </div>
   );
 };

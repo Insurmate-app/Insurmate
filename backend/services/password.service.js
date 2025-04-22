@@ -1,20 +1,14 @@
 const bcrypt = require("bcrypt");
 const otplib = require("otplib");
-const { LRUCache } = require("lru-cache");
 const log = require("../logger");
 const CustomError = require("../errorhandling/errorUtil");
+const { createCache } = require("../util/cache");
 
 const saltRounds = 10;
 
 otplib.authenticator.options = { step: 900 };
 
-const otpCache = new LRUCache({
-  max: 300,
-  maxSize: 300,
-  sizeCalculation: () => 1, // Every entry counts as 1
-  ttl: 1000 * 60 * 15, // 15 minutes TTL
-  ttlAutopurge: true,
-});
+const otpCache = createCache("otpCache", 1000 * 60 * 15); // 15 minutes TTL
 
 async function hashPassword(password) {
   try {
@@ -65,9 +59,6 @@ const verifyOtp = async (id, token) => {
 
     // Retrieve the OTP and secret from the cached data
     const { otp, secret } = cachedOtpData;
-    console.log(
-      `Cached OTP: ${otp}, Secret: ${secret}, Provided Token: ${token} for id: ${id}`
-    );
 
     if (otp.toString().trim() !== token.toString().trim()) {
       throw CustomError("Invalid OTP", 401);

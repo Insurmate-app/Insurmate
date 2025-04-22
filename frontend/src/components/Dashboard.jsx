@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
 
 import { DataGrid } from "@mui/x-data-grid";
 import fileSaver from "file-saver";
 import Papa from "papaparse";
 
+import useConfirmDialog from "../hooks/useConfirmDialog";
 import { transformPolicyData } from "../utils/transformData";
 import AddPolicyModal from "./AddPolicy";
+import RubikSpinner from "./RubikSpinner";
 import SuccessAlert from "./SuccessAlert";
+import ToastComponent from "./ToastComponent";
 import { useApi } from "./useApi";
 
 const Dash = () => {
@@ -16,6 +20,7 @@ const Dash = () => {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
+  const [confirm, ConfirmDialog] = useConfirmDialog();
 
   const api = useApi();
 
@@ -26,7 +31,7 @@ const Dash = () => {
         const transformedData = transformPolicyData(response.data);
         setData(transformedData);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        toast.error("Error fetching data:", error);
         window.location.href = "/login";
       } finally {
         setIsLoading(false);
@@ -59,7 +64,7 @@ const Dash = () => {
   };
 
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
+    const confirmDelete = await confirm(
       "Are you sure you want to delete this policy?",
     );
     if (!confirmDelete) return;
@@ -100,7 +105,7 @@ const Dash = () => {
       }, 3000);
     } catch (error) {
       console.error("Error deleting policy:", error);
-      alert("Failed to delete policy. Please try again.");
+      toast.error("Failed to delete policy. Please try again.");
     } finally {
       setDeletingId(null);
     }
@@ -281,19 +286,10 @@ const Dash = () => {
     );
   }, [data, globalFilter]);
 
-  if (isLoading) {
-    return (
-      <div className="text-center mt-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p>Loading policy details...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="container-fluid my-4">
+      {isLoading && <RubikSpinner />}
+      <ToastComponent />
       {successMessage && (
         <SuccessAlert
           message={successMessage}
@@ -415,6 +411,7 @@ const Dash = () => {
           }}
         />
       </div>
+      {ConfirmDialog}
       <AddPolicyModal
         showModal={showModal}
         setShowModal={setShowModal}

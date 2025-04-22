@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
+import ToastComponent from "../components/ToastComponent";
+import useConfirmDialog from "../hooks/useConfirmDialog.jsx";
 import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
 import Modal from "./Modal";
@@ -21,7 +22,13 @@ const UploadDocument = () => {
   const { isVisible, message, showModal, hideModal } = useModal();
   const [allFiles, setAllFiles] = useState([]);
   const [filteredFiles, setFilteredFiles] = useState([]);
-  const [needRefresh, setNeedRefresh] = useState(false); // State to track if a refresh is needed
+  const [needRefresh, setNeedRefresh] = useState(false);
+  const [documentUrl, setDocumentUrl] = useState(null);
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [deletingFileId, setDeletingFileId] = useState(null);
+  const [uploadError, setUploadError] = useState(null);
+
+  const [confirm, ConfirmDialog] = useConfirmDialog();
 
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
@@ -45,7 +52,7 @@ const UploadDocument = () => {
       try {
         const response = await api.get(`/file/list/${id}`);
         const files = response.data;
-        
+
         const matchingFiles = files.filter(
           (file) => file.filename === `${id}.pdf`,
         );
@@ -62,21 +69,35 @@ const UploadDocument = () => {
   }, [id, needRefresh]);
 
   const handleView = async (id) => {
-    const newTab = window.open("about:blank");
-
     try {
+      activateSpinner();
       const response = await api.get(`/file/signed-url/${id}`);
       const signedUrl = response.data.url;
-      newTab.location.href = signedUrl;
+      setDocumentUrl(signedUrl);
+      setShowDocumentModal(true);
     } catch (error) {
       console.error("Failed to generate signed URL:", error);
       toast.error("Failed to open file. Please try again.");
-      if (newTab) newTab.close();
+    } finally {
+      deactivateSpinner();
     }
+  };
+
+  const closeDocumentModal = () => {
+    setShowDocumentModal(false);
+    setDocumentUrl(null);
   };
 
   const handleDelete = async (id) => {
     try {
+      const confirmDelete = await confirm(
+        "Are you sure you want to delete this file?",
+      );
+
+      if (!confirmDelete) {
+        return;
+      }
+      setDeletingFileId(id);
       const response = await api.delete(`/file/delete/${id}`);
       if (response.status === 200) {
         setAllFiles([]);
@@ -86,6 +107,8 @@ const UploadDocument = () => {
     } catch (error) {
       console.error("Failed to delete file:", error);
       toast.error(error.response?.data?.message || "Failed to delete file");
+    } finally {
+      setDeletingFileId(null);
     }
   };
 
@@ -93,6 +116,7 @@ const UploadDocument = () => {
     const fileFormData = new FormData();
     e.preventDefault();
     activateSpinner();
+    setUploadError(null);
 
     if (!selectedFile || selectedFile.size === 0) {
       toast.warning("Please select a file first.");
@@ -110,7 +134,7 @@ const UploadDocument = () => {
       }
     } catch (error) {
       console.error("File upload failed:", error);
-      showModal(error.response?.data?.message || "File upload failed");
+      setUploadError(error.response?.data?.message || "File upload failed");
     } finally {
       deactivateSpinner();
     }
@@ -118,13 +142,13 @@ const UploadDocument = () => {
 
   return (
     <>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastComponent />
       <div className="container mt-5">
         <div className="row justify-content-center">
           <div className="col-md-8">
             <div className="mb-4">
               <button
-                onClick={() => window.location.href = "/dashboard"}
+                onClick={() => (window.location.href = "/dashboard")}
                 className="btn btn-outline-secondary"
               >
                 <i className="bi bi-arrow-left me-2"></i>
@@ -154,6 +178,19 @@ const UploadDocument = () => {
                         {selectedFile ? selectedFile.name : "No file chosen"}
                       </span>
                     </label>
+                    
+                    {uploadError && (
+                      <div className="alert alert-danger alert-dismissible fade show mt-3 mb-3" role="alert">
+                        <strong>Error:</strong> {uploadError}
+                        <button 
+                          type="button" 
+                          className="btn-close" 
+                          onClick={() => setUploadError(null)}
+                          aria-label="Close"
+                        ></button>
+                      </div>
+                    )}
+                    
                     <button
                       type="submit"
                       className="btn btn-primary px-4 py-2"
@@ -199,8 +236,20 @@ const UploadDocument = () => {
                               onClick={() =>
                                 handleDelete(file.filename.replace(".pdf", ""))
                               }
+                              disabled={
+                                deletingFileId ===
+                                file.filename.replace(".pdf", "")
+                              }
                             >
-                              <i className="bi bi-trash"></i>
+                              {deletingFileId ===
+                              file.filename.replace(".pdf", "") ? (
+                                <span
+                                  className="spinner-border spinner-border-sm text-danger"
+                                  role="status"
+                                ></span>
+                              ) : (
+                                <i className="bi bi-trash"></i>
+                              )}
                             </button>
                           </div>
                         </div>
@@ -219,7 +268,60 @@ const UploadDocument = () => {
             </div>
           </div>
         </div>
+
+        {ConfirmDialog}
+
+        {/* Error Modal */}
         <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
+
+        {/* Document Viewer Modal */}
+        {showDocumentModal && (
+          <div
+            className="modal fade show"
+            style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}
+          >
+            <div className="modal-dialog modal-xl modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Document Viewer</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={closeDocumentModal}
+                  ></button>
+                </div>
+                <div className="modal-body p-0" style={{ height: "80vh" }}>
+                  {documentUrl && (
+                    <iframe
+                      src={documentUrl}
+                      width="100%"
+                      height="100%"
+                      style={{ border: "none" }}
+                      title="Document Viewer"
+                    ></iframe>
+                  )}
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={closeDocumentModal}
+                  >
+                    Close
+                  </button>
+                  <a
+                    href={documentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-primary"
+                  >
+                    Open in New Tab
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

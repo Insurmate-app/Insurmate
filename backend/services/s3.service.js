@@ -3,6 +3,9 @@ const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const pdfParse = require("pdf-parse");
 const { analyzeDocument } = require("./llm.service");
+const { createCache } = require("../util/cache");
+
+const cache = createCache({ ttl: 1000 * 280 }); // 4 minutes and 40 seconds
 
 const {
   S3Client,
@@ -51,10 +54,12 @@ const listFiles = async (fileName) => {
     return [];
   }
 
-  return response.Contents.map((obj) => ({
+  const result = response.Contents.map((obj) => ({
     filename: obj.Key,
     uploadedAt: obj.LastModified,
   }));
+
+  return result;
 };
 
 /**
@@ -220,6 +225,16 @@ const generateSignedUrl = async (email, assetId) => {
   const exists = await fileExists(fileName);
   if (!exists) throw new CustomError(`File not found: ${fileName}`, 404);
 
+  if (cache.has(`signedURL_${assetId}`)) {
+    const cachedUrl = cache.get(`signedURL_${assetId}`);
+    console.log("Cache hit for signed URL");
+    if (cachedUrl) {
+      return {
+        url: cachedUrl,
+      };
+    }
+  }
+
   const params = {
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: fileName,
@@ -231,10 +246,10 @@ const generateSignedUrl = async (email, assetId) => {
       expiresIn: 300, // 5 minutes
     });
 
+    cache.set(`signedURL_${assetId}`, url);
+
     return {
-      url,
-      message: "URL generated successfully",
-      expiresIn: "5 minutes",
+      url: url,
     };
   } catch (error) {
     log.error("Upload Failed:", error);
