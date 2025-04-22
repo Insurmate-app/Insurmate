@@ -1,5 +1,4 @@
 const Groq = require("groq-sdk");
-//require("dotenv").config();
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
@@ -79,12 +78,12 @@ const analyzeDocument = async (text) => {
     analysis = analysis.replace(/```json|```/g, "").trim();
 
     const parsedAnalysis = JSON.parse(analysis);
-    
+
     // Add date validation
     if (parsedAnalysis.expirationDate) {
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toISOString().split("T")[0];
       const expirationDate = parsedAnalysis.expirationDate;
-      
+
       if (expirationDate < today) {
         parsedAnalysis.valid = false;
         parsedAnalysis.reason = `Document expired. Expiration date (${expirationDate}) is before today (${today}). ${parsedAnalysis.reason}`;

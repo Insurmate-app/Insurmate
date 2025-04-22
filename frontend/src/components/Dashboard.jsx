@@ -6,9 +6,11 @@ import Papa from "papaparse";
 
 import { transformPolicyData } from "../utils/transformData";
 import AddPolicyModal from "./AddPolicy";
+import SuccessAlert from "./SuccessAlert";
 import { useApi } from "./useApi";
 
 const Dash = () => {
+  const [successMessage, setSuccessMessage] = useState("");
   const [data, setData] = useState([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -22,8 +24,6 @@ const Dash = () => {
       try {
         const response = await api.get(`/asset/get-all`);
         const transformedData = transformPolicyData(response.data);
-
-        console.log("Transformed data:", transformedData);
         setData(transformedData);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -34,10 +34,9 @@ const Dash = () => {
     };
 
     fetchData();
-  }, [api]);
+  }, []);
 
   const handleAddPolicy = (newPolicy) => {
-    console.log("New policy added:", newPolicy);
     setShowModal(false);
     setData((prevData) => [
       ...prevData,
@@ -46,6 +45,11 @@ const Dash = () => {
         ...newPolicy.data,
       },
     ]);
+    setSuccessMessage("Policy added successfully!");
+    // Auto dismiss after 3 seconds
+    setTimeout(() => {
+      setSuccessMessage("");
+    }, 3000);
   };
 
   const handleExportCSV = () => {
@@ -63,10 +67,37 @@ const Dash = () => {
     setDeletingId(id);
 
     try {
+      // First, get the asset details to check if it has files
+      let hasFiles = false;
+      try {
+        const assetResponse = await api.get(`/file/list/${id}`);
+        hasFiles = assetResponse.data && assetResponse.data.length > 0;
+      } catch (error) {
+        console.error("Error checking for files:", error);
+        // Continue with deletion even if file check fails
+      }
+
+      // If the asset had files, try to delete them
+      if (hasFiles) {
+        try {
+          await api.delete(`/file/delete/${id}`);
+        } catch (fileError) {
+          console.error("Error deleting files:", fileError);
+          // Continue with success message even if file deletion fails
+        }
+      }
+
+      // Delete the asset
       await api.delete(`/asset/delete/${id}`);
 
+      // Update UI
       setData((prevData) => prevData.filter((item) => item.id !== id));
-      alert("Policy deleted successfully.");
+      setSuccessMessage("Policy deleted successfully.");
+
+      // Auto dismiss after 3 seconds
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 3000);
     } catch (error) {
       console.error("Error deleting policy:", error);
       alert("Failed to delete policy. Please try again.");
@@ -263,6 +294,12 @@ const Dash = () => {
 
   return (
     <div className="container-fluid my-4">
+      {successMessage && (
+        <SuccessAlert
+          message={successMessage}
+          onClose={() => setSuccessMessage("")}
+        />
+      )}
       <h2 className="text-dark mb-3">Policy Dashboard</h2>
       <div className="d-flex flex-wrap justify-content-between align-items-center mb-3">
         <div className="d-flex gap-3 mb-2 mb-sm-0">
@@ -302,8 +339,13 @@ const Dash = () => {
         <DataGrid
           rows={filteredData}
           columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5, 10, 20]}
+          initialState={{
+            pagination: {
+              paginationModel: { pageSize: 10 },
+            },
+          }}
+          pageSizeOptions={[10, 20, 50]}
+          disableRowSelectionOnClick
           disableSelectionOnClick
           loading={isLoading}
           pagination

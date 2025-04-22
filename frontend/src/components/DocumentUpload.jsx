@@ -45,7 +45,7 @@ const UploadDocument = () => {
       try {
         const response = await api.get(`/file/list/${id}`);
         const files = response.data;
-
+        
         const matchingFiles = files.filter(
           (file) => file.filename === `${id}.pdf`,
         );
@@ -53,7 +53,7 @@ const UploadDocument = () => {
         setAllFiles(files);
         setFilteredFiles(matchingFiles);
       } catch (error) {
-        showModal("Failed to fetch files. Please try again.");
+        toast.error("Failed to fetch files. Please try again.");
         console.error("Failed to fetch files:", error);
       }
     };
@@ -79,7 +79,8 @@ const UploadDocument = () => {
     try {
       const response = await api.delete(`/file/delete/${id}`);
       if (response.status === 200) {
-        setNeedRefresh((prev) => !prev);
+        setAllFiles([]);
+        setFilteredFiles([]);
         toast.success("File deleted successfully!");
       }
     } catch (error) {
