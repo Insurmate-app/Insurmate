@@ -343,7 +343,6 @@ const Dash = () => {
           pageSizeOptions={[10, 20, 50]}
           disableRowSelectionOnClick
           disableSelectionOnClick
-          loading={isLoading}
           pagination
           sx={{
             width: "100%",

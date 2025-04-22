@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sample Insurance Policy - Demo Only</title>
+    <style>
+      body {
+        font-family: "Times New Roman", serif;
+        background-color: #ffffff;
+        color: #000000;
+        margin: 0;
+        padding: 40px;
+      }
+
+      .banner {
+        background: #222;
+        color: #fff;
+        padding: 10px;
+        text-align: center;
+        font-size: 14px;
+      }
+
+      .policy-container {
+        max-width: 850px;
+        margin: auto;
+        border: 3px solid #ccc;
+        padding: 40px;
+        background-color: #fff;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #ccc;
+        padding-bottom: 10px;
+        margin-bottom: 30px;
+      }
+
+      .logo {
+        height: 80px;
+      }
+
+      .company-info h1 {
+        font-size: 26px;
+        margin: 0;
+        text-transform: uppercase;
+        color: #444;
+      }
+
+      .company-info p {
+        font-size: 13px;
+        margin-top: 4px;
+      }
+
+      .document-title {
+        text-align: center;
+        margin: 30px 0;
+      }
+
+      .document-title h2 {
+        font-size: 22px;
+        padding-bottom: 6px;
+        border-bottom: 2px dashed #ccc;
+        display: inline-block;
+        color: #222;
+      }
+
+      section h3 {
+        font-size: 18px;
+        border-left: 4px solid #999;
+        padding-left: 10px;
+        margin-top: 35px;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 10px;
+        font-size: 14px;
+        margin-top: 10px;
+      }
+
+      .info-grid p {
+        margin: 4px 0;
+      }
+
+      .coverage table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 14px;
+      }
+
+      .coverage th,
+      .coverage td {
+        border: 1px solid #999;
+        padding: 8px;
+        text-align: left;
+      }
+
+      .coverage th {
+        background-color: #444;
+        color: #fff;
+      }
+
+      .terms p {
+        font-size: 13px;
+        line-height: 1.6;
+        margin-top: 10px;
+      }
+
+      footer {
+        margin-top: 50px;
+        text-align: center;
+        font-size: 12px;
+      }
+
+      .watermark {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 72px;
+        opacity: 0.06;
+        pointer-events: none;
+        color: #888;
+        z-index: -1;
+      }
+
+      .disclaimer {
+        font-size: 12px;
+        color: #999;
+        text-align: center;
+        margin-top: 20px;
+        font-style: italic;
+      }
+
+      @media print {
+        .banner {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="banner">
+      🔒 <strong>DEMO NOTICE:</strong> This is a fictitious insurance policy
+      created for training, UI testing, or cybersecurity education. Not a valid
+      contract.
+    </div>
+
+    <div class="watermark">SAMPLE POLICY</div>
+
+    <div class="policy-container">
+      <header>
+        <img
+          src="https://via.placeholder.com/150x80?text=LOGO"
+          alt="Sample Logo"
+          class="logo"
+        />
+        <div class="company-info">
+          <h1>Sample Insurance Co.</h1>
+          <p>123 Demo Lane, Suite 456, Nowhere, ZZ 99999</p>
+          <p>License ID: DEMO-000001</p>
+        </div>
+      </header>
+
+      <div class="document-title">
+        <h2>Demo Insurance Protection Policy</h2>
+      </div>
+
+      <section class="policy-info">
+        <h3>Policy Information</h3>
+        <div class="info-grid">
+          <p><strong>Policy Number:</strong> DEMO-123456789</p>
+          <p><strong>Status:</strong> Active (Demo)</p>
+          <p><strong>Policy Type:</strong> UI Simulation Plan</p>
+          <p><strong>Issue Date:</strong> April 20, 2025</p>
+          <p><strong>Effective Date:</strong> Immediately</p>
+          <p><strong>Expiration Date:</strong> April 20, 2026</p>
+          <p><strong>Monthly Premium:</strong> $99.99</p>
+          <p><strong>Agent Name:</strong> Sample Agent 001</p>
+        </div>
+      </section>
+
+      <section class="policyholder">
+        <h3>Policyholder Details</h3>
+        <div class="info-grid">
+          <p><strong>Full Name:</strong> Taylor Exampleton</p>
+          <p>
+            <strong>Address:</strong> 456 Sample Blvd, Apt 9, Demo City, ZZ
+            12345
+          </p>
+          <p><strong>Email:</strong> taylor@example.org</p>
+          <p><strong>Phone:</strong> (000) 123-4567</p>
+        </div>
+      </section>
+
+      <section class="coverage">
+        <h3>Coverage Summary</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Coverage Item</th>
+              <th>Limit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Sample Property Coverage</td>
+              <td>$100,000</td>
+            </tr>
+            <tr>
+              <td>Liability Coverage</td>
+              <td>$50,000</td>
+            </tr>
+            <tr>
+              <td>Temporary Housing</td>
+              <td>$10,000</td>
+            </tr>
+            <tr>
+              <td>Demo Perks Access</td>
+              <td>Included</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="terms">
+        <h3>Terms & Disclaimers</h3>
+        <p>
+          This document is part of a sample insurance interface for frontend
+          demonstration and user interface testing. It does not constitute a
+          legal policy and is not associated with any licensed provider.
+        </p>
+        <p>
+          All values, names, and features are fictitious and used solely to
+          simulate policy formatting and digital documentation.
+        </p>
+      </section>
+
+      <footer>
+        <p>Support Contact: support@sampleinsurance.test | +1-800-UI-DEMO</p>
+        <div class="disclaimer">
+          This sample is not legally valid. For training/demo use only.
+        </div>
+        <p>&copy; 2025 Sample Insurance Co. UI Demo Division</p>
+      </footer>
+    </div>
+  </body>
+</html>

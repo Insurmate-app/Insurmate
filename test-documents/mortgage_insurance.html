@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Lender Insurance Policy</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        color: #333;
+        background: #fff;
+        margin: 40px;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 850px;
+        background: #ffffff;
+        padding: 60px;
+        margin: auto;
+        border: 1px solid #000000;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .watermark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0.1;
+        pointer-events: none;
+        z-index: 0;
+        width: 300px;
+        height: auto;
+      }
+
+      /* Ensure content stays above watermark */
+      header,
+      .qr-barcode,
+      .info,
+      table,
+      .section-title,
+      footer {
+        position: relative;
+        z-index: 1;
+      }
+
+      @media print {
+        .watermark {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+
+      header {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin-bottom: 40px;
+        gap: 30px;
+      }
+
+      .logo {
+        height: 60px;
+        width: auto;
+      }
+
+      h1 {
+        font-family: "Playfair Display", serif;
+        font-size: 32px;
+        margin: 0;
+        color: #000;
+      }
+
+      h2 {
+        font-family: "Playfair Display", serif;
+        font-size: 26px;
+        margin-top: 60px;
+        border-bottom: 2px solid #000;
+        padding-bottom: 10px;
+        text-align: left;
+      }
+
+      .section-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-top: 40px;
+        padding-left: 12px;
+        border-left: 4px solid #000;
+      }
+
+      .info {
+        border: 1px solid #000;
+        background: #fff;
+        padding: 20px;
+        font-size: 14px;
+        margin-top: 10px;
+        page-break-inside: avoid; /* Prevent section from breaking across pages */
+      }
+
+      .info p {
+        margin: 8px 0;
+        padding: 5px 10px;
+        border-bottom: 1px solid #eee;
+        word-wrap: break-word; /* Handle long text better */
+        overflow-wrap: break-word;
+      }
+
+      @media print {
+        body {
+          background: #fff;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          padding: 0;
+          margin: 0;
+          width: 100%;
+          height: 100%;
+        }
+
+        .container {
+          border: none;
+          max-width: none;
+          width: 210mm; /* A4 width */
+          min-height: 297mm; /* A4 height */
+          padding: 20mm; /* Standard margin */
+          margin: 0 auto;
+          box-shadow: none;
+        }
+
+        img {
+          image-rendering: -webkit-optimize-contrast;
+          image-rendering: crisp-edges;
+        }
+
+        .watermark {
+          print-color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+          resolution: 300dpi;
+        }
+
+        .qr-barcode img {
+          image-rendering: pixelated; /* Better for QR codes */
+        }
+
+        th {
+          background: #000 !important;
+          color: #fff !important;
+        }
+
+        a {
+          color: #000;
+          text-decoration: underline;
+        }
+
+        @page {
+          size: A4;
+          margin: 0;
+        }
+      }
+
+      .export-button {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #000;
+        color: #fff;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 4px;
+        font-family: "Inter", sans-serif;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        z-index: 1000;
+      }
+
+      .export-button:hover {
+        background: #333;
+      }
+
+      @media print {
+        .export-button {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <button onclick="window.print()" class="export-button">
+      Export to PDF
+    </button>
+    <div class="container">
+      <img src="../wecarelogo.png" alt="Watermark Logo" class="watermark" />
+      <header>
+        <img src="../wecarelogo.png" alt="We Care Logo" class="logo" />
+        <div>
+          <h1>We Care Insurance Inc.</h1>
+          <p>11324 Davenport Street, Ste C<br />Omaha, NE 68154</p>
+        </div>
+      </header>
+
+      <div class="qr-barcode">
+        <div>
+          <p><strong>Document ID:</strong> WC-LI-000987654</p>
+          <img
+            src="https://barcode.tec-it.com/barcode.ashx?data=WC-LI-000987654&code=Code128&dpi=96"
+            alt="Barcode"
+          />
+        </div>
+        <div>
+          <p><strong>Verify Online:</strong></p>
+          <img
+            src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://wecare-insurance.com/verify/WC-LI-000987654"
+            alt="QR Code"
+          />
+        </div>
+      </div>
+
+      <h2>Lender Insurance Policy</h2>
+
+      <div class="info">
+        <p><strong>Issue Date:</strong> April 20, 2025</p>
+        <p><strong>Loan Closing Date:</strong> April 21, 2025</p>
+        <p><strong>Effective Date:</strong> April 21, 2025</p>
+        <p><strong>Expiration Date:</strong> April 20, 2026</p>
+        <p><strong>Policy Number:</strong> WC-LI-000987654</p>
+        <p><strong>Annual Premium:</strong> $1,295.00</p>
+      </div>
+
+      <div class="section-title">Policyholder Information</div>
+      <div class="info">
+        <p><strong>Name:</strong> Jordan Evans</p>
+        <p><strong>Address:</strong> 123 Homewood Ave, Lincoln, NE 68508</p>
+        <p><strong>Email:</strong> jordan.evans@example.com</p>
+        <p><strong>Phone:</strong> (402) 555-1234</p>
+      </div>
+
+      <div class="section-title">Mortgagee</div>
+      <div class="info">
+        <p><strong>Lender:</strong> National Mortgage Bank</p>
+        <p>
+          <strong>Address:</strong> 11324 Davenport Street, Ste C, Omaha, NE
+          68154
+        </p>
+        <p><strong>Loan Number:</strong> 000112233</p>
+        <p><strong>Original Loan Amount:</strong> $310,000</p>
+        <p><strong>Loan Term:</strong> 30 Years</p>
+        <p><strong>Property Type:</strong> Single-Family Residence</p>
+        <p>
+          <strong>Property Address:</strong> 456 Suburban Ln, Lincoln, NE 68508
+        </p>
+      </div>
+
+      <div class="section-title">Coverage Details</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Coverage Type</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Lender Protection (PMI)</td>
+            <td>Included</td>
+          </tr>
+          <tr>
+            <td>Dwelling Protection</td>
+            <td>$275,000</td>
+          </tr>
+          <tr>
+            <td>Other Structures</td>
+            <td>$15,000</td>
+          </tr>
+          <tr>
+            <td>Loss of Use</td>
+            <td>$30,000</td>
+          </tr>
+          <tr>
+            <td>Personal Liability</td>
+            <td>$100,000</td>
+          </tr>
+          <tr>
+            <td>Medical Payments to Others</td>
+            <td>$5,000</td>
+          </tr>
+          <tr>
+            <td>Contents Replacement</td>
+            <td>$50,000</td>
+          </tr>
+          <tr>
+            <td>Temporary Relocation Assistance</td>
+            <td>$20,000</td>
+          </tr>
+          <tr>
+            <td>Identity Theft Coverage</td>
+            <td>$10,000</td>
+          </tr>
+          <tr>
+            <td>Flood Coverage</td>
+            <td>Not Included</td>
+          </tr>
+          <tr>
+            <td>Earthquake Coverage</td>
+            <td>Optional Rider</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="section-title">Terms & Conditions</div>
+      <div class="info">
+        <p>
+          This policy protects the lender's interest in the property and
+          includes optional protection for the policyholder. Coverage is subject
+          to terms outlined in the official policy document.
+        </p>
+        <p>
+          All claims must be submitted within 72 hours. Optional riders are
+          valid only if explicitly listed. Property maintenance is required to
+          remain eligible for full coverage benefits.
+        </p>
+        <p>
+          Policyholder may cancel at any time. We Care Insurance Inc. may also
+          cancel with 45 days’ notice.
+        </p>
+      </div>
+
+      <div class="section-title">Welcome to the We Care Family</div>
+      <div
+        class="info"
+        style="background: #f9f9f9; padding: 30px; border: 2px solid #000"
+      >
+        <p style="font-size: 16px"><strong>Dear Jordan Evans,</strong></p>
+        <p style="font-size: 15px; line-height: 1.8">
+          We're thrilled to welcome you to We Care Insurance. Your new lender
+          insurance policy ensures your home loan is protected and adds an
+          additional layer of security for you and your family.
+        </p>
+        <p style="font-size: 15px; line-height: 1.8">
+          Our team is here to support you with care and clarity at every step.
+          Should you need anything, don't hesitate to reach out. Thank you for
+          choosing us.
+        </p>
+        <div class="signature">
+          <p><strong>Sincerely,</strong></p>
+          <p
+            style="
+              font-family: 'Brush Script MT', cursive;
+              font-size: 32px;
+              color: #000;
+            "
+          >
+            Chris Cook
+          </p>
+          <p style="font-size: 14px; color: #444">President</p>
+        </div>
+      </div>
+
+      <footer>
+        <p>Support: (800) 555-INSURE | support@wecare-insurance.com</p>
+        <p>
+          Verify this policy at:
+          <a
+            href="https://wecare-insurance.com/verify/WC-LI-000987654"
+            target="_blank"
+          >
+            wecare-insurance.com/verify/WC-LI-000987654
+          </a>
+        </p>
+        <p>&copy; 2025 We Care Insurance Inc. All rights reserved.</p>
+      </footer>
+    </div>
+
+    <script>
+      document.addEventListener("keydown", function (e) {
+        // Enable Ctrl/Cmd + P shortcut for PDF export
+        if ((e.ctrlKey || e.metaKey) && e.key === "p") {
+          e.preventDefault();
+          window.print();
+        }
+      });
+    </script>
+  </body>
+</html>
