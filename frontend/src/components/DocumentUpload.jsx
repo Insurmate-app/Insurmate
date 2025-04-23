@@ -3,9 +3,8 @@ import { toast } from "react-toastify";
 
 import ToastComponent from "../components/ToastComponent";
 import useConfirmDialog from "../hooks/useConfirmDialog.jsx";
-import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
-import Modal from "./Modal";
+import ClientError from "./ClientError.jsx";
 import { useApi } from "./useApi";
 
 /**
@@ -19,7 +18,6 @@ import { useApi } from "./useApi";
 const UploadDocument = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
-  const { isVisible, message, showModal, hideModal } = useModal();
   const [allFiles, setAllFiles] = useState([]);
   const [filteredFiles, setFilteredFiles] = useState([]);
   const [needRefresh, setNeedRefresh] = useState(false);
@@ -27,6 +25,7 @@ const UploadDocument = () => {
   const [showDocumentModal, setShowDocumentModal] = useState(false);
   const [deletingFileId, setDeletingFileId] = useState(null);
   const [uploadError, setUploadError] = useState(null);
+  const [error, setError] = useState(null);
 
   const [confirm, ConfirmDialog] = useConfirmDialog();
 
@@ -60,7 +59,7 @@ const UploadDocument = () => {
         setAllFiles(files);
         setFilteredFiles(matchingFiles);
       } catch (error) {
-        toast.error("Failed to fetch files. Please try again.");
+        setError(error);
         console.error("Failed to fetch files:", error);
       }
     };
@@ -142,6 +141,7 @@ const UploadDocument = () => {
 
   return (
     <>
+      {error && <ClientError error={error} />}
       <ToastComponent />
       <div className="container mt-5">
         <div className="row justify-content-center">
@@ -178,19 +178,22 @@ const UploadDocument = () => {
                         {selectedFile ? selectedFile.name : "No file chosen"}
                       </span>
                     </label>
-                    
+
                     {uploadError && (
-                      <div className="alert alert-danger alert-dismissible fade show mt-3 mb-3" role="alert">
+                      <div
+                        className="alert alert-danger alert-dismissible fade show mt-3 mb-3"
+                        role="alert"
+                      >
                         <strong>Error:</strong> {uploadError}
-                        <button 
-                          type="button" 
-                          className="btn-close" 
+                        <button
+                          type="button"
+                          className="btn-close"
                           onClick={() => setUploadError(null)}
                           aria-label="Close"
                         ></button>
                       </div>
                     )}
-                    
+
                     <button
                       type="submit"
                       className="btn btn-primary px-4 py-2"
@@ -270,10 +273,6 @@ const UploadDocument = () => {
         </div>
 
         {ConfirmDialog}
-
-        {/* Error Modal */}
-        <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
-
         {/* Document Viewer Modal */}
         {showDocumentModal && (
           <div

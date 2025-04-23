@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import ClientError from "./ClientError";
 import RubikSpinner from "./RubikSpinner";
 import { useApi } from "./useApi";
 
@@ -34,6 +35,10 @@ const AssetHistory = () => {
       fetchHistory();
     }
   }, [assetId]);
+
+  if (error) {
+    return <ClientError error={error} />;
+  }
 
   return (
     <div className="container mt-4">

@@ -8,12 +8,15 @@ import Papa from "papaparse";
 import useConfirmDialog from "../hooks/useConfirmDialog";
 import { transformPolicyData } from "../utils/transformData";
 import AddPolicyModal from "./AddPolicy";
+import ClientError from "./ClientError";
+import NavBar from "./NavBar";
 import RubikSpinner from "./RubikSpinner";
 import SuccessAlert from "./SuccessAlert";
 import ToastComponent from "./ToastComponent";
 import { useApi } from "./useApi";
 
 const Dash = () => {
+  const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [data, setData] = useState([]);
   const [globalFilter, setGlobalFilter] = useState("");
@@ -31,8 +34,8 @@ const Dash = () => {
         const transformedData = transformPolicyData(response.data);
         setData(transformedData);
       } catch (error) {
-        toast.error("Error fetching data:", error);
-        window.location.href = "/login";
+        console.error("Error fetching data:", error);
+        setError("Error fetching data");
       } finally {
         setIsLoading(false);
       }
@@ -287,136 +290,140 @@ const Dash = () => {
   }, [data, globalFilter]);
 
   return (
-    <div className="container-fluid my-4">
-      {isLoading && <RubikSpinner />}
-      <ToastComponent />
-      {successMessage && (
-        <SuccessAlert
-          message={successMessage}
-          onClose={() => setSuccessMessage("")}
-        />
-      )}
-      <h2 className="text-dark mb-3">Policy Dashboard</h2>
-      <div className="d-flex flex-wrap justify-content-between align-items-center mb-3">
-        <div className="d-flex gap-3 mb-2 mb-sm-0">
-          <button
-            onClick={() => setShowModal(true)}
-            className="btn btn-outline-primary d-flex align-items-center"
-            style={{ borderRadius: "8px" }}
-          >
-            <i
-              className="bi bi-plus-lg me-2"
-              style={{ color: "#0d6efd", fontSize: "1.2rem" }}
-            ></i>
-            Add Policy
-          </button>
-          <button
-            onClick={handleExportCSV}
-            className="btn btn-outline-success d-flex align-items-center"
-            style={{ borderRadius: "8px" }}
-          >
-            <i
-              className="bi bi-download me-2"
-              style={{ color: "#198754", fontSize: "1.2rem" }}
-            ></i>
-            Export to CSV
-          </button>
+    <>
+      {error && <ClientError message={error} />}
+      <NavBar />
+      <div className="container-fluid my-4">
+        {isLoading && <RubikSpinner />}
+        <ToastComponent />
+        {successMessage && (
+          <SuccessAlert
+            message={successMessage}
+            onClose={() => setSuccessMessage("")}
+          />
+        )}
+        <h2 className="text-dark mb-3">Policy Dashboard</h2>
+        <div className="d-flex flex-wrap justify-content-between align-items-center mb-3">
+          <div className="d-flex gap-3 mb-2 mb-sm-0">
+            <button
+              onClick={() => setShowModal(true)}
+              className="btn btn-outline-primary d-flex align-items-center"
+              style={{ borderRadius: "8px" }}
+            >
+              <i
+                className="bi bi-plus-lg me-2"
+                style={{ color: "#0d6efd", fontSize: "1.2rem" }}
+              ></i>
+              Add Policy
+            </button>
+            <button
+              onClick={handleExportCSV}
+              className="btn btn-outline-success d-flex align-items-center"
+              style={{ borderRadius: "8px" }}
+            >
+              <i
+                className="bi bi-download me-2"
+                style={{ color: "#198754", fontSize: "1.2rem" }}
+              ></i>
+              Export to CSV
+            </button>
+          </div>
+          <input
+            type="text"
+            value={globalFilter || ""}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            placeholder="Search all columns..."
+            className="form-control"
+            style={{ borderRadius: "8px", maxWidth: "300px" }}
+          />
         </div>
-        <input
-          type="text"
-          value={globalFilter || ""}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          placeholder="Search all columns..."
-          className="form-control"
-          style={{ borderRadius: "8px", maxWidth: "300px" }}
-        />
-      </div>
-      <div style={{ height: "calc(100vh - 200px)", width: "100%" }}>
-        <DataGrid
-          rows={filteredData}
-          columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: { pageSize: 10 },
-            },
-          }}
-          pageSizeOptions={[10, 20, 50]}
-          disableRowSelectionOnClick
-          disableSelectionOnClick
-          pagination
-          sx={{
-            width: "100%",
-            "& .MuiDataGrid-root": {
-              backgroundColor: "white",
-              border: "none",
-            },
-            "& .MuiDataGrid-cell": {
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: "52px !important",
-              lineHeight: "1.4",
-              whiteSpace: "normal",
-              overflow: "hidden",
-              padding: "8px 4px",
-              fontSize: "0.9rem",
-              wordBreak: "break-word",
-            },
-            "& .MuiDataGrid-cellContent": {
-              textAlign: "center",
+        <div style={{ height: "calc(100vh - 200px)", width: "100%" }}>
+          <DataGrid
+            rows={filteredData}
+            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 10 },
+              },
+            }}
+            pageSizeOptions={[10, 20, 50]}
+            disableRowSelectionOnClick
+            disableSelectionOnClick
+            pagination
+            sx={{
               width: "100%",
-            },
-            "& .MuiDataGrid-row": {
-              minHeight: "52px !important",
-            },
-            "@media (max-width: 768px)": {
+              "& .MuiDataGrid-root": {
+                backgroundColor: "white",
+                border: "none",
+              },
               "& .MuiDataGrid-cell": {
-                fontSize: "0.8rem",
-                padding: "4px 2px",
-                lineHeight: "1.2",
-                minHeight: "40px !important",
-              },
-              "& .MuiDataGrid-columnHeaders": {
-                fontSize: "0.8rem",
-                minHeight: "40px !important",
-              },
-              "& .MuiDataGrid-columnHeader": {
-                padding: "0 2px",
-              },
-              "& .MuiDataGrid-columnHeaderTitle": {
-                width: "100%",
-                textAlign: "center",
-                fontWeight: "600",
-                overflow: "hidden",
-                lineHeight: "1.2",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "52px !important",
+                lineHeight: "1.4",
                 whiteSpace: "normal",
-                textOverflow: "ellipsis",
+                overflow: "hidden",
+                padding: "8px 4px",
+                fontSize: "0.9rem",
+                wordBreak: "break-word",
+              },
+              "& .MuiDataGrid-cellContent": {
+                textAlign: "center",
+                width: "100%",
+              },
+              "& .MuiDataGrid-row": {
+                minHeight: "52px !important",
               },
               "@media (max-width: 768px)": {
+                "& .MuiDataGrid-cell": {
+                  fontSize: "0.8rem",
+                  padding: "4px 2px",
+                  lineHeight: "1.2",
+                  minHeight: "40px !important",
+                },
                 "& .MuiDataGrid-columnHeaders": {
                   fontSize: "0.8rem",
-                  minHeight: "48px !important",
-                  padding: "4px 0",
-                },
-                "& .MuiDataGrid-columnHeaderTitle": {
-                  fontSize: "0.8rem",
-                  lineHeight: "1.1",
+                  minHeight: "40px !important",
                 },
                 "& .MuiDataGrid-columnHeader": {
-                  padding: "0 4px",
+                  padding: "0 2px",
+                },
+                "& .MuiDataGrid-columnHeaderTitle": {
+                  width: "100%",
+                  textAlign: "center",
+                  fontWeight: "600",
+                  overflow: "hidden",
+                  lineHeight: "1.2",
+                  whiteSpace: "normal",
+                  textOverflow: "ellipsis",
+                },
+                "@media (max-width: 768px)": {
+                  "& .MuiDataGrid-columnHeaders": {
+                    fontSize: "0.8rem",
+                    minHeight: "48px !important",
+                    padding: "4px 0",
+                  },
+                  "& .MuiDataGrid-columnHeaderTitle": {
+                    fontSize: "0.8rem",
+                    lineHeight: "1.1",
+                  },
+                  "& .MuiDataGrid-columnHeader": {
+                    padding: "0 4px",
+                  },
                 },
               },
-            },
-          }}
+            }}
+          />
+        </div>
+        {ConfirmDialog}
+        <AddPolicyModal
+          showModal={showModal}
+          setShowModal={setShowModal}
+          onAddPolicy={handleAddPolicy}
         />
       </div>
-      {ConfirmDialog}
-      <AddPolicyModal
-        showModal={showModal}
-        setShowModal={setShowModal}
-        onAddPolicy={handleAddPolicy}
-      />
-    </div>
+    </>
   );
 };
 
