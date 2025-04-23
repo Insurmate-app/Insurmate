@@ -23,7 +23,11 @@ const passService = require("../../services/password.service");
 test("Check password hash against original password.", async () => {
   var originalPassword = "PasswordTest123!";
   var hashedPassword = await passService.hashPassword(originalPassword);
-  expect(await passService.checkPassword(originalPassword, hashedPassword)).toBe(true); // Hashed password should match to original
+  expect(await passService.checkPassword(originalPassword, hashedPassword)).toBe(true); // Hashed password should match original
+  var invalidPassword = "NotTheRightPassword";
+  expect(await passService.checkPassword(invalidPassword, hashedPassword)).toBe(false); // Hashed password should not match invalid password
+  var hashedInvalidPassword = await passService.hashPassword(invalidPassword);
+  expect(await passService.checkPassword(originalPassword, hashedInvalidPassword)).toBe(false); // Hashed invalid password should not match original password
 });
 
 /**
