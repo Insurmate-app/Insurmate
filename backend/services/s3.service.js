@@ -135,8 +135,10 @@ const uploadFile = async (file, email, assetId) => {
       const data = asset.data;
       data.fileName = uniqueFileName;
       data.status = "Verified";
-      data.policyNumber = analysis.policyNumber;
       data.llmResponse = analysis;
+      data.policyNumber = analysis.policyNumber;
+      data.firstName = analysis.firstName;
+      data.lastName = analysis.lastName;
       await assetService.updateAssetWhileUploadingDocument(email, {
         id: assetId,
         data,
@@ -193,7 +195,6 @@ const reuploadFile = async (file, assetId, email) => {
 
   // analyze document using LLM
   const analysis = await analyzeDocument(text);
-  console.log("Analysis: ", analysis);
 
   // check if the document is valid
   if (!analysis.valid) {
@@ -314,11 +315,7 @@ const deleteFile = async (email, assetId) => {
   try {
     const command = new DeleteObjectCommand(params);
     await s3Client.send(command);
-    console.log(`File deleted successfully: ${fileName}`);
 
-    await assetService.updateAsset(email, { id: assetId, asset });
-    data.fileName = "N/A";
-    await assetService.updateAsset(email, { id: assetId, data });
     cache.delete(`signedURL_${assetId}`);
 
     return { message: "File deleted successfully", fileName };
