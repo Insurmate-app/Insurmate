@@ -1,14 +1,15 @@
 /*
  * LLM Service Unit Tests
  *
- * This file contains unit tests for the LLM Service module which handles:
- * - checking document expiration date
- * - checking document for relevance (i.e. insurance-related)
- * - checks if Groq API outputted a valid response
+ * This file contains unit tests for the LLM service module which handles:
+ * - handling insurance document validation responses from the Groq API
+ * - ensuring expiration dates are correctly validated
+ * - catching and responding to groq API errors or invalid responses
  *
  * Dependencies:
- * - llm.service.js: Core user management functions
- * - groq-sdk: Groq API
+ * - llm.service.js: Insurnace document validation service
+ * - groq-sdk: Mocked Groq API client
+ * - jest: Testing framework
  */
 
 const mockCreate = jest.fn(); // Mock the groq-sdk module instead of using the real one
