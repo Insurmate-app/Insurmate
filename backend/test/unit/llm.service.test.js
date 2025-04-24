@@ -25,7 +25,6 @@ jest.mock("groq-sdk", () => {
   });
 });
 
-const { after } = require("lodash");
 const { analyzeDocument } = require("../../services/llm.service");
 
 describe("LLM service guarantees a response for a valid or invalid document as well any errors that may happen with the service", () => {
