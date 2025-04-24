@@ -1,3 +1,13 @@
 .env
 .env.test
 /env_scripts/
+# Removes useless macOS file
+.DS_Store
+# Removes output file when running JSDoc
+out/
+# Removes lock created when using bun instead of npm
+bun.lock
+# Removes vscode config file
+.vscode/
+# Removes idea config for JetBrains IDEs
+.idea/
