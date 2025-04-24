@@ -94,7 +94,6 @@ describe("LLM service guarantees a response for a valid or invalid document as w
     expect(result.reason).toContain("Document expired.");
   });
 
-
   it("should return valid = false for a non-insurance document with missing fields", async () => {
     const mockGroqResponse = {
       choices: [
@@ -107,22 +106,30 @@ describe("LLM service guarantees a response for a valid or invalid document as w
               expirationDate: null,
               valid: false,
               confidenceScore: 0.2,
-              reason: "Document lacks insurance-related content and required fields.",
+              reason:
+                "Document lacks insurance-related content and required fields.",
             }),
           },
         },
       ],
     };
-  
+
     mockCreate.mockResolvedValue(mockGroqResponse);
-  
-    const result = await analyzeDocument("This is a grocery list, not a policy.");
-  
+
+    const result = await analyzeDocument("Not a real insurance document.");
+
     expect(result.valid).toBe(false);
     expect(result.firstName).toBe("Jim");
     expect(result.lastName).toBe(null);
     expect(result.policyNumber).toBe(null);
     expect(result.reason).toContain("required fields");
   });
-  
+
+  it("should throw an error if the Groq API call fails at some point", async () => {
+    mockCreate.mockRejectedValue(new Error("some groq error"));
+
+    await expect(analyzeDocument("example document")).rejects.toThrow(
+      "Failed to analyze document."
+    );
+  });
 });
