@@ -66,4 +66,31 @@ describe("LLM service guarantees a response for a valid or invalid document as w
         "The document is valid. It is insurance related, and the expiration date is in the future.",
     });
   });
+
+  it("should return valid = false for an insurance document with a past expiration date", async () => {
+    const mockGroqResponse = {
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              firstName: "Patrick",
+              lastName: "Doe",
+              policyNumber: "123456789",
+              expirationDate: "2020-01-01",
+              valid: true, // this should be false, the service should handle this
+              confidenceScore: 0.95,
+              reason: "The document is valid and all fields are present",
+            }),
+          },
+        },
+      ],
+    };
+
+    mockCreate.mockResolvedValue(mockGroqResponse);
+
+    const result = await analyzeDocument("This is a expired document.");
+
+    expect(result.valid).toBe(false);
+    expect(result.reason).toContain("Document expired.");
+  });
 });
