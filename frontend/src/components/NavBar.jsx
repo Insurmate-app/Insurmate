@@ -29,23 +29,23 @@ const Navbar = () => {
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
       {logoutSuccess && <LogoutSuccess />}
       <div className="container-fluid d-flex justify-content-between align-items-center">
-        <a href="/login" className="navbar-brand d-flex align-items-center">
-          <div 
+        <a href="/dashboard" className="navbar-brand d-flex align-items-center">
+          <div
             className="rounded-circle overflow-hidden bg-white d-flex align-items-center justify-content-center"
-            style={{ 
-              width: "40px", 
+            style={{
+              width: "40px",
               height: "40px",
               border: "2px solid #212529",
-              padding: "2px"
+              padding: "2px",
             }}
           >
             <img
               src="/insurmate_logo.png"
               alt="Logo"
-              style={{ 
+              style={{
                 width: "100%",
                 height: "100%",
-                objectFit: "contain"
+                objectFit: "contain",
               }}
             />
           </div>

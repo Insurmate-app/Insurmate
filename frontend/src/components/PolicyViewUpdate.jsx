@@ -350,6 +350,14 @@ const PolicyViewUpdate = () => {
                           </span>
                         </div>
                       </div>
+                      <div className="col-md-6">
+                        <div className="d-flex align-items-center">
+                          <strong className="me-2">Risk Level:</strong>
+                          <span>
+                            {formValues.llmResponse?.riskLevel || "N/A"}
+                          </span>
+                        </div>
+                      </div>
                       <div className="col-12">
                         <strong className="d-block mb-2">
                           Analysis Notes:
@@ -358,6 +366,24 @@ const PolicyViewUpdate = () => {
                           {formValues.llmResponse?.reason ||
                             "No analysis available"}
                         </p>
+                      </div>
+                      <div className="col-12">
+                        <strong className="d-block mb-2">
+                          Fraud Indicators:
+                        </strong>
+                        {formValues.llmResponse?.fraudIndicators?.length > 0 ? (
+                          <ul className="mb-0">
+                            {formValues.llmResponse.fraudIndicators.map(
+                              (indicator, index) => (
+                                <li key={index}>{indicator}</li>
+                              ),
+                            )}
+                          </ul>
+                        ) : (
+                          <p className="mb-0 text-secondary">
+                            No fraud indicators detected
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
