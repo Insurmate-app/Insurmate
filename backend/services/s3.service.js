@@ -168,7 +168,7 @@ const reuploadFile = async (file, assetId, email) => {
   const fileName = asset.data.fileName;
 
   // Check if the file exists before attempting to delete
-  const exists = fileExists(fileName);
+  const exists = await module.exports.fileExists(fileName);
   if (!exists) throw new CustomError(`File not found: ${fileName}`, 404);
 
   // analyze document using LLM
@@ -217,7 +217,7 @@ const generateSignedUrl = async (email, assetId) => {
   const fileName = asset.data.fileName;
 
   // Check if the file exists before attempting to delete
-  const exists = await fileExists(fileName);
+  const exists = await module.exports.fileExists(fileName);
   if (!exists) throw new CustomError(`File not found: ${fileName}`, 404);
 
   const params = {
@@ -260,7 +260,7 @@ const deleteFile = async (email, assetId) => {
   const fileName = data.fileName;
 
   // Check if the file exists before attempting to delete
-  const exists = fileExists(fileName);
+  const exists = await module.exports.fileExists(fileName);
   if (!exists) {
     throw new CustomError(`File not found: ${fileName}`, 404);
   }
@@ -282,6 +282,7 @@ const deleteFile = async (email, assetId) => {
     return { message: "File deleted successfully", fileName };
   } catch (error) {
     log.error("Delete Failed:", error);
+    throw new CustomError("Delete failed", 500);
   }
 };
 
@@ -291,4 +292,5 @@ module.exports = {
   generateSignedUrl,
   deleteFile,
   listFiles,
+  fileExists,
 };
