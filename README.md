@@ -18,7 +18,7 @@
 This project is developed in collaboration with the University of Nebraska Omaha (UNO). We extend our gratitude to UNO for their support and resources in making this blockchain-based mortgage policy exchange system possible.
 
 Special thanks to:
-- Harvey Siy. PhD, Alfredo Perez. PhD 
+- Harvey Siy, PhD, Alfredo Perez, PhD 
 
 ![mortgage_policy_exchange_workdlow.png](mortgage_policy_exchange_workdlow.png)
 
