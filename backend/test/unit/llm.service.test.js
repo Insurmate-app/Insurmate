@@ -132,4 +132,22 @@ describe("LLM service guarantees a response for a valid or invalid document as w
       "Failed to analyze document."
     );
   });
+
+  it("should throw an error if Groq API returns an empty or invalid response", async () => {
+    const mockGroqResponse = {
+      choices: [
+        {
+          message: {
+            content: null, // !analysis
+          },
+        },
+      ],
+    };
+
+    mockCreate.mockResolvedValue(mockGroqResponse);
+
+    await expect(analyzeDocument("example document")).rejects.toThrow(
+      "Failed to analyze document."
+    );
+  });
 });
