@@ -93,4 +93,36 @@ describe("LLM service guarantees a response for a valid or invalid document as w
     expect(result.valid).toBe(false);
     expect(result.reason).toContain("Document expired.");
   });
+
+
+  it("should return valid = false for a non-insurance document with missing fields", async () => {
+    const mockGroqResponse = {
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              firstName: "Jim",
+              lastName: null,
+              policyNumber: null,
+              expirationDate: null,
+              valid: false,
+              confidenceScore: 0.2,
+              reason: "Document lacks insurance-related content and required fields.",
+            }),
+          },
+        },
+      ],
+    };
+  
+    mockCreate.mockResolvedValue(mockGroqResponse);
+  
+    const result = await analyzeDocument("This is a grocery list, not a policy.");
+  
+    expect(result.valid).toBe(false);
+    expect(result.firstName).toBe("Jim");
+    expect(result.lastName).toBe(null);
+    expect(result.policyNumber).toBe(null);
+    expect(result.reason).toContain("required fields");
+  });
+  
 });
