@@ -3,7 +3,9 @@ const router = express.Router();
 const multer = require("multer");
 const fileController = require("../controllers/file.controller");
 const passport = require("passport");
-require("../security/passport"); 
+require("../security/passport"); // Import Passport JWT configuration
+
+const s3Service = require("../services/s3.service");
 
 // Configure multer to store files in memory
 const upload = multer({

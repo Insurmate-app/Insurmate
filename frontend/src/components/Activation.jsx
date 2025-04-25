@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { decodeBase64 } from "../functions/base64";
 import { deobfuscate } from "../functions/obfs";

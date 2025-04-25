@@ -11,4 +11,3 @@ bun.lock
 .vscode/
 # Removes idea config for JetBrains IDEs
 .idea/
-.qodo

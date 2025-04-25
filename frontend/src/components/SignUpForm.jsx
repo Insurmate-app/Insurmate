@@ -1,12 +1,12 @@
 import { useCallback, useMemo, useState } from "react";
-import { toast } from "react-toastify";
 
 import * as Yup from "yup";
 
 import { encodeBase64 } from "../functions/base64";
 import { obfuscate } from "../functions/obfs";
+import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
-import ToastComponent from "./ToastComponent";
+import Modal from "./Modal";
 import { useApi } from "./useApi";
 
 const SignUpForm = () => {
@@ -27,6 +27,7 @@ const SignUpForm = () => {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
+  const { isVisible, message, showModal, hideModal } = useModal();
   const [touchedFields, setTouchedFields] = useState({});
 
   // Memoized validation schema
@@ -173,18 +174,24 @@ const SignUpForm = () => {
           });
           setErrors(validateFormData);
         } else if (err.response) {
-          toast.error(err.response.data.message || "Error from server");
+          showModal(err.response.data.message || "Error from server");
         } else {
-          toast.error("An unexpected error occurred");
+          showModal("An unexpected error occurred");
         }
       }
     },
-    [formValues, validationSchema, api, activateSpinner, deactivateSpinner],
+    [
+      formValues,
+      validationSchema,
+      api,
+      activateSpinner,
+      deactivateSpinner,
+      showModal,
+    ],
   );
 
   return (
     <div>
-      <ToastComponent />
       <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light p-3">
         <div
           className="card p-4 shadow rounded w-100"
@@ -228,6 +235,7 @@ const SignUpForm = () => {
                     value={formValues.firstName}
                     onChange={handleInputChange}
                     onBlur={handleBlur}
+                    required
                   />
                   {touchedFields.firstName && errors.firstName && (
                     <small className="text-danger">{errors.firstName}</small>
@@ -252,6 +260,7 @@ const SignUpForm = () => {
                     value={formValues.lastName}
                     onChange={handleInputChange}
                     onBlur={handleBlur}
+                    required
                   />
                   {touchedFields.lastName && errors.lastName && (
                     <small className="text-danger">{errors.lastName}</small>
@@ -276,6 +285,7 @@ const SignUpForm = () => {
                     value={formValues.email}
                     onChange={handleInputChange}
                     onBlur={handleBlur}
+                    required
                   />
                   {touchedFields.email && errors.email && (
                     <small className="text-danger">{errors.email}</small>
@@ -301,6 +311,7 @@ const SignUpForm = () => {
                       value={formValues.password}
                       onChange={handleInputChange}
                       onBlur={handleBlur}
+                      required
                     />
                     <span
                       className="input-group-text bg-transparent border-0"
@@ -335,6 +346,7 @@ const SignUpForm = () => {
                 value={formValues.companyName}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
+                required
               />
               {touchedFields.companyName && errors.companyName && (
                 <small className="text-danger">{errors.companyName}</small>
@@ -357,6 +369,7 @@ const SignUpForm = () => {
                 value={formValues.addressLine1}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
+                required
               />
               {touchedFields.addressLine1 && errors.addressLine1 && (
                 <small className="text-danger">{errors.addressLine1}</small>
@@ -397,6 +410,7 @@ const SignUpForm = () => {
                 value={formValues.city}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
+                required
               />
               {touchedFields.city && errors.city && (
                 <small className="text-danger">{errors.city}</small>
@@ -417,6 +431,7 @@ const SignUpForm = () => {
                 value={formValues.state}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
+                required
               />
               {touchedFields.state && errors.state && (
                 <small className="text-danger">{errors.state}</small>
@@ -437,6 +452,7 @@ const SignUpForm = () => {
                 value={formValues.zipCode}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
+                required
               />
               {touchedFields.zipCode && errors.zipCode && (
                 <small className="text-danger">{errors.zipCode}</small>
@@ -503,6 +519,7 @@ const SignUpForm = () => {
             </a>
           </p>
         </div>
+        <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
       </div>
     </div>
   );

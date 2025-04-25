@@ -1,7 +1,5 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-import ClientError from "./ClientError";
-import RubikSpinner from "./RubikSpinner";
 import { useApi } from "./useApi";
 
 const AssetHistory = () => {
@@ -36,46 +34,43 @@ const AssetHistory = () => {
     }
   }, [assetId]);
 
+  if (isLoading) {
+    return (
+      <div className="text-center mt-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p>Loading asset history...</p>
+      </div>
+    );
+  }
+
   if (error) {
-    return <ClientError error={error} />;
+    return <div className="alert alert-danger text-center">{error}</div>;
   }
 
   return (
     <div className="container mt-4">
-      {isLoading && <RubikSpinner />}
-      {error && <div className="alert alert-danger text-center">{error}</div>}
       <h3 className="mb-4">Asset History</h3>
       <pre
         style={{ background: "#f8f9fa", padding: "10px", borderRadius: "5px" }}
       >
         {JSON.stringify(history, null, 2)}
       </pre>
-
-      {/* Floating back button */}
-      <button
-        type="button"
-        className="btn btn-secondary rounded-circle"
-        style={{
-          position: "fixed",
-          bottom: "30px",
-          right: "30px",
-          width: "60px",
-          height: "60px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 1000,
-          backgroundColor: "#6c757d", // A lighter gray color
-          border: "none",
-        }}
-        onClick={() =>
-          document.startViewTransition(() => {
-            window.location.href = "/dashboard";
-          })
-        }
-      >
-        <i className="bi bi-arrow-left" style={{ fontSize: "1.5rem" }}></i>
-      </button>
+      <div className="d-flex justify-content-between">
+        <button
+          type="button"
+          className="btn btn-light"
+          style={{ backgroundColor: "#95a5a6" }}
+          onClick={() =>
+            document.startViewTransition(() => {
+              window.location.href = "/dashboard";
+            })
+          }
+        >
+          Back
+        </button>
+      </div>
     </div>
   );
 };

@@ -2,6 +2,7 @@ const assetService = require("../services/asset.service");
 const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 const extractToken = require("../util/tokenExtractor");
+const S3Service = require("../services/s3.service");
 
 const createAsset = async (req, res, next) => {
   try {
@@ -128,6 +129,7 @@ const deleteAsset = async (req, res, next) => {
     const payload = jwt.decode(token);
 
     const assetId = req.params.id;
+    await S3Service.deleteFile(payload.id, assetId);
     const result = await assetService.deleteAsset(payload.id, assetId);
     res.status(200).json(result);
   } catch (error) {

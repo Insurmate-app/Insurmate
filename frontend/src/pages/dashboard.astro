@@ -1,5 +1,6 @@
 ---
 import Dash from "../components/Dashboard.jsx";
+import NavBar from "../components/NavBar.jsx";
 import MainLayout from "../layouts/MainLayout.astro";
 
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -7,5 +8,6 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 ---
 
 <MainLayout title="Dashboard" description="Dashboard">
+  <NavBar client:load/>
   <Dash client:visible/>
 </MainLayout>

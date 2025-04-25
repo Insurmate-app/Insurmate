@@ -1,8 +1,10 @@
 ---
+import NavBar from "../components/NavBar.jsx";
 import MainLayout from "../layouts/MainLayout.astro";
 import PolicyViewUpdate from "../components/PolicyViewUpdate.jsx";
 ---
 
 <MainLayout title="View/Update Policy" description="View and update a policy.">
+  <NavBar client:load />
   <PolicyViewUpdate client:only />
 </MainLayout>

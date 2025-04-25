@@ -5,32 +5,16 @@ const Home = () => {
     <div className="container-fluid vh-100 d-flex flex-column align-items-center bg-white">
       {/* Header */}
       <header className="d-flex justify-content-between align-items-center w-100 p-3 bg-light shadow-sm">
-        <div className="logo d-flex align-items-center">
-          <a
-            href="/"
-            className="d-flex align-items-center text-decoration-none"
-          >
-            <div
-              className="rounded-circle overflow-hidden bg-white d-flex align-items-center justify-content-center"
-              style={{
-                width: "40px",
-                height: "40px",
-                border: "2px solid #212529",
-                padding: "2px",
-              }}
-            >
-              <img
-                src="/insurmate_logo.png"
-                alt="Insurmate Logo"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "contain",
-                }}
-              />
-            </div>
-            <h1 className="h5 text-dark mb-0 ms-2">Insurmate</h1>
-          </a>
+      <div className="logo d-flex align-items-center">
+          <a href="/">
+            <img
+              src="/insurmate_logo.png"
+              alt="Insurmate Logo"
+              className="me-2"
+              style={{ height: "40px" }}
+            />
+          </a>  
+            <h1 className="h5 text-dark mb-0">Insurmate</h1>
         </div>
         <nav>
           <ul className="nav">

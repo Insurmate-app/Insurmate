@@ -5,7 +5,7 @@ const log = require("../logger");
 const CustomError = require("../errorhandling/errorUtil");
 const passwordService = require("../services/password.service");
 const nameMatcherService = require("../services/name-matcher.service");
-const { cache } = require("../util/cache");
+const cache = require("../utils/cache");
 
 const sendVerificationEmail = async (email, otp) => {
   await emailService.sendEmail({

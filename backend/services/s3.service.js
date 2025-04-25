@@ -3,11 +3,6 @@ const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const pdfParse = require("pdf-parse");
 const { analyzeDocument } = require("./llm.service");
-const { createCache } = require("../util/cache");
-
-const https = require("https");
-
-const cache = createCache({ ttl: 1000 * 280 }); // 4 minutes and 40 seconds
 
 const {
   S3Client,
@@ -43,19 +38,6 @@ const s3Client = new S3Client({
   },
 });
 
-function checkURLStatus(url) {
-  return new Promise((resolve) => {
-    https
-      .get(url, (res) => {
-        resolve(res.statusCode === 200);
-      })
-      .on("error", (err) => {
-        console.error(`Error checking URL: ${err.message}`);
-        resolve(false);
-      });
-  });
-}
-
 //Returns a list of files in S3
 const listFiles = async (fileName) => {
   const command = new ListObjectsV2Command({
@@ -69,12 +51,10 @@ const listFiles = async (fileName) => {
     return [];
   }
 
-  const result = response.Contents.map((obj) => ({
+  return response.Contents.map((obj) => ({
     filename: obj.Key,
     uploadedAt: obj.LastModified,
   }));
-
-  return result;
 };
 
 /**
@@ -135,10 +115,8 @@ const uploadFile = async (file, email, assetId) => {
       const data = asset.data;
       data.fileName = uniqueFileName;
       data.status = "Verified";
-      data.llmResponse = analysis;
       data.policyNumber = analysis.policyNumber;
-      data.firstName = analysis.firstName;
-      data.lastName = analysis.lastName;
+      data.llmResponse = analysis;
       await assetService.updateAssetWhileUploadingDocument(email, {
         id: assetId,
         data,
@@ -195,6 +173,7 @@ const reuploadFile = async (file, assetId, email) => {
 
   // analyze document using LLM
   const analysis = await analyzeDocument(text);
+  console.log("Analysis: ", analysis);
 
   // check if the document is valid
   if (!analysis.valid) {
@@ -228,30 +207,6 @@ const reuploadFile = async (file, assetId, email) => {
   }
 };
 
-const generateSignedUrl_via_S3 = async (fileName) => {
-  const params = {
-    Bucket: process.env.AWS_BUCKET_NAME,
-    Key: fileName,
-  };
-
-  try {
-    console.log("Generating signed URL for file:", fileName);
-    const command = new GetObjectCommand(params);
-    const url = await getSignedUrl(s3Client, command, {
-      expiresIn: 300, // 5 minutes
-    });
-
-    cache.set(`signedURL_${fileName}`, url);
-
-    return {
-      url: url,
-    };
-  } catch (error) {
-    log.error("Upload Failed:", error);
-    throw new CustomError("Unable to generate signed URL", 400);
-  }
-};
-
 const generateSignedUrl = async (email, assetId) => {
   const asset = await assetService.getAssetById(email, assetId);
 
@@ -265,25 +220,26 @@ const generateSignedUrl = async (email, assetId) => {
   const exists = await module.exports.fileExists(fileName);
   if (!exists) throw new CustomError(`File not found: ${fileName}`, 404);
 
-  if (cache.has(`signedURL_${fileName}`)) {
-    const cachedUrl = cache.get(`signedURL_${fileName}`);
-    console.log("Cache hit for signed URL");
-    if (cachedUrl) {
-      console.log("Using cached signed URL");
-      checkURLStatus(cachedUrl).then((isValid) => {
-        if (!isValid) {
-          console.log("Cached signed URL is invalid. Regenerating...");
-          cache.delete(`signedURL_${fileName}`);
-          return generateSignedUrl_via_S3(fileName);
-        }
-      });
-      return {
-        url: cachedUrl,
-      };
-    }
+  const params = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: fileName,
+  };
+
+  try {
+    const command = new GetObjectCommand(params);
+    const url = await getSignedUrl(s3Client, command, {
+      expiresIn: 300, // 5 minutes
+    });
+
+    return {
+      url,
+      message: "URL generated successfully",
+      expiresIn: "5 minutes",
+    };
+  } catch (error) {
+    log.error("Upload Failed:", error);
+    throw new CustomError("Unable to generate signed URL", 400);
   }
-  console.log("Cache miss for signed URL");
-  return await generateSignedUrl_via_S3(fileName);
 };
 
 /**
@@ -294,6 +250,8 @@ const generateSignedUrl = async (email, assetId) => {
 const deleteFile = async (email, assetId) => {
   const asset = await assetService.getAssetById(email, assetId);
   const data = asset.data;
+
+  console.log("Asset: ", asset);
 
   if (!asset) {
     throw new CustomError(`Customer not found`, 404);
@@ -315,8 +273,11 @@ const deleteFile = async (email, assetId) => {
   try {
     const command = new DeleteObjectCommand(params);
     await s3Client.send(command);
+    console.log(`File deleted successfully: ${fileName}`);
 
-    cache.delete(`signedURL_${assetId}`);
+    await assetService.updateAsset(email, { id: assetId, asset });
+    data.fileName = "N/A";
+    await assetService.updateAsset(email, { id: assetId, data });
 
     return { message: "File deleted successfully", fileName };
   } catch (error) {
