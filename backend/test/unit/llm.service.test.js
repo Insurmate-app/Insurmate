@@ -7,148 +7,81 @@
  * - catching and responding to groq API errors or invalid responses
  *
  * Dependencies:
- * - llm.service.js: Insurnace document validation service
- * - groq-sdk: Mocked Groq API client
+ * - llm.service.js: Insurance document validation service
+ * - groq-sdk: uses real API calls to the Groq service
  * - jest: Testing framework
  */
+require("dotenv").config({ path: __dirname + "/../../.env" });
 
-const mockCreate = jest.fn(); // Mock the groq-sdk module instead of using the real one
-
-jest.mock("groq-sdk", () => {
-  return jest.fn().mockImplementation(() => {
-    return {
-      chat: {
-        completions: {
-          create: mockCreate,
-        },
-      },
-    };
-  });
-});
-
-const { analyzeDocument } = require("../../services/llm.service");
+const { analyzeDocument, groq } = require("../../services/llm.service");
 
 describe("LLM service guarantees a response for a valid or invalid document as well any errors that may happen with the service", () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  it("should return valid = true and LOW risk for a clean insurance document", async () => {
+    const document = `
+      Insurance Policy
+      Name: Patrick Doe
+      Policy Number: 123456789
+      Expiration Date: 2050-01-01
+    `;
 
-  it("should return valid = true for an insurance document with a future expiration date", async () => {
-    const mockGroqResponse = {
-      choices: [
-        {
-          message: {
-            content: JSON.stringify({
-              firstName: "Patrick",
-              lastName: "Doe",
-              policyNumber: "123456789",
-              expirationDate: "2050-01-01",
-              valid: true,
-              confidenceScore: 0.95,
-              reason:
-                "The document is valid. It is insurance related, and the expiration date is in the future.",
-            }),
-          },
-        },
-      ],
-    };
+    const result = await analyzeDocument(document); // send to service
 
-    mockCreate.mockResolvedValue(mockGroqResponse);
-
-    const result = await analyzeDocument("This is a test document.");
-    expect(result).toEqual({
-      firstName: "Patrick",
-      lastName: "Doe",
-      policyNumber: "123456789",
-      expirationDate: "2050-01-01",
-      valid: true,
-      confidenceScore: 0.95,
-      reason:
-        "The document is valid. It is insurance related, and the expiration date is in the future.",
-    });
+    expect(result.valid).toBe(true);
+    expect(result.riskLevel).toBe("LOW");
+    expect(result.firstName).toBe("Patrick");
+    expect(result.lastName).toBe("Doe");
+    expect(result.policyNumber).toBe("123456789");
+    expect(result.expirationDate).toBe("2050-01-01");
+    expect(Array.isArray(result.fraudIndicators)).toBe(true);
   });
 
   it("should return valid = false for an insurance document with a past expiration date", async () => {
-    const mockGroqResponse = {
-      choices: [
-        {
-          message: {
-            content: JSON.stringify({
-              firstName: "Patrick",
-              lastName: "Doe",
-              policyNumber: "123456789",
-              expirationDate: "2020-01-01",
-              valid: true, // this should be false, the service should handle this
-              confidenceScore: 0.95,
-              reason: "The document is valid and all fields are present",
-            }),
-          },
-        },
-      ],
-    };
+    const document = `
+      Insurance Policy
+      Name: Jane Doe
+      Policy Number: 987654321
+      Expiration Date: 2000-01-01
+    `; // outdated policy
 
-    mockCreate.mockResolvedValue(mockGroqResponse);
-
-    const result = await analyzeDocument("This is a expired document.");
+    const result = await analyzeDocument(document);
 
     expect(result.valid).toBe(false);
-    expect(result.reason).toContain("Document expired.");
+    expect(result.fraudIndicators).toContain("Expired document");
+    expect(result.reason).toContain("Document expired");
   });
 
   it("should return valid = false for a non-insurance document with missing fields", async () => {
-    const mockGroqResponse = {
-      choices: [
-        {
-          message: {
-            content: JSON.stringify({
-              firstName: "Jim",
-              lastName: null,
-              policyNumber: null,
-              expirationDate: null,
-              valid: false,
-              confidenceScore: 0.2,
-              reason:
-                "Document lacks insurance-related content and required fields.",
-            }),
-          },
-        },
-      ],
-    };
+    const document = `
+      Cake Recipe:
+      Ingredients:
+      - flour
+      - sugar
+      - eggs
+    `; // not an insurance document
 
-    mockCreate.mockResolvedValue(mockGroqResponse);
-
-    const result = await analyzeDocument("Not a real insurance document.");
+    const result = await analyzeDocument(document);
 
     expect(result.valid).toBe(false);
-    expect(result.firstName).toBe("Jim");
-    expect(result.lastName).toBe(null);
-    expect(result.policyNumber).toBe(null);
-    expect(result.reason).toContain("required fields");
-  });
-
-  it("should throw an error if the Groq API call fails at some point", async () => {
-    mockCreate.mockRejectedValue(new Error("some groq error"));
-
-    await expect(analyzeDocument("example document")).rejects.toThrow(
-      "Failed to analyze document."
+    expect(result.riskLevel === "HIGH" || result.riskLevel === "MEDIUM").toBe(
+      true
     );
   });
 
-  it("should throw an error if Groq API returns an empty or invalid response", async () => {
-    const mockGroqResponse = {
+  it("should throw an error if the Groq API responds with nothing", async () => {
+    const spy = jest.spyOn(groq.chat.completions, "create").mockResolvedValue({
       choices: [
         {
           message: {
-            content: null, // !analysis
+            content: null,
           },
         },
       ],
-    };
+    });
 
-    mockCreate.mockResolvedValue(mockGroqResponse);
-
-    await expect(analyzeDocument("example document")).rejects.toThrow(
+    await expect(analyzeDocument("test Document")).rejects.toThrow(
       "Failed to analyze document."
     );
+
+    spy.mockRestore();
   });
 });

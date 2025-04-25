@@ -127,5 +127,6 @@ const analyzeDocument = async (text) => {
 };
 
 module.exports = {
+  groq,
   analyzeDocument,
 };
