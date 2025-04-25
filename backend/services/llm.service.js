@@ -1,5 +1,4 @@
 const Groq = require("groq-sdk");
-//require("dotenv").config();
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
@@ -7,7 +6,7 @@ const groq = new Groq({
 
 const analyzeDocument = async (text) => {
   try {
-    const prompt = `Analyze the following insurance document and:
+    const prompt = `Analyze the following insurance document for potential fraud and extract key information:
 
             1. Extract these specific fields (if present):
                - firstName: The first name of the policy holder
@@ -15,7 +14,15 @@ const analyzeDocument = async (text) => {
                - policyNumber: The insurance policy identification number
                - expirationDate: The policy expiration date
 
-            2. Validation Rules:
+            2. Fraud Detection Checks:
+               - Check for inconsistencies in personal information
+               - Look for suspicious patterns in policy details
+               - Identify potential document alterations or tampering
+               - Flag unusual policy terms or conditions
+               - Check for mismatched or invalid dates
+               - Verify policy number format and validity
+               
+            3. Validation Rules:
                IMPORTANT - Date Validation:
                - Today's date is: ${new Date().toISOString().split("T")[0]}
                - You MUST compare the expirationDate with today's date
@@ -25,16 +32,19 @@ const analyzeDocument = async (text) => {
                - The document is INVALID if:
                   * Any required field (firstName, lastName, policyNumber) is missing
                   * The content is not insurance-related
+                  * Any signs of document tampering or alterations are detected
+                  * Policy number format is invalid or suspicious
                - The document is VALID only if:
                   * ALL required fields are present AND
                   * expirationDate is either today or a future date AND
-                  * document content is insurance-related
+                  * document content is insurance-related AND
+                  * no fraud indicators are detected
 
-            3. Confidence Scoring:
-               - Score 1.0: All fields present, properly formatted, and expiration date is valid
-               - Score 0.7-0.9: Most fields present but some uncertainty
-               - Score 0.4-0.6: Some fields missing or unclear
-               - Score 0.0-0.3: Document appears unrelated to insurance
+            3. Confidence and Fraud Risk Scoring:
+               - Score 1.0: All fields valid, no fraud indicators
+               - Score 0.7-0.9: Most fields valid, minor inconsistencies
+               - Score 0.4-0.6: Some fields missing or suspicious patterns
+               - Score 0.0-0.3: Major red flags or likely fraudulent
 
             Return the analysis in this exact JSON format:
             {
@@ -44,7 +54,9 @@ const analyzeDocument = async (text) => {
                 "expirationDate": "YYYY-MM-DD or null",
                 "valid": boolean,
                 "confidenceScore": number between 0 and 1,
-                "reason": "detailed explanation including the date comparison result"
+                "fraudIndicators": ["list of suspicious elements found"],
+                "riskLevel": "LOW|MEDIUM|HIGH",
+                "reason": "detailed explanation including fraud analysis and date validation"
             }
 
             Document text:
@@ -58,7 +70,7 @@ const analyzeDocument = async (text) => {
         {
           role: "system",
           content:
-            "Carefully analyze the document and respond strictly in raw JSON format.",
+            "You are a fraud detection expert. Carefully analyze the document for authenticity and respond strictly in raw JSON format.",
         },
         {
           role: "user",
@@ -79,16 +91,32 @@ const analyzeDocument = async (text) => {
     analysis = analysis.replace(/```json|```/g, "").trim();
 
     const parsedAnalysis = JSON.parse(analysis);
-    
-    // Add date validation
+
+    // Add date validation and fraud risk assessment
     if (parsedAnalysis.expirationDate) {
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toISOString().split("T")[0];
       const expirationDate = parsedAnalysis.expirationDate;
-      
+
       if (expirationDate < today) {
         parsedAnalysis.valid = false;
+        parsedAnalysis.fraudIndicators.push("Expired document");
         parsedAnalysis.reason = `Document expired. Expiration date (${expirationDate}) is before today (${today}). ${parsedAnalysis.reason}`;
       }
+    }
+
+    // Determine risk level based on confidence score and fraud indicators
+    if (
+      parsedAnalysis.confidenceScore >= 0.8 &&
+      parsedAnalysis.fraudIndicators.length === 0
+    ) {
+      parsedAnalysis.riskLevel = "LOW";
+    } else if (
+      parsedAnalysis.confidenceScore >= 0.5 ||
+      parsedAnalysis.fraudIndicators.length <= 2
+    ) {
+      parsedAnalysis.riskLevel = "MEDIUM";
+    } else {
+      parsedAnalysis.riskLevel = "HIGH";
     }
 
     return parsedAnalysis;
