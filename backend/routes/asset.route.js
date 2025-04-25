@@ -40,8 +40,8 @@ router.post(
     body("data.policyNumber")
       .notEmpty()
       .withMessage("Policy number is required")
-      .isLength({ min: 6, max: 10 })
-      .withMessage("Policy number must be between 6 and 10 digits"),
+      .isLength({ min: 6, max: 100 })
+      .withMessage("Policy number must be between 6 and 100 digits"),
   ],
   validate,
   assetController.createAsset
@@ -83,14 +83,14 @@ router.put(
     body("data.policyNumber")
       .notEmpty()
       .withMessage("Policy number is required")
-      .isLength({ min: 6, max: 10 })
-      .withMessage("Policy number must be between 6 and 10 digits"),
+      .isLength({ min: 6, max: 100 })
+      .withMessage("Policy number must be between 6 and 100 characters."),
     body("data.status")
       .notEmpty()
       .withMessage("Status is required")
       .isString()
       .withMessage("Status must be a string")
-      .isIn(["Active", "Inactive", "Pending"])
+      .isIn(["Active", "Inactive", "Pending", "Verified"])
       .withMessage("Status must be 'Active', 'Inactive', or 'Pending'"),
   ],
   validate,

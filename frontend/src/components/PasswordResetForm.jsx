@@ -1,12 +1,12 @@
 import { useCallback, useMemo, useState } from "react";
+import { toast } from "react-toastify";
 
 import * as Yup from "yup";
 
 import { encodeBase64 } from "../functions/base64";
 import { obfuscate } from "../functions/obfs";
-import useModal from "../hooks/useModal";
 import useSpinner from "../hooks/useSpinner";
-import Modal from "./Modal";
+import ToastComponent from "./ToastComponent";
 import { useApi } from "./useApi";
 
 const PasswordResetForm = () => {
@@ -17,7 +17,6 @@ const PasswordResetForm = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const { isSpinnerVisible, activateSpinner, deactivateSpinner } = useSpinner();
-  const { isVisible, message, showModal, hideModal } = useModal();
 
   const [errors, setErrors] = useState({});
 
@@ -100,118 +99,117 @@ const PasswordResetForm = () => {
         });
         setErrors(validationErrors);
       } else if (err.response) {
-        showModal(err.response.data.message || "Reset password failed.");
+        toast.error(err.response.data.message || "Reset password failed.");
       } else {
-        showModal("An unexpected error occurred");
+        toast.error("An unexpected error occurred");
       }
     }
   };
 
   return (
-    <div className="container-fluid d-flex justify-content-center align-items-center min-vh-100 bg-white">
-      <div
-        className="card p-4 shadow rounded w-100"
-        style={{
-          maxWidth: "450px",
-          backgroundColor: "#f9f9f9",
-          border: "1px solid #ddd",
-        }}
-      >
-        <h2 className="text-center mb-4" style={{ color: "#333" }}>
-          Reset Your Password
-        </h2>
-        <form onSubmit={handleSubmit} noValidate>
-          {/* Email Input */}
-          <div className="mb-3">
-            <label htmlFor="email" className="form-label fw-bold">
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="email"
-              className={`form-control ${errors.email ? "is-invalid" : ""}`}
-              placeholder="user@example.com"
-              value={formData.email}
-              onChange={handleInputChange}
-              style={{
-                backgroundColor: "#fff",
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-              }}
-              required
-            />
-            {errors.email && (
-              <small className="text-danger">{errors.email}</small>
-            )}
-          </div>
-
-          {/* New Password Input */}
-          <div className="mb-3">
-            <label htmlFor="password" className="form-label fw-bold">
-              New Password
-            </label>
-            <div className="input-group">
+    <>
+      {" "}
+      <ToastComponent />
+      <div className="container-fluid d-flex justify-content-center align-items-center min-vh-100 bg-white">
+        <div
+          className="card p-4 shadow rounded w-100"
+          style={{
+            maxWidth: "450px",
+            backgroundColor: "#f9f9f9",
+            border: "1px solid #ddd",
+          }}
+        >
+          <h2 className="text-center mb-4" style={{ color: "#333" }}>
+            Reset Your Password
+          </h2>
+          <form onSubmit={handleSubmit} noValidate>
+            {/* Email Input */}
+            <div className="mb-3">
+              <label htmlFor="email" className="form-label fw-bold">
+                Email Address
+              </label>
               <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                className={`form-control ${errors.password ? "is-invalid" : ""}`}
-                placeholder="Enter a new password"
-                value={formData.password}
+                type="email"
+                id="email"
+                className={`form-control ${errors.email ? "is-invalid" : ""}`}
+                placeholder="user@example.com"
+                value={formData.email}
                 onChange={handleInputChange}
                 style={{
                   backgroundColor: "#fff",
                   border: "1px solid #ddd",
                   borderRadius: "8px",
                 }}
-                required
               />
-              <span
-                className="input-group-text bg-transparent border-0"
-                onClick={togglePasswordVisibility}
-                style={{
-                  cursor: "pointer",
-                  color: "#333",
-                  borderRadius: "8px",
-                }}
-                role="button"
-              >
-                <i
-                  className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
-                ></i>
-              </span>
+              {errors.email && (
+                <small className="text-danger">{errors.email}</small>
+              )}
             </div>
-            {errors.password && (
-              <small className="text-danger">{errors.password}</small>
-            )}
-          </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="btn w-100 mt-3"
-            style={{
-              backgroundColor: isSpinnerVisible ? "#ccc" : "#333",
-              color: "#fff",
-              borderRadius: "8px",
-              cursor: isSpinnerVisible ? "not-allowed" : "pointer",
-              fontWeight: "bold",
-            }}
-            disabled={isSpinnerVisible}
-          >
-            {isSpinnerVisible && (
-              <span
-                className="spinner-border spinner-border-sm text-light me-2"
-                role="status"
-              ></span>
-            )}
-            Reset Password
-          </button>
-        </form>
+            {/* New Password Input */}
+            <div className="mb-3">
+              <label htmlFor="password" className="form-label fw-bold">
+                New Password
+              </label>
+              <div className="input-group">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  className={`form-control ${errors.password ? "is-invalid" : ""}`}
+                  placeholder="Enter a new password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  style={{
+                    backgroundColor: "#fff",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                  }}
+                />
+                <span
+                  className="input-group-text bg-transparent border-0"
+                  onClick={togglePasswordVisibility}
+                  style={{
+                    cursor: "pointer",
+                    color: "#333",
+                    borderRadius: "8px",
+                  }}
+                  role="button"
+                >
+                  <i
+                    className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}
+                  ></i>
+                </span>
+              </div>
+              {errors.password && (
+                <small className="text-danger">{errors.password}</small>
+              )}
+            </div>
 
-        {/* Modal for Errors */}
-        <Modal isVisible={isVisible} message={message} hideModal={hideModal} />
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="btn w-100 mt-3"
+              style={{
+                backgroundColor: isSpinnerVisible ? "#ccc" : "#333",
+                color: "#fff",
+                borderRadius: "8px",
+                cursor: isSpinnerVisible ? "not-allowed" : "pointer",
+                fontWeight: "bold",
+              }}
+              disabled={isSpinnerVisible}
+            >
+              {isSpinnerVisible && (
+                <span
+                  className="spinner-border spinner-border-sm text-light me-2"
+                  role="status"
+                ></span>
+              )}
+              Reset Password
+            </button>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

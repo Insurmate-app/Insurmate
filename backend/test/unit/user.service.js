@@ -83,7 +83,7 @@ describe("create user without mocking hashPassword and generateOtp", () => {
     const createdUser = {
       ...userData,
       _id: "12345",
-      password: expect.any(String),
+      password: expect.any(String), 
     };
 
     // DTO format for the user data to be returned
