@@ -7,9 +7,14 @@ const CollaborationComponent = () => {
     setIsExpanded(!isExpanded);
   };
 
-  const handleNavigate = () => {
-    window.location.href = "/uno/fall_2024_poster.pdf";
+  const handleNavigate = (pdfPath) => {
+    window.location.href = pdfPath;
   };
+
+  const pdfFiles = [
+    { name: "Fall 2024 Poster", path: "/uno/fall_2024_poster.pdf" },
+    { name: "Spring 2025 Poster", path: "/uno/spring_2025_poster.pdf" },
+  ];
 
   return (
     <div>
@@ -74,11 +79,19 @@ const CollaborationComponent = () => {
               {isExpanded && (
                 <div className="border p-3 bg-white rounded shadow-sm">
                   <p>
-                    <strong>Folder:</strong> Fall 24
+                    <strong>Available Documents:</strong>
                   </p>
-                  <button onClick={handleNavigate} className="btn btn-danger">
-                    Go to Fall 24 Collaboration
-                  </button>
+                  <div className="d-grid gap-2">
+                    {pdfFiles.map((pdf, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleNavigate(pdf.path)}
+                        className="btn btn-outline-danger"
+                      >
+                        {pdf.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
