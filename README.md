@@ -209,4 +209,4 @@ This project is developed in collaboration with the University of Nebraska Omaha
 
 ## License
 
-This project is licensed under the Apache 2.0 License.
+This project is licensed under the MIT License.
