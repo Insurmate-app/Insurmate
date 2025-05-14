@@ -144,7 +144,7 @@ graph TB;
 1. Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Insurmate-app/Insurmate.git
 cd unomaha
 ```
 
