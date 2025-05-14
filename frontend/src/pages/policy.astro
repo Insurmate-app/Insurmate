@@ -1,0 +1,8 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import PolicyViewUpdate from "../components/PolicyViewUpdate.jsx";
+---
+
+<MainLayout title="View/Update Policy" description="View and update a policy.">
+  <PolicyViewUpdate client:only />
+</MainLayout>

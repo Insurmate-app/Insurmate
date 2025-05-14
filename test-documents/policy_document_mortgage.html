@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homeowner Mortgage Insurance Policy</title>
+    <style>
+      @page {
+        size: A4;
+        margin: 20mm;
+      }
+
+      body {
+        font-family: "Georgia", serif;
+        background-color: #ffffff;
+        color: #000000;
+        margin: 0;
+        padding: 40px;
+        position: relative;
+        overflow-x: hidden;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .watermark-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        justify-items: center;
+        align-items: center;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .watermark {
+        font-size: 48px;
+        font-weight: bold;
+        color: rgba(0, 0, 0, 0.04);
+        transform: rotate(-45deg);
+        white-space: nowrap;
+        user-select: none;
+      }
+
+      .policy-container {
+        max-width: 850px;
+        margin: auto;
+        border: 2px solid #000;
+        padding: 40px;
+        background-color: rgba(255, 255, 255, 0.98);
+        position: relative;
+        z-index: 2;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #000;
+        padding-bottom: 10px;
+        margin-bottom: 30px;
+      }
+
+      .logo {
+        height: 70px;
+      }
+
+      .company-info h1 {
+        font-size: 22px;
+        margin: 0;
+        text-transform: uppercase;
+      }
+
+      .company-info p {
+        font-size: 13px;
+        margin-top: 4px;
+      }
+
+      .document-title {
+        text-align: center;
+        margin: 30px 0;
+      }
+
+      .document-title h2 {
+        font-size: 20px;
+        padding-bottom: 6px;
+        border-bottom: 2px dashed #000;
+        display: inline-block;
+      }
+
+      section {
+        page-break-inside: avoid;
+      }
+
+      section h3 {
+        font-size: 16px;
+        border-left: 3px solid #000;
+        padding-left: 10px;
+        margin-top: 35px;
+        page-break-after: avoid;
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 10px;
+        font-size: 14px;
+        margin-top: 10px;
+      }
+
+      .info-grid p {
+        margin: 4px 0;
+      }
+
+      .coverage table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 14px;
+        page-break-inside: avoid;
+      }
+
+      .coverage th,
+      .coverage td {
+        border: 1px solid #000;
+        padding: 8px;
+        text-align: left;
+      }
+
+      .coverage th {
+        background-color: #000 !important;
+        color: #fff !important;
+      }
+
+      .terms p {
+        font-size: 13px;
+        line-height: 1.6;
+        margin-top: 10px;
+      }
+
+      .qr-section {
+        margin-top: 40px;
+        text-align: center;
+        page-break-inside: avoid;
+      }
+
+      .qr-section p {
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+
+      .qr-section img {
+        max-width: 100px;
+        height: auto;
+      }
+
+      footer {
+        margin-top: 50px;
+        text-align: center;
+        font-size: 12px;
+        page-break-inside: avoid;
+      }
+
+      @media print {
+        body {
+          padding: 0;
+          background: #fff !important;
+        }
+
+        .watermark-container {
+          display: grid !important;
+          opacity: 0.04 !important;
+        }
+
+        .policy-container {
+          border: 2px solid #000 !important;
+          box-shadow: none;
+          margin: 0 auto;
+          padding: 40px !important;
+          background-color: #fff !important;
+        }
+
+        .coverage th {
+          background-color: #000 !important;
+          color: #fff !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        .coverage th,
+        .coverage td {
+          border: 1px solid #000 !important;
+        }
+
+        header {
+          border-bottom: 2px solid #000 !important;
+        }
+
+        .document-title h2 {
+          border-bottom: 2px dashed #000 !important;
+        }
+
+        section h3 {
+          border-left: 3px solid #000 !important;
+        }
+
+        img {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="watermark-container">
+      <div class="watermark">WE CARE INSURANCE</div>
+      <div class="watermark">WE CARE INSURANCE</div>
+      <div class="watermark">WE CARE INSURANCE</div>
+      <div class="watermark">WE CARE INSURANCE</div>
+      <div class="watermark">WE CARE INSURANCE</div>
+      <div class="watermark">WE CARE INSURANCE</div>
+      <div class="watermark">WE CARE INSURANCE</div>
+      <div class="watermark">WE CARE INSURANCE</div>
+      <div class="watermark">WE CARE INSURANCE</div>
+    </div>
+
+    <div class="policy-container">
+      <header>
+        <img src="./wecarelogo.png" alt="We Care Insurance Logo" class="logo" />
+        <div class="company-info">
+          <h1>We Care Insurance Inc.</h1>
+          <p>11324 Davenport Street, Ste C, Omaha, NE, 68154</p>
+        </div>
+      </header>
+
+      <div class="document-title">
+        <h2>Homeowner Mortgage Insurance Policy</h2>
+      </div>
+
+      <section class="policy-info">
+        <h3>Policy Information</h3>
+        <div class="info-grid">
+          <p><strong>Policy Number:</strong> WC-HO-987654321</p>
+          <p><strong>Status:</strong> Active</p>
+          <p><strong>Policy Type:</strong> Homeowner (Mortgage Insurance)</p>
+          <p><strong>Issue Date:</strong> April 20, 2025</p>
+          <p><strong>Effective Date:</strong> April 21, 2025</p>
+          <p><strong>Expiration Date:</strong> April 20, 2026</p>
+          <p><strong>Annual Premium:</strong> $1,050.00</p>
+          <p><strong>Insurance Agent:</strong> Michael Bryant</p>
+        </div>
+      </section>
+
+      <section class="policyholder">
+        <h3>Policyholder Details</h3>
+        <div class="info-grid">
+          <p><strong>Name:</strong> Saige Fuentes</p>
+          <p><strong>Property Address:</strong> 456 Oak Lane, Springfield, IL 62704</p>
+          <p><strong>Phone:</strong> (217) 555-8899</p>
+          <p><strong>Email:</strong> saige.fuentes@example.com</p>
+          <p><strong>Lender:</strong> American Mortgage Bank</p>
+          <p><strong>Loan Number:</strong> 1122334455</p>
+        </div>
+      </section>
+
+      <section class="coverage">
+        <h3>Coverage Summary</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Coverage</th>
+              <th>Limit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Dwelling Coverage</td>
+              <td>$300,000</td>
+            </tr>
+            <tr>
+              <td>Other Structures</td>
+              <td>$30,000</td>
+            </tr>
+            <tr>
+              <td>Personal Property</td>
+              <td>$100,000</td>
+            </tr>
+            <tr>
+              <td>Liability Protection</td>
+              <td>$200,000</td>
+            </tr>
+            <tr>
+              <td>Medical Payments to Others</td>
+              <td>$5,000</td>
+            </tr>
+            <tr>
+              <td>Mortgage Insurance (PMI)</td>
+              <td>Included</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="terms">
+        <h3>Terms & Conditions</h3>
+        <p>
+          This policy provides protection against covered losses to your property
+          and personal belongings. It also includes liability coverage in the
+          event someone is injured on your property. Mortgage insurance is
+          required by the lender and protects the lender in case of loan
+          default.
+        </p>
+        <p>
+          This document is a summary of coverage. Please refer to the official
+          policy booklet for complete terms, endorsements, deductibles, and
+          exclusions. Coverage is effective only after full premium payment and
+          remains subject to underwriting approval.
+        </p>
+      </section>
+
+      <section class="qr-section">
+        <p>Scan to verify this policy online:</p>
+        <img
+          src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://wecare-insurance.com/verify/WC-HO-987654321"
+          alt="QR Code"
+        />
+      </section>
+
+      <footer>
+        <p>Contact Us: (800) 555-INSURE | support@wecare-insurance.com</p>
+        <p>&copy; 2025 We Care Insurance Inc. All rights reserved.</p>
+      </footer>
+    </div>
+  </body>
+</html></qodoArtifact>

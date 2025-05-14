@@ -1,0 +1,8 @@
+---
+import MainLayout from "../layouts/MainLayout.astro"
+import UploadDocument from "../components/DocumentUpload.jsx"
+---
+
+<MainLayout title="Document Upload" description="Document upload page">
+    <UploadDocument client:only/>
+</MainLayout>

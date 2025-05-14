@@ -1,0 +1,153 @@
+---
+import MortgagePolicyWorkflowSVG from "../components/MortgagePolicyWorkflowSVG";
+import HyperledgerFabricWorkflow from "../components/HyperledgerFabricWorkflow";
+import MainLayout from "../layouts/MainLayout.astro";
+---
+
+<MainLayout title="Learn More" description="Explore more about our workflows and architecture.">
+  <div class="workflow-container">
+    <h2>Revolutionizing Insurance with Blockchain Technology</h2>
+    <p class="page-description">
+      Dive deep into the details of our Mortgage Policy Workflow and Hyperledger Fabric Architecture.
+    </p>
+    <div class="workflow-content">
+      <div class="workflow-card">
+        <a href="https://github.com/Toe12/blockchain-experimental" target="_blank" rel="noopener noreferrer" class="github-icon-link">
+          <i class="bi bi-github github-icon"></i>
+        </a>
+        <h2>Mortgage Policy Workflow</h2>
+        <div class="svg-container">
+          <MortgagePolicyWorkflowSVG client:load />
+        </div>
+      </div>
+
+      <div class="workflow-card">
+        <a href="https://github.com/Toe12/blockchain-experimental" target="_blank" rel="noopener noreferrer" class="github-icon-link">
+          <i class="bi bi-github github-icon"></i>
+        </a>
+        <h2>Hyperledger Fabric Workflow</h2>
+        <div class="svg-container">
+          <HyperledgerFabricWorkflow client:load />
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-section">
+      <div class="highlight-point">
+        <h3>Secure and Transparent Operations</h3>
+        <p>
+          Our application harnesses the power of Hyperledger Fabric to ensure unparalleled data privacy and security. By using a permissioned blockchain network, we protect sensitive customer and policy data while enabling authorized stakeholders to access relevant information seamlessly.
+        </p>
+      </div>
+      <div class="highlight-point">
+        <h3>Smart Contract-Driven Efficiency</h3>
+        <p>
+          Experience automation at its best. By integrating Hyperledger Fabric's smart contract capabilities, we simplify complex insurance workflows—whether it's processing claims, validating coverage, or updating policy information. This automation reduces operational costs and human error, bringing unmatched efficiency to the industry.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .workflow-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      text-align: center;
+      background: #f9f9f9;
+      border-radius: 10px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+    .animation-container {
+      position: relative;
+      height: 150px;
+      margin-bottom: 20px;
+    }
+    .animated-circle {
+      width: 100px;
+      height: 100px;
+      border: 10px solid #2980b9;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 2s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    .page-title {
+      font-size: 2.8rem;
+      margin-bottom: 15px;
+      color: #2c3e50;
+      font-family: 'Georgia', serif;
+    }
+    .page-description {
+      font-size: 1.3rem;
+      margin-bottom: 40px;
+      color: #7f8c8d;
+      font-family: 'Georgia', serif;
+    }
+    .highlight-section {
+      margin-bottom: 50px;
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 10px;
+      border: 1px solid #e5e5e5;
+      text-align: left;
+    }
+    .highlight-section h2 {
+      font-size: 2.2rem;
+      margin-bottom: 20px;
+      color: #34495e;
+    }
+    .highlight-point {
+      margin-bottom: 25px;
+    }
+    .highlight-point h3 {
+      font-size: 1.5rem;
+      color: #2980b9;
+      margin-bottom: 10px;
+    }
+    .highlight-point p {
+      font-size: 1.1rem;
+      color: #7f8c8d;
+      line-height: 1.6;
+    }
+    .workflow-content {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .workflow-card {
+      width: 100%;
+      padding: 25px;
+      background: linear-gradient(145deg, #ffffff, #f3f3f3);
+      border-radius: 15px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .workflow-card h2 {
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+      color: #34495e;
+    }
+    .svg-container {
+      margin-top: 15px;
+    }
+    .github-icon-link {
+      display: inline-block;
+      margin-bottom: 10px;
+      color: #2c3e50;
+      font-size: 1.5rem;
+      text-decoration: none;
+    }
+    .github-icon:hover {
+      color: #2980b9;
+    }
+  </style>
+</MainLayout>

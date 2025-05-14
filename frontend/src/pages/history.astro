@@ -1,0 +1,8 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import AssetHistory from "../components/AssetHistory.jsx";
+---
+
+<MainLayout title="View/Update Policy" description="View and update a policy.">
+  <AssetHistory client:only />
+</MainLayout>

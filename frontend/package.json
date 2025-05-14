@@ -1,0 +1,51 @@
+{
+  "name": "frontend-react-astro",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.1.1",
+    "@emotion/react": "^11.13.5",
+    "@emotion/styled": "^11.13.5",
+    "@mui/material": "^6.1.8",
+    "@mui/x-data-grid": "^7.22.2",
+    "@mui/x-data-grid-pro": "^7.22.2",
+    "@react-pdf/renderer": "^4.1.5",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "astro": "^5.4.2",
+    "axios": "^1.8.2",
+    "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.11.3",
+    "dotenv": "^16.4.5",
+    "file-saver": "^2.0.5",
+    "framer-motion": "^11.11.17",
+    "gsap": "^3.12.5",
+    "jwt-decode": "^4.0.0",
+    "lucide-react": "^0.503.0",
+    "papaparse": "^5.4.1",
+    "pdfjs-dist": "^4.9.155",
+    "prop-types": "^15.8.1",
+    "react": "^18.3.1",
+    "react-cookie": "^7.2.2",
+    "react-csv": "^2.2.2",
+    "react-dom": "^18.3.1",
+    "react-icons": "^5.5.0",
+    "react-pdf": "^9.1.1",
+    "react-textarea-autosize": "^8.5.6",
+    "react-toastify": "^11.0.5",
+    "universal-cookie": "^7.2.2",
+    "yup": "^1.4.0"
+  },
+  "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "prettier": "^3.3.3"
+  }
+}

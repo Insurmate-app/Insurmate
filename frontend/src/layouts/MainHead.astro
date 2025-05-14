@@ -1,0 +1,14 @@
+---
+const { title, description } = Astro.props;
+---
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <meta name="generator" content={Astro.generator} />
+  <link rel="stylesheet" href="">
+  <link rel="icon" type="image/png" href="/insurmate_logo.png">
+  <link rel="stylesheet" href="/style/global.css">
+  <title>{title}</title>
+  <meta name="description" content={description} />
+</head>
